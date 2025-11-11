@@ -6,11 +6,10 @@ import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
 import { PortfolioTracker } from "@/components/PortfolioTracker";
 import { Dashboard } from "@/components/Dashboard";
+import { Charts } from "@/components/Charts";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Wallet, TrendingUp } from "lucide-react";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -24,8 +23,12 @@ function App() {
     balance: 0,
   });
   const [portfolio, setPortfolio] = useState(null);
+  const [analytics, setAnalytics] = useState({
+    expense_breakdown: [],
+    income_breakdown: [],
+    investment_breakdown: [],
+  });
   const [loading, setLoading] = useState(true);
-  const [activeView, setActiveView] = useState("budget"); // "budget" or "investments"
 
   // Fetch transactions
   const fetchTransactions = async () => {
