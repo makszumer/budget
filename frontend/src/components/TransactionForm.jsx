@@ -49,7 +49,6 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
     const newErrors = {};
     
     if (!amount) newErrors.amount = "Amount is required";
-    if (!description) newErrors.description = "Description is required";
     if (!category) newErrors.category = "Category is required";
     if (!date) newErrors.date = "Date is required";
 
