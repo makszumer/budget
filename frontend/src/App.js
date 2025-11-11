@@ -120,9 +120,6 @@ function App() {
     );
   }
 
-  const budgetTransactions = transactions.filter(t => t.type !== "investment");
-  const investmentTransactions = transactions.filter(t => t.type === "investment");
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Toaster />
@@ -133,158 +130,66 @@ function App() {
             💰 Financial Management Platform
           </h1>
           <p className="text-slate-600">
-            Complete budgeting and portfolio tracking solution
+            Complete budgeting and portfolio tracking with analytics
           </p>
         </div>
 
-        {/* View Switcher */}
-        <div className="mb-8 flex justify-center">
-          <div className="inline-flex rounded-lg border border-slate-200 bg-white p-1 shadow-sm">
-            <button
-              onClick={() => setActiveView("budget")}
-              data-testid="budget-view-btn"
-              className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${
-                activeView === "budget"
-                  ? "bg-slate-900 text-white shadow-md"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <Wallet className="h-4 w-4" />
-              Budget Manager
-            </button>
-            <button
-              onClick={() => setActiveView("investments")}
-              data-testid="investments-view-btn"
-              className={`flex items-center gap-2 px-6 py-3 rounded-md font-medium transition-all ${
-                activeView === "investments"
-                  ? "bg-blue-600 text-white shadow-md"
-                  : "text-slate-600 hover:text-slate-900"
-              }`}
-            >
-              <TrendingUp className="h-4 w-4" />
-              Investment Portfolio
-            </button>
-          </div>
+        {/* Dashboard */}
+        <div className="mb-8">
+          <Dashboard summary={summary} />
         </div>
 
-        {/* Budget View */}
-        {activeView === "budget" && (
-          <div className="space-y-8">
-            {/* Budget Dashboard */}
-            <div>
-              <Dashboard summary={summary} />
-            </div>
+        {/* Main Tabs */}
+        <Tabs defaultValue="budget" className="mb-8">
+          <TabsList className="grid w-full grid-cols-3 max-w-3xl mx-auto">
+            <TabsTrigger value="budget" data-testid="budget-tab">
+              Budget
+            </TabsTrigger>
+            <TabsTrigger value="investments" data-testid="investments-tab">
+              Investments
+            </TabsTrigger>
+            <TabsTrigger value="analytics" data-testid="analytics-tab">
+              Analytics
+            </TabsTrigger>
+          </TabsList>
 
-            {/* Budget Forms */}
+          {/* Budget Tab */}
+          <TabsContent value="budget" className="space-y-8">
+            {/* Income and Expense Forms Side by Side */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-green-200 bg-green-50/30">
-                <CardHeader>
-                  <CardTitle className="text-green-700">Income</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TransactionForm
-                    type="income"
-                    onAddTransaction={handleAddTransaction}
-                  />
-                </CardContent>
-              </Card>
-
-              <Card className="border-red-200 bg-red-50/30">
-                <CardHeader>
-                  <CardTitle className="text-red-700">Expenses</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <TransactionForm
-                    type="expense"
-                    onAddTransaction={handleAddTransaction}
-                  />
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Budget Transaction List */}
-            <div>
-              <TransactionList
-                transactions={budgetTransactions}
-                onDeleteTransaction={handleDeleteTransaction}
+              <TransactionForm
+                type="income"
+                onAddTransaction={handleAddTransaction}
+              />
+              <TransactionForm
+                type="expense"
+                onAddTransaction={handleAddTransaction}
               />
             </div>
-          </div>
-        )}
 
-        {/* Investment View */}
-        {activeView === "investments" && (
-          <div className="space-y-8">
+            {/* Transaction List */}
+            <TransactionList
+              transactions={transactions.filter(t => t.type !== "investment")}
+              onDeleteTransaction={handleDeleteTransaction}
+            />
+          </TabsContent>
+
+          {/* Investments Tab */}
+          <TabsContent value="investments" className="space-y-8">
             {/* Portfolio Tracker */}
-            <div>
-              <PortfolioTracker portfolio={portfolio} />
-            </div>
+            <PortfolioTracker portfolio={portfolio} />
 
             {/* Investment Form */}
             <div className="max-w-4xl mx-auto">
               <InvestmentForm onAddInvestment={handleAddTransaction} />
             </div>
+          </TabsContent>
 
-            {/* Investment Transaction List */}
-            <div className="max-w-4xl mx-auto">
-              <Card className="border-blue-200">
-                <CardHeader>
-                  <CardTitle>Investment History</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {investmentTransactions.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-8">
-                      No investment transactions yet.
-                    </p>
-                  ) : (
-                    <div className="space-y-3">
-                      {investmentTransactions.map((transaction) => (
-                        <div
-                          key={transaction.id}
-                          data-testid={`investment-transaction-${transaction.id}`}
-                          className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
-                        >
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
-                              <span className="font-bold">{transaction.asset || transaction.category}</span>
-                              <span className="text-sm text-muted-foreground">
-                                {transaction.quantity && `(${transaction.quantity} units)`}
-                              </span>
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              <span>{transaction.category}</span>
-                              {transaction.description && (
-                                <>
-                                  <span className="mx-2">•</span>
-                                  <span>{transaction.description}</span>
-                                </>
-                              )}
-                            </div>
-                          </div>
-                          <div className="text-right">
-                            <div className="text-lg font-bold text-blue-600">
-                              {new Intl.NumberFormat('en-US', {
-                                style: 'currency',
-                                currency: 'USD',
-                              }).format(transaction.amount)}
-                            </div>
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(transaction.date).toLocaleDateString('en-US', { 
-                                year: 'numeric', 
-                                month: 'short', 
-                                day: 'numeric' 
-                              })}
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
+          {/* Analytics Tab */}
+          <TabsContent value="analytics">
+            <Charts analytics={analytics} summary={summary} />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );
