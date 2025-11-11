@@ -108,7 +108,8 @@ async def get_summary():
     total_expenses = sum(t['amount'] for t in transactions if t['type'] == 'expense')
     total_investments = sum(t['amount'] for t in transactions if t['type'] == 'investment')
     
-    balance = total_income - total_expenses - total_investments
+    # Investments count as positive (savings), not negative
+    balance = total_income - total_expenses
     
     return TransactionSummary(
         totalIncome=total_income,
