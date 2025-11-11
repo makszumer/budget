@@ -28,10 +28,10 @@ const categoryOptions = {
     "Miscellaneous": ["Donations / Charity", "Unexpected Expenses", "Other / Uncategorized"],
   },
   income: {
-    "👩‍💼 Employment Income": ["Salary / wages", "Overtime / bonuses", "Commissions / tips"],
-    "💼 Self-Employment / Business": ["Freelance income", "Business sales", "Consulting / side hustle"],
-    "🏦 Transfers & Support": ["Government benefits", "Family support / alimony", "Reimbursements"],
-    "🎁 Other Income": ["Gifts", "Lottery / windfalls", "One-time payments"],
+    "Employment Income": ["Salary / wages", "Overtime / bonuses", "Commissions / tips"],
+    "Self-Employment / Business": ["Freelance income", "Business sales", "Consulting / side hustle"],
+    "Transfers & Support": ["Government benefits", "Family support / alimony", "Reimbursements"],
+    "Other Income": ["Gifts", "Lottery / windfalls", "One-time payments"],
   },
   investment: ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other"],
 };
