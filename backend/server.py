@@ -33,17 +33,24 @@ class Transaction(BaseModel):
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     type: Literal["expense", "income", "investment"]
     amount: float
-    description: str
+    description: Optional[str] = ""
     category: str
     date: str
+    # Investment specific fields
+    asset: Optional[str] = None  # Stock ticker, crypto symbol, etc.
+    quantity: Optional[float] = None  # Number of shares/coins
+    purchase_price: Optional[float] = None  # Price per unit at purchase
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TransactionCreate(BaseModel):
     type: Literal["expense", "income", "investment"]
     amount: float
-    description: str
+    description: Optional[str] = ""
     category: str
     date: str
+    asset: Optional[str] = None
+    quantity: Optional[float] = None
+    purchase_price: Optional[float] = None
 
 class TransactionSummary(BaseModel):
     totalIncome: float
