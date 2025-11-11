@@ -117,6 +117,104 @@ async def get_summary():
         balance=balance
     )
 
+# Portfolio specific endpoints
+class PortfolioHolding(BaseModel):
+    asset: str
+    category: str
+    total_quantity: float
+    total_invested: float
+    average_price: float
+    current_price: float
+    current_value: float
+    gain_loss: float
+    roi_percentage: float
+
+class PortfolioSummary(BaseModel):
+    holdings: List[PortfolioHolding]
+    total_invested: float
+    current_value: float
+    total_gain_loss: float
+    total_roi_percentage: float
+
+# Mock current prices for demonstration
+MOCK_PRICES = {
+    # Stocks
+    "AAPL": 185.50, "GOOGL": 142.30, "MSFT": 378.90, "TSLA": 242.80,
+    "AMZN": 155.20, "NVDA": 495.60, "META": 352.40, "NFLX": 485.30,
+    # Crypto
+    "BTC": 43250.00, "ETH": 2280.50, "SOL": 98.75, "BNB": 315.20,
+    "ADA": 0.52, "DOT": 6.85, "MATIC": 0.89, "AVAX": 36.40,
+}
+
+@api_router.get("/portfolio", response_model=PortfolioSummary)
+async def get_portfolio():
+    investments = await db.transactions.find(
+        {"type": "investment", "asset": {"$ne": None}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Group by asset
+    holdings_map = {}
+    for inv in investments:
+        asset = inv.get('asset')
+        if not asset:
+            continue
+            
+        if asset not in holdings_map:
+            holdings_map[asset] = {
+                'category': inv['category'],
+                'total_quantity': 0,
+                'total_invested': 0,
+                'transactions': []
+            }
+        
+        qty = inv.get('quantity', 0)
+        holdings_map[asset]['total_quantity'] += qty
+        holdings_map[asset]['total_invested'] += inv['amount']
+        holdings_map[asset]['transactions'].append(inv)
+    
+    # Calculate portfolio
+    holdings = []
+    total_invested = 0
+    current_value = 0
+    
+    for asset, data in holdings_map.items():
+        total_qty = data['total_quantity']
+        invested = data['total_invested']
+        avg_price = invested / total_qty if total_qty > 0 else 0
+        
+        # Get current price (mock)
+        current_price = MOCK_PRICES.get(asset, avg_price * 1.1)  # Default 10% gain
+        curr_value = total_qty * current_price
+        gain_loss = curr_value - invested
+        roi = (gain_loss / invested * 100) if invested > 0 else 0
+        
+        holdings.append(PortfolioHolding(
+            asset=asset,
+            category=data['category'],
+            total_quantity=total_qty,
+            total_invested=invested,
+            average_price=avg_price,
+            current_price=current_price,
+            current_value=curr_value,
+            gain_loss=gain_loss,
+            roi_percentage=roi
+        ))
+        
+        total_invested += invested
+        current_value += curr_value
+    
+    total_gain_loss = current_value - total_invested
+    total_roi = (total_gain_loss / total_invested * 100) if total_invested > 0 else 0
+    
+    return PortfolioSummary(
+        holdings=holdings,
+        total_invested=total_invested,
+        current_value=current_value,
+        total_gain_loss=total_gain_loss,
+        total_roi_percentage=total_roi
+    )
+
 # Include the router in the main app
 app.include_router(api_router)
 
