@@ -86,7 +86,7 @@ function App() {
     try {
       const response = await axios.post(`${API}/transactions`, transaction);
       setTransactions([response.data, ...transactions]);
-      await fetchSummary();
+      await Promise.all([fetchSummary(), fetchAnalytics()]);
       if (transaction.type === "investment") {
         await fetchPortfolio();
       }
@@ -101,8 +101,7 @@ function App() {
     try {
       await axios.delete(`${API}/transactions/${id}`);
       setTransactions(transactions.filter((t) => t.id !== id));
-      await fetchSummary();
-      await fetchPortfolio();
+      await Promise.all([fetchSummary(), fetchPortfolio(), fetchAnalytics()]);
       toast.success("Transaction deleted successfully");
     } catch (error) {
       console.error("Error deleting transaction:", error);
