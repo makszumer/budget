@@ -216,6 +216,78 @@ async def get_portfolio():
         total_roi_percentage=total_roi
     )
 
+# Analytics endpoints
+class CategoryBreakdown(BaseModel):
+    category: str
+    amount: float
+    percentage: float
+
+class AnalyticsData(BaseModel):
+    expense_breakdown: List[CategoryBreakdown]
+    income_breakdown: List[CategoryBreakdown]
+    investment_breakdown: List[CategoryBreakdown]
+
+@api_router.get("/analytics", response_model=AnalyticsData)
+async def get_analytics():
+    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
+    
+    # Expense breakdown
+    expense_by_category = {}
+    for t in transactions:
+        if t['type'] == 'expense':
+            cat = t['category']
+            expense_by_category[cat] = expense_by_category.get(cat, 0) + t['amount']
+    
+    total_expenses = sum(expense_by_category.values())
+    expense_breakdown = [
+        CategoryBreakdown(
+            category=cat,
+            amount=amt,
+            percentage=(amt / total_expenses * 100) if total_expenses > 0 else 0
+        )
+        for cat, amt in expense_by_category.items()
+    ]
+    
+    # Income breakdown
+    income_by_category = {}
+    for t in transactions:
+        if t['type'] == 'income':
+            cat = t['category']
+            income_by_category[cat] = income_by_category.get(cat, 0) + t['amount']
+    
+    total_income = sum(income_by_category.values())
+    income_breakdown = [
+        CategoryBreakdown(
+            category=cat,
+            amount=amt,
+            percentage=(amt / total_income * 100) if total_income > 0 else 0
+        )
+        for cat, amt in income_by_category.items()
+    ]
+    
+    # Investment breakdown
+    investment_by_category = {}
+    for t in transactions:
+        if t['type'] == 'investment':
+            cat = t['category']
+            investment_by_category[cat] = investment_by_category.get(cat, 0) + t['amount']
+    
+    total_investments = sum(investment_by_category.values())
+    investment_breakdown = [
+        CategoryBreakdown(
+            category=cat,
+            amount=amt,
+            percentage=(amt / total_investments * 100) if total_investments > 0 else 0
+        )
+        for cat, amt in investment_by_category.items()
+    ]
+    
+    return AnalyticsData(
+        expense_breakdown=expense_breakdown,
+        income_breakdown=income_breakdown,
+        investment_breakdown=investment_breakdown
+    )
+
 # Include the router in the main app
 app.include_router(api_router)
 
