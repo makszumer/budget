@@ -1,4 +1,4 @@
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, HTTPException
 from dotenv import load_dotenv
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -6,7 +6,7 @@ import os
 import logging
 from pathlib import Path
 from pydantic import BaseModel, Field, ConfigDict
-from typing import List
+from typing import List, Optional, Literal
 import uuid
 from datetime import datetime, timezone
 
@@ -27,44 +27,88 @@ api_router = APIRouter(prefix="/api")
 
 
 # Define Models
-class StatusCheck(BaseModel):
-    model_config = ConfigDict(extra="ignore")  # Ignore MongoDB's _id field
+class Transaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    client_name: str
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    type: Literal["expense", "income", "investment"]
+    amount: float
+    description: str
+    category: str
+    date: str
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
-class StatusCheckCreate(BaseModel):
-    client_name: str
+class TransactionCreate(BaseModel):
+    type: Literal["expense", "income", "investment"]
+    amount: float
+    description: str
+    category: str
+    date: str
+
+class TransactionSummary(BaseModel):
+    totalIncome: float
+    totalExpenses: float
+    totalInvestments: float
+    balance: float
 
 # Add your routes to the router instead of directly to app
 @api_router.get("/")
 async def root():
-    return {"message": "Hello World"}
+    return {"message": "Financial Tracker API"}
 
-@api_router.post("/status", response_model=StatusCheck)
-async def create_status_check(input: StatusCheckCreate):
-    status_dict = input.model_dump()
-    status_obj = StatusCheck(**status_dict)
+# Transaction endpoints
+@api_router.post("/transactions", response_model=Transaction)
+async def create_transaction(transaction: TransactionCreate):
+    trans_dict = transaction.model_dump()
+    trans_obj = Transaction(**trans_dict)
     
     # Convert to dict and serialize datetime to ISO string for MongoDB
-    doc = status_obj.model_dump()
-    doc['timestamp'] = doc['timestamp'].isoformat()
+    doc = trans_obj.model_dump()
+    doc['createdAt'] = doc['createdAt'].isoformat()
     
-    _ = await db.status_checks.insert_one(doc)
-    return status_obj
+    await db.transactions.insert_one(doc)
+    return trans_obj
 
-@api_router.get("/status", response_model=List[StatusCheck])
-async def get_status_checks():
+@api_router.get("/transactions", response_model=List[Transaction])
+async def get_transactions():
     # Exclude MongoDB's _id field from the query results
-    status_checks = await db.status_checks.find({}, {"_id": 0}).to_list(1000)
+    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
     
     # Convert ISO string timestamps back to datetime objects
-    for check in status_checks:
-        if isinstance(check['timestamp'], str):
-            check['timestamp'] = datetime.fromisoformat(check['timestamp'])
+    for trans in transactions:
+        if isinstance(trans['createdAt'], str):
+            trans['createdAt'] = datetime.fromisoformat(trans['createdAt'])
     
-    return status_checks
+    # Sort by date (newest first)
+    transactions.sort(key=lambda x: x['createdAt'], reverse=True)
+    
+    return transactions
+
+@api_router.delete("/transactions/{transaction_id}")
+async def delete_transaction(transaction_id: str):
+    result = await db.transactions.delete_one({"id": transaction_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    return {"message": "Transaction deleted successfully"}
+
+@api_router.get("/transactions/summary", response_model=TransactionSummary)
+async def get_summary():
+    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
+    
+    total_income = sum(t['amount'] for t in transactions if t['type'] == 'income')
+    total_expenses = sum(t['amount'] for t in transactions if t['type'] == 'expense')
+    total_investments = sum(t['amount'] for t in transactions if t['type'] == 'investment')
+    
+    balance = total_income - total_expenses - total_investments
+    
+    return TransactionSummary(
+        totalIncome=total_income,
+        totalExpenses=total_expenses,
+        totalInvestments=total_investments,
+        balance=balance
+    )
 
 # Include the router in the main app
 app.include_router(api_router)
