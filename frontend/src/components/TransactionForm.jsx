@@ -118,12 +118,12 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
 
           <div className="space-y-2">
             <Label htmlFor={`description-${type}`}>
-              Description <span className="text-destructive">*</span>
+              Description (Optional)
             </Label>
             <Input
               id={`description-${type}`}
               data-testid={`description-input-${type}`}
-              placeholder="Enter description"
+              placeholder="Add notes (optional)"
               value={description}
               onChange={(e) => {
                 setDescription(e.target.value);
