@@ -61,11 +61,21 @@ function App() {
     }
   };
 
+  // Fetch analytics
+  const fetchAnalytics = async () => {
+    try {
+      const response = await axios.get(`${API}/analytics`);
+      setAnalytics(response.data);
+    } catch (error) {
+      console.error("Error fetching analytics:", error);
+    }
+  };
+
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchTransactions(), fetchSummary(), fetchPortfolio()]);
+      await Promise.all([fetchTransactions(), fetchSummary(), fetchPortfolio(), fetchAnalytics()]);
       setLoading(false);
     };
     loadData();
