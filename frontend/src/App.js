@@ -253,38 +253,38 @@ function App() {
             <TabsContent value="transactions" className="space-y-8 mt-6">
               {/* Income and Expense Forms Side by Side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="border-2 border-green-200 rounded-xl p-1 bg-green-50/50">
-                    <TransactionForm
-                      type="income"
-                      onAddTransaction={handleAddTransaction}
-                    />
-                  </div>
-                  <div className="border-2 border-red-200 rounded-xl p-1 bg-red-50/50">
-                    <TransactionForm
-                      type="expense"
-                      onAddTransaction={handleAddTransaction}
-                    />
-                  </div>
+                <div className="border-2 border-green-200 rounded-xl p-1 bg-green-50/50">
+                  <TransactionForm
+                    type="income"
+                    onAddTransaction={handleAddTransaction}
+                  />
                 </div>
+                <div className="border-2 border-red-200 rounded-xl p-1 bg-red-50/50">
+                  <TransactionForm
+                    type="expense"
+                    onAddTransaction={handleAddTransaction}
+                  />
+                </div>
+              </div>
 
-                {/* Transaction List */}
-                <TransactionList
-                  transactions={transactions.filter(t => t.type !== "investment")}
-                  onDeleteTransaction={handleDeleteTransaction}
-                />
-              </TabsContent>
+              {/* Transaction List */}
+              <TransactionList
+                transactions={transactions.filter(t => t.type !== "investment")}
+                onDeleteTransaction={handleDeleteTransaction}
+              />
+            </TabsContent>
 
-              {/* Analytics Tab */}
-              <TabsContent value="analytics" className="mt-6">
-                <BudgetAnalytics analytics={analytics} budgetGrowth={budgetGrowth} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="mt-6">
+              <BudgetAnalytics analytics={analytics} budgetGrowth={budgetGrowth} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
 
-        {/* Investment Section */}
-        {activeSection === "investments" && (
-          <div className="space-y-8">
+      {/* Investment Section */}
+      {activeSection === "investments" && (
+        <div className="space-y-8">
             {/* Investment Tabs */}
             <Tabs defaultValue="portfolio" className="w-full">
               <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
