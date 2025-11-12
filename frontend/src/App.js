@@ -5,6 +5,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
+import { InvestmentTransactionList } from "@/components/InvestmentTransactionList";
 import { PortfolioTracker } from "@/components/PortfolioTracker";
 import { Dashboard } from "@/components/Dashboard";
 import { BudgetAnalytics } from "@/components/BudgetAnalytics";
