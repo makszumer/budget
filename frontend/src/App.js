@@ -166,10 +166,31 @@ function App() {
     );
   }
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-      <Toaster />
-      <div className="container mx-auto px-4 py-8">
+  const renderPage = () => {
+    switch (currentPage) {
+      case "dashboard":
+        return renderDashboard();
+      case "investing-overview":
+        return <InvestingOverview />;
+      case "investing-crypto":
+        return <CryptoGuide />;
+      case "investing-stocks":
+        return <StocksGuide />;
+      case "investing-bonds":
+        return <BondsGuide />;
+      case "investing-etfs":
+        return <ETFsGuide />;
+      case "investing-inflation":
+        return <InflationGuide />;
+      case "calculator":
+        return <CompoundCalculator />;
+      default:
+        return renderDashboard();
+    }
+  };
+
+  const renderDashboard = () => (
+    <div className="space-y-8">
         {/* Header */}
         <div className="mb-8 text-center">
           <h1 className="text-4xl font-bold text-slate-900 mb-2">
