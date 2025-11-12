@@ -223,8 +223,8 @@ async def get_portfolio():
         invested = data['total_invested']
         avg_price = invested / total_qty if total_qty > 0 else 0
         
-        # Get current price (mock)
-        current_price = MOCK_PRICES.get(asset, avg_price * 1.1)  # Default 10% gain
+        # Get current price from Yahoo Finance
+        current_price = get_current_price(asset, data['category'])
         curr_value = total_qty * current_price
         gain_loss = curr_value - invested
         roi = (gain_loss / invested * 100) if invested > 0 else 0
