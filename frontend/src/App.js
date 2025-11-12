@@ -256,12 +256,15 @@ function App() {
           <div className="space-y-8">
             {/* Investment Tabs */}
             <Tabs defaultValue="portfolio" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+              <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
                 <TabsTrigger value="portfolio" data-testid="portfolio-tab">
                   Portfolio
                 </TabsTrigger>
                 <TabsTrigger value="add" data-testid="add-investment-tab">
                   Add Investment
+                </TabsTrigger>
+                <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
+                  Analytics
                 </TabsTrigger>
               </TabsList>
 
@@ -275,6 +278,11 @@ function App() {
                 <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
                   <InvestmentForm onAddInvestment={handleAddTransaction} />
                 </div>
+              </TabsContent>
+
+              {/* Analytics Tab */}
+              <TabsContent value="analytics" className="mt-6">
+                <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
               </TabsContent>
             </Tabs>
           </div>
