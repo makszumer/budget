@@ -75,11 +75,38 @@ function App() {
     }
   };
 
+  // Fetch budget growth
+  const fetchBudgetGrowth = async () => {
+    try {
+      const response = await axios.get(`${API}/analytics/budget-growth`);
+      setBudgetGrowth(response.data);
+    } catch (error) {
+      console.error("Error fetching budget growth:", error);
+    }
+  };
+
+  // Fetch investment growth
+  const fetchInvestmentGrowth = async () => {
+    try {
+      const response = await axios.get(`${API}/analytics/investment-growth`);
+      setInvestmentGrowth(response.data);
+    } catch (error) {
+      console.error("Error fetching investment growth:", error);
+    }
+  };
+
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([fetchTransactions(), fetchSummary(), fetchPortfolio(), fetchAnalytics()]);
+      await Promise.all([
+        fetchTransactions(), 
+        fetchSummary(), 
+        fetchPortfolio(), 
+        fetchAnalytics(),
+        fetchBudgetGrowth(),
+        fetchInvestmentGrowth()
+      ]);
       setLoading(false);
     };
     loadData();
