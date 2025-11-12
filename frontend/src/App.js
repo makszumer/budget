@@ -120,6 +120,8 @@ function App() {
     );
   }
 
+  const [activeSection, setActiveSection] = useState("budget"); // "budget" or "investments"
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       <Toaster />
@@ -134,62 +136,114 @@ function App() {
           </p>
         </div>
 
-        {/* Dashboard */}
-        <div className="mb-8">
-          <Dashboard summary={summary} />
+        {/* Main Section Switcher */}
+        <div className="mb-8 flex justify-center">
+          <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white p-1.5 shadow-lg">
+            <button
+              onClick={() => setActiveSection("budget")}
+              data-testid="budget-section-btn"
+              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+                activeSection === "budget"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              }`}
+            >
+              💼 Budget Manager
+            </button>
+            <button
+              onClick={() => setActiveSection("investments")}
+              data-testid="investments-section-btn"
+              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+                activeSection === "investments"
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
+                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+              }`}
+            >
+              📈 Investment Portfolio
+            </button>
+          </div>
         </div>
 
-        {/* Main Tabs */}
-        <Tabs defaultValue="budget" className="mb-8">
-          <TabsList className="grid w-full grid-cols-3 max-w-3xl mx-auto">
-            <TabsTrigger value="budget" data-testid="budget-tab">
-              Budget
-            </TabsTrigger>
-            <TabsTrigger value="investments" data-testid="investments-tab">
-              Investments
-            </TabsTrigger>
-            <TabsTrigger value="analytics" data-testid="analytics-tab">
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-
-          {/* Budget Tab */}
-          <TabsContent value="budget" className="space-y-8">
-            {/* Income and Expense Forms Side by Side */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <TransactionForm
-                type="income"
-                onAddTransaction={handleAddTransaction}
-              />
-              <TransactionForm
-                type="expense"
-                onAddTransaction={handleAddTransaction}
-              />
+        {/* Budget Section */}
+        {activeSection === "budget" && (
+          <div className="space-y-8">
+            {/* Budget Dashboard */}
+            <div>
+              <Dashboard summary={summary} />
             </div>
 
-            {/* Transaction List */}
-            <TransactionList
-              transactions={transactions.filter(t => t.type !== "investment")}
-              onDeleteTransaction={handleDeleteTransaction}
-            />
-          </TabsContent>
+            {/* Budget Tabs */}
+            <Tabs defaultValue="transactions" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+                <TabsTrigger value="transactions" data-testid="transactions-tab">
+                  Transactions
+                </TabsTrigger>
+                <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
 
-          {/* Investments Tab */}
-          <TabsContent value="investments" className="space-y-8">
-            {/* Portfolio Tracker */}
-            <PortfolioTracker portfolio={portfolio} />
+              {/* Transactions Tab */}
+              <TabsContent value="transactions" className="space-y-8 mt-6">
+                {/* Income and Expense Forms Side by Side */}
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="border-2 border-green-200 rounded-xl p-1 bg-green-50/50">
+                    <TransactionForm
+                      type="income"
+                      onAddTransaction={handleAddTransaction}
+                    />
+                  </div>
+                  <div className="border-2 border-red-200 rounded-xl p-1 bg-red-50/50">
+                    <TransactionForm
+                      type="expense"
+                      onAddTransaction={handleAddTransaction}
+                    />
+                  </div>
+                </div>
 
-            {/* Investment Form */}
-            <div className="max-w-4xl mx-auto">
-              <InvestmentForm onAddInvestment={handleAddTransaction} />
-            </div>
-          </TabsContent>
+                {/* Transaction List */}
+                <TransactionList
+                  transactions={transactions.filter(t => t.type !== "investment")}
+                  onDeleteTransaction={handleDeleteTransaction}
+                />
+              </TabsContent>
 
-          {/* Analytics Tab */}
-          <TabsContent value="analytics">
-            <Charts analytics={analytics} summary={summary} />
-          </TabsContent>
-        </Tabs>
+              {/* Analytics Tab */}
+              <TabsContent value="analytics" className="mt-6">
+                <Charts analytics={analytics} summary={summary} />
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
+
+        {/* Investment Section */}
+        {activeSection === "investments" && (
+          <div className="space-y-8">
+            {/* Investment Tabs */}
+            <Tabs defaultValue="portfolio" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+                <TabsTrigger value="portfolio" data-testid="portfolio-tab">
+                  Portfolio
+                </TabsTrigger>
+                <TabsTrigger value="add" data-testid="add-investment-tab">
+                  Add Investment
+                </TabsTrigger>
+              </TabsList>
+
+              {/* Portfolio Tab */}
+              <TabsContent value="portfolio" className="space-y-6 mt-6">
+                <PortfolioTracker portfolio={portfolio} />
+              </TabsContent>
+
+              {/* Add Investment Tab */}
+              <TabsContent value="add" className="mt-6">
+                <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
+                  <InvestmentForm onAddInvestment={handleAddTransaction} />
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        )}
       </div>
     </div>
   );
