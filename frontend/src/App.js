@@ -201,33 +201,38 @@ function App() {
         </p>
       </div>
 
-        {/* Main Section Switcher */}
-        <div className="mb-8 flex justify-center">
-          <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white p-1.5 shadow-lg">
-            <button
-              onClick={() => setActiveSection("budget")}
-              data-testid="budget-section-btn"
-              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
-                activeSection === "budget"
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-            >
-              💼 Budget Manager
-            </button>
-            <button
-              onClick={() => setActiveSection("investments")}
-              data-testid="investments-section-btn"
-              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
-                activeSection === "investments"
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                  : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
-              }`}
-            >
-              📈 Investment Portfolio
-            </button>
-          </div>
+      {/* Dashboard */}
+      <div className="mb-8">
+        <Dashboard summary={summary} />
+      </div>
+
+      {/* Main Section Switcher */}
+      <div className="mb-8 flex justify-center">
+        <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white p-1.5 shadow-lg">
+          <button
+            onClick={() => setActiveSection("budget")}
+            data-testid="budget-section-btn"
+            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+              activeSection === "budget"
+                ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            💼 Budget Manager
+          </button>
+          <button
+            onClick={() => setActiveSection("investments")}
+            data-testid="investments-section-btn"
+            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+              activeSection === "investments"
+                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
+                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+            }`}
+          >
+            📈 Investment Portfolio
+          </button>
         </div>
+      </div>
 
         {/* Budget Section */}
         {activeSection === "budget" && (
