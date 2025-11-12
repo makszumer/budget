@@ -117,9 +117,9 @@ function App() {
     try {
       const response = await axios.post(`${API}/transactions`, transaction);
       setTransactions([response.data, ...transactions]);
-      await Promise.all([fetchSummary(), fetchAnalytics()]);
+      await Promise.all([fetchSummary(), fetchAnalytics(), fetchBudgetGrowth()]);
       if (transaction.type === "investment") {
-        await fetchPortfolio();
+        await Promise.all([fetchPortfolio(), fetchInvestmentGrowth()]);
       }
     } catch (error) {
       console.error("Error adding transaction:", error);
@@ -132,7 +132,13 @@ function App() {
     try {
       await axios.delete(`${API}/transactions/${id}`);
       setTransactions(transactions.filter((t) => t.id !== id));
-      await Promise.all([fetchSummary(), fetchPortfolio(), fetchAnalytics()]);
+      await Promise.all([
+        fetchSummary(), 
+        fetchPortfolio(), 
+        fetchAnalytics(),
+        fetchBudgetGrowth(),
+        fetchInvestmentGrowth()
+      ]);
       toast.success("Transaction deleted successfully");
     } catch (error) {
       console.error("Error deleting transaction:", error);
