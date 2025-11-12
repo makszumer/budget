@@ -238,8 +238,8 @@ function App() {
       {activeSection === "budget" && (
         <div className="space-y-8">
 
-            {/* Budget Tabs */}
-            <Tabs defaultValue="transactions" className="w-full">
+          {/* Budget Tabs */}
+          <Tabs defaultValue="transactions" className="w-full">
               <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
                 <TabsTrigger value="transactions" data-testid="transactions-tab">
                   Transactions
