@@ -251,8 +251,8 @@ function App() {
 
             {/* Transactions Tab */}
             <TabsContent value="transactions" className="space-y-8 mt-6">
-                {/* Income and Expense Forms Side by Side */}
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Income and Expense Forms Side by Side */}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                   <div className="border-2 border-green-200 rounded-xl p-1 bg-green-50/50">
                     <TransactionForm
                       type="income"
