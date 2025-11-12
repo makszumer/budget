@@ -234,13 +234,9 @@ function App() {
         </div>
       </div>
 
-        {/* Budget Section */}
-        {activeSection === "budget" && (
-          <div className="space-y-8">
-            {/* Budget Dashboard */}
-            <div>
-              <Dashboard summary={summary} />
-            </div>
+      {/* Budget Section */}
+      {activeSection === "budget" && (
+        <div className="space-y-8">
 
             {/* Budget Tabs */}
             <Tabs defaultValue="transactions" className="w-full">
