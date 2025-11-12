@@ -29,6 +29,8 @@ function App() {
     income_breakdown: [],
     investment_breakdown: [],
   });
+  const [budgetGrowth, setBudgetGrowth] = useState(null);
+  const [investmentGrowth, setInvestmentGrowth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("budget");
 
