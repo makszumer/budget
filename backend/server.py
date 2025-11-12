@@ -327,6 +327,99 @@ async def get_analytics():
         investment_breakdown=investment_breakdown
     )
 
+# Growth analytics
+class GrowthDataPoint(BaseModel):
+    date: str
+    value: float
+    cumulative: float
+
+class BudgetGrowth(BaseModel):
+    data: List[GrowthDataPoint]
+    total_income: float
+    total_expenses: float
+    net_savings: float
+
+class InvestmentGrowth(BaseModel):
+    data: List[GrowthDataPoint]
+    total_invested: float
+    current_value: float
+    total_gain: float
+
+@api_router.get("/analytics/budget-growth", response_model=BudgetGrowth)
+async def get_budget_growth():
+    transactions = await db.transactions.find(
+        {"type": {"$in": ["income", "expense"]}},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Sort by date
+    transactions.sort(key=lambda x: x['date'])
+    
+    # Calculate cumulative balance over time
+    cumulative_balance = 0
+    growth_data = []
+    date_map = defaultdict(float)
+    
+    for t in transactions:
+        date = t['date']
+        amount = t['amount'] if t['type'] == 'income' else -t['amount']
+        date_map[date] += amount
+    
+    for date in sorted(date_map.keys()):
+        cumulative_balance += date_map[date]
+        growth_data.append(GrowthDataPoint(
+            date=date,
+            value=date_map[date],
+            cumulative=cumulative_balance
+        ))
+    
+    total_income = sum(t['amount'] for t in transactions if t['type'] == 'income')
+    total_expenses = sum(t['amount'] for t in transactions if t['type'] == 'expense')
+    
+    return BudgetGrowth(
+        data=growth_data,
+        total_income=total_income,
+        total_expenses=total_expenses,
+        net_savings=total_income - total_expenses
+    )
+
+@api_router.get("/analytics/investment-growth", response_model=InvestmentGrowth)
+async def get_investment_growth():
+    investments = await db.transactions.find(
+        {"type": "investment"},
+        {"_id": 0}
+    ).to_list(1000)
+    
+    # Sort by date
+    investments.sort(key=lambda x: x['date'])
+    
+    # Calculate cumulative investment over time
+    cumulative_invested = 0
+    growth_data = []
+    date_map = defaultdict(float)
+    
+    for inv in investments:
+        date = inv['date']
+        date_map[date] += inv['amount']
+    
+    for date in sorted(date_map.keys()):
+        cumulative_invested += date_map[date]
+        growth_data.append(GrowthDataPoint(
+            date=date,
+            value=date_map[date],
+            cumulative=cumulative_invested
+        ))
+    
+    # Get current portfolio value
+    portfolio = await get_portfolio()
+    
+    return InvestmentGrowth(
+        data=growth_data,
+        total_invested=cumulative_invested,
+        current_value=portfolio.current_value,
+        total_gain=portfolio.total_gain_loss
+    )
+
 # Include the router in the main app
 app.include_router(api_router)
 
