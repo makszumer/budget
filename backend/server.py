@@ -137,15 +137,54 @@ class PortfolioSummary(BaseModel):
     total_gain_loss: float
     total_roi_percentage: float
 
-# Mock current prices for demonstration
-MOCK_PRICES = {
-    # Stocks
-    "AAPL": 185.50, "GOOGL": 142.30, "MSFT": 378.90, "TSLA": 242.80,
-    "AMZN": 155.20, "NVDA": 495.60, "META": 352.40, "NFLX": 485.30,
-    # Crypto
-    "BTC": 43250.00, "ETH": 2280.50, "SOL": 98.75, "BNB": 315.20,
-    "ADA": 0.52, "DOT": 6.85, "MATIC": 0.89, "AVAX": 36.40,
-}
+import yfinance as yf
+from collections import defaultdict
+
+# Cache for prices to avoid repeated API calls
+price_cache = {}
+
+def get_current_price(symbol, category):
+    """Fetch current price from Yahoo Finance"""
+    if symbol in price_cache:
+        return price_cache[symbol]
+    
+    try:
+        # Map crypto symbols to Yahoo Finance format
+        if category == "Crypto":
+            symbol_map = {
+                "BTC": "BTC-USD",
+                "ETH": "ETH-USD",
+                "SOL": "SOL-USD",
+                "BNB": "BNB-USD",
+                "ADA": "ADA-USD",
+                "DOT": "DOT-USD",
+                "MATIC": "MATIC-USD",
+                "AVAX": "AVAX-USD",
+            }
+            ticker_symbol = symbol_map.get(symbol, f"{symbol}-USD")
+        else:
+            ticker_symbol = symbol
+        
+        ticker = yf.Ticker(ticker_symbol)
+        info = ticker.info
+        
+        # Try different price fields
+        price = info.get('currentPrice') or info.get('regularMarketPrice') or info.get('previousClose')
+        
+        if price:
+            price_cache[symbol] = price
+            return price
+    except Exception as e:
+        logging.warning(f"Failed to fetch price for {symbol}: {e}")
+    
+    # Fallback to mock prices if API fails
+    fallback_prices = {
+        "AAPL": 185.50, "GOOGL": 142.30, "MSFT": 378.90, "TSLA": 242.80,
+        "AMZN": 155.20, "NVDA": 495.60, "META": 352.40, "NFLX": 485.30,
+        "BTC": 43250.00, "ETH": 2280.50, "SOL": 98.75, "BNB": 315.20,
+        "ADA": 0.52, "DOT": 6.85, "MATIC": 0.89, "AVAX": 36.40,
+    }
+    return fallback_prices.get(symbol, 100.0)
 
 @api_router.get("/portfolio", response_model=PortfolioSummary)
 async def get_portfolio():
