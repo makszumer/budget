@@ -191,15 +191,15 @@ function App() {
 
   const renderDashboard = () => (
     <div className="space-y-8">
-        {/* Header */}
-        <div className="mb-8 text-center">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">
-            💰 Financial Management Platform
-          </h1>
-          <p className="text-slate-600">
-            Complete budgeting and portfolio tracking with analytics
-          </p>
-        </div>
+      {/* Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">
+          Dashboard
+        </h1>
+        <p className="text-slate-600">
+          Your financial overview and management
+        </p>
+      </div>
 
         {/* Main Section Switcher */}
         <div className="mb-8 flex justify-center">
