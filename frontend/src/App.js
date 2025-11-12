@@ -287,37 +287,48 @@ function App() {
         <div className="space-y-8">
           {/* Investment Tabs */}
           <Tabs defaultValue="portfolio" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
-                <TabsTrigger value="portfolio" data-testid="portfolio-tab">
-                  Portfolio
-                </TabsTrigger>
-                <TabsTrigger value="add" data-testid="add-investment-tab">
-                  Add Investment
-                </TabsTrigger>
-                <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
+            <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
+              <TabsTrigger value="portfolio" data-testid="portfolio-tab">
+                Portfolio
+              </TabsTrigger>
+              <TabsTrigger value="add" data-testid="add-investment-tab">
+                Add Investment
+              </TabsTrigger>
+              <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
+                Analytics
+              </TabsTrigger>
+            </TabsList>
 
-              {/* Portfolio Tab */}
-              <TabsContent value="portfolio" className="space-y-6 mt-6">
-                <PortfolioTracker portfolio={portfolio} />
-              </TabsContent>
+            {/* Portfolio Tab */}
+            <TabsContent value="portfolio" className="space-y-6 mt-6">
+              <PortfolioTracker portfolio={portfolio} />
+            </TabsContent>
 
-              {/* Add Investment Tab */}
-              <TabsContent value="add" className="mt-6">
-                <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
-                  <InvestmentForm onAddInvestment={handleAddTransaction} />
-                </div>
-              </TabsContent>
+            {/* Add Investment Tab */}
+            <TabsContent value="add" className="mt-6">
+              <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
+                <InvestmentForm onAddInvestment={handleAddTransaction} />
+              </div>
+            </TabsContent>
 
-              {/* Analytics Tab */}
-              <TabsContent value="analytics" className="mt-6">
-                <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
-              </TabsContent>
-            </Tabs>
-          </div>
-        )}
+            {/* Analytics Tab */}
+            <TabsContent value="analytics" className="mt-6">
+              <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
+            </TabsContent>
+          </Tabs>
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex">
+      <Toaster />
+      <Sidebar currentPage={currentPage} onNavigate={setCurrentPage} />
+      <div className="flex-1 overflow-auto">
+        <div className="container mx-auto px-8 py-8">
+          {renderPage()}
+        </div>
       </div>
     </div>
   );
