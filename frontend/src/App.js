@@ -245,7 +245,7 @@ function App() {
 
               {/* Analytics Tab */}
               <TabsContent value="analytics" className="mt-6">
-                <Charts analytics={analytics} summary={summary} />
+                <BudgetAnalytics analytics={analytics} budgetGrowth={budgetGrowth} />
               </TabsContent>
             </Tabs>
           </div>
