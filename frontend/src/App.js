@@ -285,8 +285,8 @@ function App() {
       {/* Investment Section */}
       {activeSection === "investments" && (
         <div className="space-y-8">
-            {/* Investment Tabs */}
-            <Tabs defaultValue="portfolio" className="w-full">
+          {/* Investment Tabs */}
+          <Tabs defaultValue="portfolio" className="w-full">
               <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
                 <TabsTrigger value="portfolio" data-testid="portfolio-tab">
                   Portfolio
