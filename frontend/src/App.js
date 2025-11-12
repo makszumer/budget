@@ -41,6 +41,7 @@ function App() {
   const [investmentGrowth, setInvestmentGrowth] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("budget");
+  const [currentPage, setCurrentPage] = useState("dashboard");
 
   // Fetch transactions
   const fetchTransactions = async () => {
