@@ -42,6 +42,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("budget");
   const [currentPage, setCurrentPage] = useState("dashboard");
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Fetch transactions
   const fetchTransactions = async () => {
