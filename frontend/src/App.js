@@ -29,6 +29,7 @@ function App() {
     investment_breakdown: [],
   });
   const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("budget");
 
   // Fetch transactions
   const fetchTransactions = async () => {
