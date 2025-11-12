@@ -289,12 +289,15 @@ function App() {
         <div className="space-y-8">
           {/* Investment Tabs */}
           <Tabs defaultValue="portfolio" className="w-full">
-            <TabsList className="grid w-full grid-cols-3 max-w-2xl mx-auto">
+            <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
               <TabsTrigger value="portfolio" data-testid="portfolio-tab">
                 Portfolio
               </TabsTrigger>
               <TabsTrigger value="add" data-testid="add-investment-tab">
                 Add Investment
+              </TabsTrigger>
+              <TabsTrigger value="history" data-testid="investment-history-tab">
+                History
               </TabsTrigger>
               <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
                 Analytics
@@ -310,6 +313,16 @@ function App() {
             <TabsContent value="add" className="mt-6">
               <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
                 <InvestmentForm onAddInvestment={handleAddTransaction} />
+              </div>
+            </TabsContent>
+
+            {/* History Tab */}
+            <TabsContent value="history" className="mt-6">
+              <div className="max-w-4xl mx-auto">
+                <InvestmentTransactionList
+                  transactions={transactions.filter(t => t.type === "investment")}
+                  onDeleteTransaction={handleDeleteTransaction}
+                />
               </div>
             </TabsContent>
 
