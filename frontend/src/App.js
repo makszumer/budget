@@ -412,6 +412,14 @@ function App() {
         </svg>
       </button>
 
+      {/* Server Status Indicator */}
+      {serverAwake && (
+        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg shadow-md">
+          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+          <span className="text-sm text-green-700 font-medium">Server Active</span>
+        </div>
+      )}
+
       {/* Overlay when sidebar is open */}
       {sidebarOpen && (
         <div
