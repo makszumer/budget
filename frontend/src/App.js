@@ -108,19 +108,62 @@ function App() {
     }
   };
 
+  // Keep-alive ping to prevent server sleep
+  useEffect(() => {
+    const keepAlive = async () => {
+      try {
+        await axios.get(`${API}/`, { timeout: 5000 });
+        if (!serverAwake) {
+          setServerAwake(true);
+        }
+      } catch (error) {
+        console.log("Keep-alive ping failed, server may be sleeping");
+      }
+    };
+
+    // Ping immediately
+    keepAlive();
+
+    // Then ping every 3 minutes to keep server awake
+    const interval = setInterval(keepAlive, 3 * 60 * 1000); // 3 minutes
+
+    return () => clearInterval(interval);
+  }, [serverAwake]);
+
   // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      await Promise.all([
-        fetchTransactions(), 
-        fetchSummary(), 
-        fetchPortfolio(), 
-        fetchAnalytics(),
-        fetchBudgetGrowth(),
-        fetchInvestmentGrowth()
-      ]);
-      setLoading(false);
+      
+      // Try to load data with retry logic
+      let retries = 0;
+      const maxRetries = 3;
+      
+      while (retries < maxRetries) {
+        try {
+          await Promise.all([
+            fetchTransactions(), 
+            fetchSummary(), 
+            fetchPortfolio(), 
+            fetchAnalytics(),
+            fetchBudgetGrowth(),
+            fetchInvestmentGrowth()
+          ]);
+          setServerAwake(true);
+          setLoading(false);
+          break;
+        } catch (error) {
+          retries++;
+          console.log(`Attempt ${retries} failed, retrying...`);
+          if (retries < maxRetries) {
+            // Wait 10 seconds before retrying
+            await new Promise(resolve => setTimeout(resolve, 10000));
+          } else {
+            console.error("Failed to load data after retries");
+            setLoading(false);
+          }
+        }
+      }
     };
     loadData();
   }, []);
