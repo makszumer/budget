@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "@/App.css";
 import axios from "axios";
 import { Sidebar } from "@/components/Sidebar";
+import { LoadingScreen } from "@/components/LoadingScreen";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
