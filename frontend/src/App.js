@@ -477,9 +477,23 @@ function App() {
         </svg>
       </button>
 
+      {/* Privacy Toggle Button */}
+      <button
+        onClick={() => setPrivacyMode(!privacyMode)}
+        className="fixed top-6 right-6 z-50 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200"
+        data-testid="privacy-toggle"
+        title={privacyMode ? "Show amounts" : "Hide amounts"}
+      >
+        {privacyMode ? (
+          <EyeOff className="w-5 h-5 text-gray-700" />
+        ) : (
+          <Eye className="w-5 h-5 text-gray-700" />
+        )}
+      </button>
+
       {/* Server Status Indicator */}
       {serverAwake && (
-        <div className="fixed top-6 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg shadow-md">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg shadow-md">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span className="text-sm text-green-700 font-medium">Server Active</span>
         </div>
