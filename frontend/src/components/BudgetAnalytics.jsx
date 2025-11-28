@@ -142,8 +142,20 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }
         {expenseData.length > 0 && (
           <Card>
             <CardHeader>
-              <CardTitle className="text-red-700">💸 Expense Breakdown</CardTitle>
-              <p className="text-sm text-muted-foreground">What you spend the most on</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <CardTitle className="text-red-700">💸 Expense Breakdown</CardTitle>
+                  <p className="text-sm text-muted-foreground">What you spend the most on</p>
+                </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setShowExpenseLegend(!showExpenseLegend)}
+                >
+                  {showExpenseLegend ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
+                  {showExpenseLegend ? "Hide" : "Show"} Details
+                </Button>
+              </div>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -163,11 +175,13 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  <Legend 
-                    verticalAlign="bottom" 
-                    height={36}
-                    formatter={(value, entry) => `${value} (${formatAmount(entry.payload.value)})`}
-                  />
+                  {showExpenseLegend && (
+                    <Legend 
+                      verticalAlign="bottom" 
+                      height={36}
+                      formatter={(value, entry) => `${value} (${formatAmount(entry.payload.value)})`}
+                    />
+                  )}
                 </PieChart>
               </ResponsiveContainer>
             </CardContent>
