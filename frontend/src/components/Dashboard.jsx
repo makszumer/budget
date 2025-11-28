@@ -1,8 +1,11 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingDown, TrendingUp, PieChart } from "lucide-react";
 
-export const Dashboard = ({ summary }) => {
+export const Dashboard = ({ summary, privacyMode = false }) => {
   const formatAmount = (amount) => {
+    if (privacyMode) {
+      return "$***,***";
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
