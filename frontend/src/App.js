@@ -382,6 +382,49 @@ function App() {
     setSidebarOpen(false); // Close sidebar after navigation
   };
 
+  // Filter transactions by date
+  const getFilteredTransactions = () => {
+    if (dateFilter === "all") return transactions;
+
+    const now = selectedDate;
+    const filtered = transactions.filter(t => {
+      const transDate = new Date(t.date);
+      
+      if (dateFilter === "day") {
+        return transDate.toDateString() === now.toDateString();
+      } else if (dateFilter === "week") {
+        const weekStart = new Date(now);
+        weekStart.setDate(now.getDate() - now.getDay());
+        const weekEnd = new Date(weekStart);
+        weekEnd.setDate(weekStart.getDate() + 7);
+        return transDate >= weekStart && transDate < weekEnd;
+      } else if (dateFilter === "month") {
+        return transDate.getMonth() === now.getMonth() && 
+               transDate.getFullYear() === now.getFullYear();
+      } else if (dateFilter === "year") {
+        return transDate.getFullYear() === now.getFullYear();
+      }
+      return true;
+    });
+    
+    return filtered;
+  };
+
+  // Calculate filtered summary
+  const getFilteredSummary = () => {
+    const filtered = getFilteredTransactions();
+    const totalIncome = filtered.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
+    const totalExpenses = filtered.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
+    const totalInvestments = filtered.filter(t => t.type === 'investment').reduce((sum, t) => sum + t.amount, 0);
+    
+    return {
+      totalIncome,
+      totalExpenses,
+      totalInvestments,
+      balance: totalIncome - totalExpenses
+    };
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex relative">
       <Toaster />
