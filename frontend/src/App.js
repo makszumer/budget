@@ -326,14 +326,18 @@ function App() {
 
               {/* Transaction List */}
               <TransactionList
-                transactions={transactions.filter(t => t.type !== "investment")}
+                transactions={filteredTransactions.filter(t => t.type !== "investment")}
                 onDeleteTransaction={handleDeleteTransaction}
               />
             </TabsContent>
 
             {/* Analytics Tab */}
             <TabsContent value="analytics" className="mt-6">
-              <BudgetAnalytics analytics={analytics} budgetGrowth={budgetGrowth} />
+              <BudgetAnalytics 
+                analytics={analytics} 
+                budgetGrowth={budgetGrowth} 
+                privacyMode={privacyMode}
+              />
             </TabsContent>
           </Tabs>
         </div>
