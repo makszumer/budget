@@ -6,8 +6,18 @@ const COLORS = {
   income: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
 };
 
-export const BudgetAnalytics = ({ analytics, budgetGrowth }) => {
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
+
+export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }) => {
+  const [showExpenseLegend, setShowExpenseLegend] = useState(false);
+  const [showIncomeLegend, setShowIncomeLegend] = useState(false);
+
   const formatAmount = (amount) => {
+    if (privacyMode) {
+      return "$***,***";
+    }
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD',
