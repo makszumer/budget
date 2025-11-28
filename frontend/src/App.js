@@ -234,22 +234,34 @@ function App() {
     }
   };
 
-  const renderDashboard = () => (
-    <div className="space-y-8">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-slate-900 mb-2">
-          Dashboard
-        </h1>
-        <p className="text-slate-600">
-          Your financial overview and management
-        </p>
-      </div>
+  const renderDashboard = () => {
+    const filteredTransactions = getFilteredTransactions();
+    const filteredSummary = getFilteredSummary();
+    
+    return (
+      <div className="space-y-8">
+        {/* Header */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-slate-900 mb-2">
+            Dashboard
+          </h1>
+          <p className="text-slate-600">
+            Your financial overview and management
+          </p>
+        </div>
 
-      {/* Dashboard */}
-      <div className="mb-8">
-        <Dashboard summary={summary} />
-      </div>
+        {/* Date Filter */}
+        <DateFilter 
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          selectedDate={selectedDate}
+          setSelectedDate={setSelectedDate}
+        />
+
+        {/* Dashboard */}
+        <div className="mb-8">
+          <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
+        </div>
 
       {/* Main Section Switcher */}
       <div className="mb-8 flex justify-center">
