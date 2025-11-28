@@ -1,14 +1,13 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { Eye, EyeOff } from "lucide-react";
 
 const COLORS = {
   expenses: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6'],
   income: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
 };
-
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Eye, EyeOff } from "lucide-react";
 
 export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }) => {
   const [showExpenseLegend, setShowExpenseLegend] = useState(false);
