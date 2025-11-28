@@ -394,6 +394,7 @@ function App() {
       )}
     </div>
   );
+};
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
