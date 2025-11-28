@@ -46,6 +46,9 @@ function App() {
   const [currentPage, setCurrentPage] = useState("dashboard");
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [serverAwake, setServerAwake] = useState(false);
+  const [privacyMode, setPrivacyMode] = useState(false);
+  const [dateFilter, setDateFilter] = useState("all"); // all, day, week, month, year
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   // Fetch transactions
   const fetchTransactions = async () => {
