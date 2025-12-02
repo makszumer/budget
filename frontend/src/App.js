@@ -52,6 +52,7 @@ function App() {
   const [privacyMode, setPrivacyMode] = useState(false);
   const [dateFilter, setDateFilter] = useState("all"); // all, day, week, month, year
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [currencies, setCurrencies] = useState(["USD"]);
 
   // Fetch transactions
   const fetchTransactions = async () => {
