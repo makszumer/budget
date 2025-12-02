@@ -276,6 +276,8 @@ function App() {
     switch (currentPage) {
       case "dashboard":
         return renderDashboard();
+      case "recurring":
+        return <RecurringTransactions currencies={currencies} />;
       case "investing-overview":
         return <InvestingOverview />;
       case "investing-crypto":
