@@ -36,10 +36,11 @@ const categoryOptions = {
   investment: ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other"],
 };
 
-export const TransactionForm = ({ type, onAddTransaction }) => {
+export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState({});
 
