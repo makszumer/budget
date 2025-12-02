@@ -91,6 +91,27 @@ async def get_transactions():
     
     return transactions
 
+@api_router.put("/transactions/{transaction_id}", response_model=Transaction)
+async def update_transaction(transaction_id: str, transaction: TransactionCreate):
+    # Find and update the transaction
+    existing = await db.transactions.find_one({"id": transaction_id}, {"_id": 0})
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Update with new data but keep the original id and createdAt
+    updated_doc = transaction.model_dump()
+    updated_doc['id'] = transaction_id
+    updated_doc['createdAt'] = existing['createdAt']
+    
+    await db.transactions.replace_one({"id": transaction_id}, updated_doc)
+    
+    # Convert createdAt back to datetime for response
+    if isinstance(updated_doc['createdAt'], str):
+        updated_doc['createdAt'] = datetime.fromisoformat(updated_doc['createdAt'])
+    
+    return Transaction(**updated_doc)
+
 @api_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str):
     result = await db.transactions.delete_one({"id": transaction_id})
