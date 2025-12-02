@@ -420,6 +420,132 @@ async def get_investment_growth():
         total_gain=portfolio.total_gain_loss
     )
 
+# Voice input parsing
+import re
+from datetime import date as date_module
+
+class VoiceTransactionRequest(BaseModel):
+    text: str
+
+class VoiceTransactionResponse(BaseModel):
+    success: bool
+    message: Optional[str] = None
+    data: Optional[TransactionCreate] = None
+
+@api_router.post("/parse-voice-transaction", response_model=VoiceTransactionResponse)
+async def parse_voice_transaction(request: VoiceTransactionRequest):
+    text = request.text.lower()
+    
+    try:
+        # Extract amount
+        amount_patterns = [
+            r'\$?(\d+(?:\.\d{2})?)',
+            r'(\d+)\s*dollars?',
+            r'(\d+)\s*bucks?'
+        ]
+        
+        amount = None
+        for pattern in amount_patterns:
+            match = re.search(pattern, text)
+            if match:
+                amount = float(match.group(1))
+                break
+        
+        if not amount:
+            return VoiceTransactionResponse(
+                success=False,
+                message="Could not detect amount. Please say the dollar amount clearly."
+            )
+        
+        # Determine transaction type
+        transaction_type = "expense"  # default
+        if any(word in text for word in ["earned", "income", "salary", "paid me", "received", "got paid"]):
+            transaction_type = "income"
+        elif any(word in text for word in ["invested", "bought stock", "bought crypto", "investment"]):
+            transaction_type = "investment"
+        
+        # Extract category based on keywords
+        category_keywords = {
+            "expense": {
+                "groceries": ["grocery", "groceries", "food shopping", "supermarket"],
+                "restaurants": ["restaurant", "eating out", "dinner", "lunch out", "coffee shop", "cafe"],
+                "gas": ["gas", "fuel", "petrol"],
+                "utilities": ["electricity", "water bill", "utility", "utilities", "internet"],
+                "rent": ["rent", "mortgage"],
+                "car": ["car payment", "auto"],
+                "gym": ["gym", "fitness", "workout"],
+                "clothing": ["clothes", "clothing", "shirt", "shoes"],
+                "entertainment": ["movie", "concert", "entertainment", "netflix", "spotify"],
+                "transport": ["uber", "lyft", "taxi", "bus", "train", "transportation"]
+            },
+            "income": {
+                "salary": ["salary", "paycheck", "wages"],
+                "freelance": ["freelance", "gig", "side hustle"],
+                "bonus": ["bonus", "overtime"]
+            }
+        }
+        
+        category = "Other"
+        if transaction_type in category_keywords:
+            for cat, keywords in category_keywords[transaction_type].items():
+                if any(keyword in text for keyword in keywords):
+                    category = cat.capitalize()
+                    break
+        
+        # Map to actual category names
+        category_map = {
+            "groceries": "Groceries",
+            "restaurants": "Restaurants / Cafes",
+            "gas": "Fuel / Gas",
+            "utilities": "Utilities",
+            "rent": "Rent / Mortgage",
+            "car": "Car Payment / Lease",
+            "gym": "Gym / Fitness / Sports",
+            "clothing": "Clothing & Shoes",
+            "entertainment": "Movies / Concerts / Events",
+            "transport": "Public Transport",
+            "salary": "Salary / wages",
+            "freelance": "Freelance income",
+            "bonus": "Overtime / bonuses"
+        }
+        
+        category = category_map.get(category.lower(), "Other / Uncategorized")
+        
+        # Extract description (remaining text after removing amount)
+        description = text
+        for pattern in amount_patterns:
+            description = re.sub(pattern, "", description)
+        
+        # Clean up description
+        description = re.sub(r'\b(spent|paid|bought|earned|received|got|for|on|at|today|yesterday)\b', '', description)
+        description = description.strip()
+        if not description:
+            description = f"{transaction_type.capitalize()} via voice"
+        
+        # Use today's date
+        today = date_module.today().isoformat()
+        
+        transaction_data = TransactionCreate(
+            type=transaction_type,
+            amount=amount,
+            description=description[:100],  # Limit length
+            category=category,
+            date=today
+        )
+        
+        return VoiceTransactionResponse(
+            success=True,
+            data=transaction_data,
+            message=f"Created {transaction_type} of ${amount}"
+        )
+        
+    except Exception as e:
+        logging.error(f"Error parsing voice transaction: {e}")
+        return VoiceTransactionResponse(
+            success=False,
+            message="Could not parse transaction. Please try again."
+        )
+
 # Include the router in the main app
 app.include_router(api_router)
 
