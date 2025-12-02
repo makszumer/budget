@@ -49,6 +49,14 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           active={currentPage === "dashboard"}
         />
 
+        {/* Standing Orders */}
+        <MenuItem
+          icon={Repeat}
+          label="Standing Orders"
+          page="recurring"
+          active={currentPage === "recurring"}
+        />
+
         {/* Why Investing */}
         <div className="space-y-1">
           <button
