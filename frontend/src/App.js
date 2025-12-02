@@ -189,6 +189,41 @@ function App() {
     }
   };
 
+  // Edit transaction
+  const handleEditTransaction = async (updatedTransaction) => {
+    try {
+      const response = await axios.put(`${API}/transactions/${updatedTransaction.id}`, {
+        type: updatedTransaction.type,
+        amount: updatedTransaction.amount,
+        description: updatedTransaction.description,
+        category: updatedTransaction.category,
+        date: updatedTransaction.date,
+        asset: updatedTransaction.asset,
+        quantity: updatedTransaction.quantity,
+        purchase_price: updatedTransaction.purchase_price
+      });
+      
+      // Update local state
+      setTransactions(transactions.map(t => 
+        t.id === updatedTransaction.id ? response.data : t
+      ));
+      
+      // Refresh all data
+      await Promise.all([
+        fetchSummary(), 
+        fetchPortfolio(), 
+        fetchAnalytics(),
+        fetchBudgetGrowth(),
+        fetchInvestmentGrowth()
+      ]);
+      
+      toast.success("Transaction updated successfully");
+    } catch (error) {
+      console.error("Error updating transaction:", error);
+      toast.error("Failed to update transaction");
+    }
+  };
+
   // Delete transaction
   const handleDeleteTransaction = async (id) => {
     try {
