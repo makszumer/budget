@@ -40,6 +40,8 @@ class Transaction(BaseModel):
     asset: Optional[str] = None  # Stock ticker, crypto symbol, etc.
     quantity: Optional[float] = None  # Number of shares/coins
     purchase_price: Optional[float] = None  # Price per unit at purchase
+    currency: str = "USD"
+    amount_usd: Optional[float] = None  # Converted amount in USD
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TransactionCreate(BaseModel):
