@@ -1,9 +1,24 @@
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Trash2 } from "lucide-react";
+import { Trash2, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { EditTransactionModal } from "@/components/EditTransactionModal";
 
-export const TransactionList = ({ transactions, onDeleteTransaction }) => {
+export const TransactionList = ({ transactions, onDeleteTransaction, onEditTransaction }) => {
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleEditClick = (transaction) => {
+    setEditingTransaction(transaction);
+    setIsEditModalOpen(true);
+  };
+
+  const handleSaveEdit = (updatedTransaction) => {
+    onEditTransaction(updatedTransaction);
+    setIsEditModalOpen(false);
+    setEditingTransaction(null);
+  };
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString('en-US', { 
