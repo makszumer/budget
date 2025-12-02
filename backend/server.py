@@ -51,6 +51,52 @@ class TransactionCreate(BaseModel):
     asset: Optional[str] = None
     quantity: Optional[float] = None
     purchase_price: Optional[float] = None
+    currency: Optional[str] = "USD"
+
+# Recurring transactions (standing orders)
+class RecurringTransaction(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    type: Literal["expense", "income"]
+    amount: float
+    description: str
+    category: str
+    currency: str = "USD"
+    frequency: Literal["daily", "weekly", "monthly", "yearly"]
+    day_of_month: Optional[int] = None  # For monthly (1-31)
+    day_of_week: Optional[int] = None   # For weekly (0=Monday, 6=Sunday)
+    start_date: str
+    end_date: Optional[str] = None
+    last_created: Optional[str] = None
+    active: bool = True
+    createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+
+class RecurringTransactionCreate(BaseModel):
+    type: Literal["expense", "income"]
+    amount: float
+    description: str
+    category: str
+    currency: str = "USD"
+    frequency: Literal["daily", "weekly", "monthly", "yearly"]
+    day_of_month: Optional[int] = None
+    day_of_week: Optional[int] = None
+    start_date: str
+    end_date: Optional[str] = None
+
+# Exchange rates (mock data - in production, fetch from API)
+EXCHANGE_RATES = {
+    "USD": 1.0,      # US Dollar (base)
+    "EUR": 0.92,     # Euro
+    "GBP": 0.79,     # British Pound
+    "JPY": 149.50,   # Japanese Yen
+    "CHF": 0.88,     # Swiss Franc
+    "CAD": 1.36,     # Canadian Dollar
+    "AUD": 1.52,     # Australian Dollar
+    "CNY": 7.24,     # Chinese Yuan
+    "INR": 83.12,    # Indian Rupee
+    "BRL": 4.97,     # Brazilian Real
+}
 
 class TransactionSummary(BaseModel):
     totalIncome: float
