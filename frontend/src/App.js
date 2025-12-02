@@ -242,13 +242,16 @@ function App() {
     return (
       <div className="space-y-8">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-slate-900 mb-2">
-            Dashboard
-          </h1>
-          <p className="text-slate-600">
-            Your financial overview and management
-          </p>
+        <div className="mb-8 flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold text-slate-900 mb-2">
+              Dashboard
+            </h1>
+            <p className="text-slate-600">
+              Your financial overview and management
+            </p>
+          </div>
+          <VoiceInput onTransactionCreated={handleAddTransaction} />
         </div>
 
         {/* Date Filter */}
