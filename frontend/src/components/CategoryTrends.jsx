@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Search, ChevronDown, ChevronRight } from "lucide-react";
 
 export const CategoryTrends = ({ transactions }) => {
   const [searchTerm, setSearchTerm] = useState("");
   const [results, setResults] = useState([]);
+  const [expandedMonth, setExpandedMonth] = useState(null);
 
   useEffect(() => {
     if (!searchTerm || searchTerm.length < 2) {
@@ -27,17 +28,26 @@ export const CategoryTrends = ({ transactions }) => {
       
       if (!grouped[monthKey]) {
         grouped[monthKey] = {
+          monthKey,
           month: monthLabel,
           amount: 0,
-          count: 0
+          count: 0,
+          transactions: []
         };
       }
       grouped[monthKey].amount += t.amount;
       grouped[monthKey].count += 1;
+      grouped[monthKey].transactions.push(t);
     });
 
     // Convert to array and sort by date (newest first)
-    const data = Object.values(grouped).sort((a, b) => b.month.localeCompare(a.month));
+    const data = Object.values(grouped).sort((a, b) => b.monthKey.localeCompare(a.monthKey));
+    
+    // Sort transactions within each month by date (newest first)
+    data.forEach(item => {
+      item.transactions.sort((a, b) => new Date(b.date) - new Date(a.date));
+    });
+    
     setResults(data);
   }, [searchTerm, transactions]);
 
