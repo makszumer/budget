@@ -97,26 +97,44 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor={`amount-${type}`}>
-              Amount ($) <span className="text-destructive">*</span>
-            </Label>
-            <Input
-              id={`amount-${type}`}
-              data-testid={`amount-input-${type}`}
-              type="number"
-              step="0.01"
-              placeholder="0.00"
-              value={amount}
-              onChange={(e) => {
-                setAmount(e.target.value);
-                setErrors(prev => ({ ...prev, amount: "" }));
-              }}
-              className={errors.amount ? "border-destructive" : ""}
-            />
-            {errors.amount && (
-              <p className="text-sm text-destructive">{errors.amount}</p>
-            )}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor={`amount-${type}`}>
+                Amount <span className="text-destructive">*</span>
+              </Label>
+              <Input
+                id={`amount-${type}`}
+                data-testid={`amount-input-${type}`}
+                type="number"
+                step="0.01"
+                placeholder="0.00"
+                value={amount}
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setErrors(prev => ({ ...prev, amount: "" }));
+                }}
+                className={errors.amount ? "border-destructive" : ""}
+              />
+              {errors.amount && (
+                <p className="text-sm text-destructive">{errors.amount}</p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor={`currency-${type}`}>
+                Currency <span className="text-destructive">*</span>
+              </Label>
+              <Select value={currency} onValueChange={setCurrency}>
+                <SelectTrigger id={`currency-${type}`}>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {currencies.map(curr => (
+                    <SelectItem key={curr} value={curr}>{curr}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
           <div className="space-y-2">
