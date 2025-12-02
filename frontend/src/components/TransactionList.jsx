@@ -121,6 +121,12 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
           ))}
         </div>
       </CardContent>
+      <EditTransactionModal
+        transaction={editingTransaction}
+        open={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        onSave={handleSaveEdit}
+      />
     </Card>
   );
 };
