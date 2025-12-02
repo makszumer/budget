@@ -101,6 +101,15 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
                 <Button
                   variant="ghost"
                   size="icon"
+                  data-testid={`edit-btn-${transaction.id}`}
+                  onClick={() => handleEditClick(transaction)}
+                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                >
+                  <Edit className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
                   data-testid={`delete-btn-${transaction.id}`}
                   onClick={() => onDeleteTransaction(transaction.id)}
                   className="text-destructive hover:text-destructive hover:bg-destructive/10"
