@@ -115,6 +115,27 @@ function App() {
     }
   };
 
+  // Fetch currencies
+  const fetchCurrencies = async () => {
+    try {
+      const response = await axios.get(`${API}/currencies`);
+      setCurrencies(response.data.currencies);
+    } catch (error) {
+      console.error("Error fetching currencies:", error);
+    }
+  };
+
+  // Process recurring transactions
+  const processRecurringTransactions = async () => {
+    try {
+      await axios.post(`${API}/recurring-transactions/process`);
+      await fetchTransactions();
+      await fetchSummary();
+    } catch (error) {
+      console.error("Error processing recurring transactions:", error);
+    }
+  };
+
   // Keep-alive ping to prevent server sleep
   useEffect(() => {
     const keepAlive = async () => {
