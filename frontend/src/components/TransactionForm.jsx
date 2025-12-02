@@ -70,12 +70,14 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
       description,
       category,
       date,
+      currency,
     });
 
     // Reset form
     setAmount("");
     setDescription("");
     setCategory("");
+    setCurrency("USD");
     setDate(new Date().toISOString().split("T")[0]);
     setErrors({});
 
