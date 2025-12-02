@@ -174,15 +174,28 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }
                     ))}
                   </Pie>
                   <Tooltip content={<CustomTooltip />} />
-                  {showExpenseLegend && (
-                    <Legend 
-                      verticalAlign="bottom" 
-                      height={36}
-                      formatter={(value, entry) => `${value} (${formatAmount(entry.payload.value)})`}
-                    />
-                  )}
                 </PieChart>
               </ResponsiveContainer>
+              
+              {/* Scrollable Legend */}
+              {showExpenseLegend && (
+                <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                    {expenseData.map((entry, index) => (
+                      <div key={index} className="flex items-center gap-2 text-sm">
+                        <div 
+                          className="w-4 h-4 rounded-sm flex-shrink-0" 
+                          style={{ backgroundColor: COLORS.expenses[index % COLORS.expenses.length] }}
+                        />
+                        <span className="truncate">{entry.name}</span>
+                        <span className="text-muted-foreground ml-auto">
+                          ({formatAmount(entry.value)})
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
         )}
