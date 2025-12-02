@@ -15,6 +15,7 @@ import { Dashboard } from "@/components/Dashboard";
 import { BudgetAnalytics } from "@/components/BudgetAnalytics";
 import { InvestmentAnalytics } from "@/components/InvestmentAnalytics";
 import { CompoundCalculator } from "@/components/CompoundCalculator";
+import { RecurringTransactions } from "@/components/RecurringTransactions";
 import { InvestingOverview } from "@/components/education/InvestingOverview";
 import { CryptoGuide } from "@/components/education/CryptoGuide";
 import { StocksGuide } from "@/components/education/StocksGuide";
