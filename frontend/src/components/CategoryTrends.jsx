@@ -91,36 +91,73 @@ export const CategoryTrends = ({ transactions }) => {
             <p className="text-sm text-muted-foreground">
               Found {results.reduce((sum, r) => sum + r.count, 0)} transactions
             </p>
-            <div className="border rounded-lg overflow-hidden">
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-4 py-2 text-left text-sm font-medium text-gray-700">Month</th>
-                    <th className="px-4 py-2 text-right text-sm font-medium text-gray-700">Amount</th>
-                    <th className="px-4 py-2 text-right text-sm font-medium text-gray-700">Count</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y">
-                  {results.map((item, index) => (
-                    <tr key={index} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm">{item.month}</td>
-                      <td className="px-4 py-3 text-sm text-right font-semibold">{formatAmount(item.amount)}</td>
-                      <td className="px-4 py-3 text-sm text-right text-gray-600">{item.count}</td>
-                    </tr>
-                  ))}
-                </tbody>
-                <tfoot className="bg-gray-50 font-semibold">
-                  <tr>
-                    <td className="px-4 py-3 text-sm">Total</td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      {formatAmount(results.reduce((sum, r) => sum + r.amount, 0))}
-                    </td>
-                    <td className="px-4 py-3 text-sm text-right">
-                      {results.reduce((sum, r) => sum + r.count, 0)}
-                    </td>
-                  </tr>
-                </tfoot>
-              </table>
+            <div className="space-y-2">
+              {results.map((item, index) => (
+                <div key={index} className="border rounded-lg overflow-hidden">
+                  {/* Month Header - Clickable */}
+                  <div 
+                    className="flex items-center justify-between p-4 bg-gray-50 hover:bg-gray-100 cursor-pointer"
+                    onClick={() => setExpandedMonth(expandedMonth === item.monthKey ? null : item.monthKey)}
+                  >
+                    <div className="flex items-center gap-2">
+                      {expandedMonth === item.monthKey ? (
+                        <ChevronDown className="h-4 w-4 text-gray-600" />
+                      ) : (
+                        <ChevronRight className="h-4 w-4 text-gray-600" />
+                      )}
+                      <span className="font-semibold">{item.month}</span>
+                      <span className="text-sm text-gray-600">({item.count} transactions)</span>
+                    </div>
+                    <span className="font-bold">{formatAmount(item.amount)}</span>
+                  </div>
+
+                  {/* Expanded Transactions */}
+                  {expandedMonth === item.monthKey && (
+                    <div className="divide-y">
+                      {item.transactions.map((trans, tIndex) => (
+                        <div key={tIndex} className="p-4 hover:bg-gray-50">
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1">
+                              <div className="font-medium text-sm mb-1">
+                                {new Date(trans.date).toLocaleDateString('en-US', { 
+                                  weekday: 'short',
+                                  month: 'short', 
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </div>
+                              <div className="text-sm text-gray-700">
+                                <span className="font-medium">{trans.category}</span>
+                              </div>
+                              {trans.description && (
+                                <div className="text-sm text-gray-500 mt-1">
+                                  {trans.description}
+                                </div>
+                              )}
+                            </div>
+                            <div className="text-right ml-4">
+                              <div className="font-bold text-red-600">
+                                {formatAmount(trans.amount)}
+                              </div>
+                              {trans.currency && trans.currency !== "USD" && (
+                                <div className="text-xs text-gray-500">{trans.currency}</div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+
+              {/* Total */}
+              <div className="border rounded-lg p-4 bg-gray-50 font-semibold">
+                <div className="flex items-center justify-between">
+                  <span>Total ({results.reduce((sum, r) => sum + r.count, 0)} transactions)</span>
+                  <span>{formatAmount(results.reduce((sum, r) => sum + r.amount, 0))}</span>
+                </div>
+              </div>
             </div>
           </div>
         )}
