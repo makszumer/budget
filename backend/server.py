@@ -112,10 +112,20 @@ async def root():
     return {"message": "Financial Tracker API"}
 
 # Transaction endpoints
+def convert_to_usd(amount: float, currency: str) -> float:
+    """Convert amount from given currency to USD"""
+    if currency == "USD":
+        return amount
+    rate = EXCHANGE_RATES.get(currency, 1.0)
+    return amount / rate
+
 @api_router.post("/transactions", response_model=Transaction)
 async def create_transaction(transaction: TransactionCreate):
     trans_dict = transaction.model_dump()
     trans_obj = Transaction(**trans_dict)
+    
+    # Convert amount to USD for calculations
+    trans_obj.amount_usd = convert_to_usd(trans_obj.amount, trans_obj.currency)
     
     # Convert to dict and serialize datetime to ISO string for MongoDB
     doc = trans_obj.model_dump()
