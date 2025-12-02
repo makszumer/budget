@@ -4,6 +4,7 @@ import axios from "axios";
 import { Sidebar } from "@/components/Sidebar";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { DateFilter } from "@/components/DateFilter";
+import { VoiceInput } from "@/components/VoiceInput";
 import { Eye, EyeOff } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
