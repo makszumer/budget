@@ -10,7 +10,7 @@ const COLORS = {
   income: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
 };
 
-export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false }) => {
+export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, transactions = [] }) => {
   const [showExpenseLegend, setShowExpenseLegend] = useState(false);
   const [showIncomeLegend, setShowIncomeLegend] = useState(false);
 
