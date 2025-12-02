@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat } from "lucide-react";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
