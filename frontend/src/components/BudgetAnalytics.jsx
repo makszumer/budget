@@ -264,6 +264,9 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           </Card>
         )}
       </div>
+
+      {/* Category Trends */}
+      <CategoryTrends transactions={transactions} />
     </div>
   );
 };
