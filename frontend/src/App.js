@@ -406,6 +406,7 @@ function App() {
                 analytics={analytics} 
                 budgetGrowth={budgetGrowth} 
                 privacyMode={privacyMode}
+                transactions={filteredTransactions.filter(t => t.type !== "investment")}
               />
             </TabsContent>
           </Tabs>
