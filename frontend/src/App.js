@@ -175,7 +175,9 @@ function App() {
             fetchPortfolio(), 
             fetchAnalytics(),
             fetchBudgetGrowth(),
-            fetchInvestmentGrowth()
+            fetchInvestmentGrowth(),
+            fetchCurrencies(),
+            processRecurringTransactions()
           ]);
           setServerAwake(true);
           setLoading(false);
