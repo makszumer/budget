@@ -367,6 +367,7 @@ function App() {
               <TransactionList
                 transactions={filteredTransactions.filter(t => t.type !== "investment")}
                 onDeleteTransaction={handleDeleteTransaction}
+                onEditTransaction={handleEditTransaction}
               />
             </TabsContent>
 
