@@ -538,6 +538,42 @@ function MainApp() {
     };
   };
 
+  // Show loading screen while checking auth
+  if (authLoading) {
+    return <LoadingScreen />;
+  }
+
+  // Show login/register if not authenticated
+  if (!isAuthenticated) {
+    if (authView === 'register') {
+      return (
+        <RegisterPage
+          onSwitchToLogin={() => setAuthView('login')}
+          onRegisterSuccess={() => setAuthView('login')}
+        />
+      );
+    }
+    return (
+      <LoginPage
+        onSwitchToRegister={() => setAuthView('register')}
+        onLoginSuccess={() => {}}
+      />
+    );
+  }
+
+  // Handle subscription routes
+  if (currentPage === 'pricing') {
+    return <PricingPage />;
+  }
+
+  if (currentPage === 'subscription-success') {
+    return <SubscriptionSuccess onGoHome={() => setCurrentPage('dashboard')} />;
+  }
+
+  if (currentPage === 'subscription-cancel') {
+    return <SubscriptionCancel onGoHome={() => setCurrentPage('dashboard')} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex relative">
       <Toaster />
