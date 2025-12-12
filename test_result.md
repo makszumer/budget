@@ -152,15 +152,18 @@ frontend:
 
   - task: "Subscription Pricing Page"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/subscription/PricingPage.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial assessment - need to verify pricing page displays Monthly (€4) and Yearly (€36) options and loads Stripe checkout (without completing payment)"
+      - working: false
+        agent: "testing"
+        comment: "Cannot access pricing page due to React runtime errors preventing navigation. Pricing component exists and backend subscription API works (tested checkout creation via curl), but frontend React errors block UI access."
 
   - task: "Logout & Re-login Flow"
     implemented: true
