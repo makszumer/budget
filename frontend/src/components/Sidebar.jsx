@@ -1,8 +1,10 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
+  const { user } = useAuth();
 
   const MenuItem = ({ icon: Icon, label, page, active }) => (
     <button
