@@ -766,6 +766,11 @@ async def get_currencies():
         "rates": EXCHANGE_RATES
     }
 
+# Include all routers
+api_router.include_router(users_router)
+api_router.include_router(subscription_router)
+api_router.include_router(admin_router)
+
 # Include the router in the main app
 app.include_router(api_router)
 
