@@ -101,3 +101,160 @@
 #====================================================================================================
 # Testing Data - Main Agent and testing sub agent both should log testing data below this section
 #====================================================================================================
+
+user_problem_statement: "Test the complete authentication, subscription, and ad display flow of the financial tracking application"
+
+frontend:
+  - task: "User Registration & Login Flow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/auth/LoginPage.jsx, /app/frontend/src/components/auth/RegisterPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test registration with test@example.com, testuser, Test123! and verify automatic login and dashboard redirect"
+
+  - task: "Free User Ad Banner Display"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/AdBanner.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to verify ad banner appears at bottom for free users and contains 'Upgrade to Premium' button"
+
+  - task: "Premium Upgrade Button & Badge"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to verify 'Upgrade to Premium' button in top right for free users and premium badge display for premium users"
+
+  - task: "Subscription Pricing Page"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/subscription/PricingPage.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to verify pricing page displays Monthly (€4) and Yearly (€36) options and loads Stripe checkout (without completing payment)"
+
+  - task: "Logout & Re-login Flow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/context/AuthContext.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test logout button functionality and re-login with same credentials"
+
+  - task: "Sidebar Navigation"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/Sidebar.jsx"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test sidebar 'Upgrade to Premium' button navigation to pricing page"
+
+  - task: "Financial Tracking Features"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/App.js"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to verify add expense and add income functionality works for free users"
+
+backend:
+  - task: "User Registration API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/users.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test /api/users/register endpoint with test data"
+
+  - task: "User Login API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/users.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test /api/users/login endpoint with registered credentials"
+
+  - task: "User Profile API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/users.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test /api/users/me endpoint with auth token"
+
+  - task: "Subscription Checkout API"
+    implemented: true
+    working: "NA"
+    file: "/app/backend/routes/subscription.py"
+    stuck_count: 0
+    priority: "medium"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "testing"
+        comment: "Initial assessment - need to test /api/subscription/create-checkout endpoint (without completing payment)"
+
+metadata:
+  created_by: "testing_agent"
+  version: "1.0"
+  test_sequence: 1
+
+test_plan:
+  current_focus:
+    - "User Registration & Login Flow"
+    - "Free User Ad Banner Display"
+    - "Premium Upgrade Button & Badge"
+    - "Subscription Pricing Page"
+    - "Logout & Re-login Flow"
+    - "Sidebar Navigation"
+  stuck_tasks: []
+  test_all: false
+  test_priority: "high_first"
+
+agent_communication:
+  - agent: "testing"
+    message: "Starting comprehensive testing of authentication, subscription, and ad display flow. Will test frontend UI interactions and backend API endpoints as specified in review request."
