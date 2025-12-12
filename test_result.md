@@ -197,15 +197,18 @@ frontend:
 
   - task: "Financial Tracking Features"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/App.js"
-    stuck_count: 0
+    stuck_count: 1
     priority: "medium"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial assessment - need to verify add expense and add income functionality works for free users"
+      - working: false
+        agent: "testing"
+        comment: "Cannot test financial tracking features due to React runtime errors preventing dashboard access. Transaction components exist but React hooks violations prevent proper rendering and functionality."
 
 backend:
   - task: "User Registration API"
