@@ -51,6 +51,16 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           active={currentPage === "dashboard"}
         />
 
+        {/* Admin Dashboard (only for admin users) */}
+        {user?.email === 'admin@financehub.com' && (
+          <MenuItem
+            icon={Shield}
+            label="Admin Panel"
+            page="admin"
+            active={currentPage === "admin"}
+          />
+        )}
+
         {/* Standing Orders */}
         <MenuItem
           icon={Repeat}
