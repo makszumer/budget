@@ -62,6 +62,42 @@ function MainApp() {
   const [dateFilter, setDateFilter] = useState("all"); // all, day, week, month, year
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currencies, setCurrencies] = useState(["USD"]);
+  const [authView, setAuthView] = useState('login'); // 'login' or 'register'
+
+  // Show login/register if not authenticated
+  if (authLoading) {
+    return <LoadingScreen />;
+  }
+
+  if (!isAuthenticated) {
+    if (authView === 'register') {
+      return (
+        <RegisterPage
+          onSwitchToLogin={() => setAuthView('login')}
+          onRegisterSuccess={() => setAuthView('login')}
+        />
+      );
+    }
+    return (
+      <LoginPage
+        onSwitchToRegister={() => setAuthView('register')}
+        onLoginSuccess={() => {}}
+      />
+    );
+  }
+
+  // Handle subscription routes
+  if (currentPage === 'pricing') {
+    return <PricingPage />;
+  }
+
+  if (currentPage === 'subscription-success') {
+    return <SubscriptionSuccess onGoHome={() => setCurrentPage('dashboard')} />;
+  }
+
+  if (currentPage === 'subscription-cancel') {
+    return <SubscriptionCancel onGoHome={() => setCurrentPage('dashboard')} />;
+  }
 
   // Fetch transactions
   const fetchTransactions = async () => {
