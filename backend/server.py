@@ -9,10 +9,18 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import List, Optional, Literal
 import uuid
 from datetime import datetime, timezone
-
+import sys
 
 ROOT_DIR = Path(__file__).parent
 load_dotenv(ROOT_DIR / '.env')
+
+# Add the backend directory to Python path for imports
+sys.path.append(str(ROOT_DIR))
+
+# Import auth and subscription routes
+from routes.users import router as users_router
+from routes.subscription import router as subscription_router
+from routes.admin import router as admin_router
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
