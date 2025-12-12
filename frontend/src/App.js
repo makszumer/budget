@@ -660,11 +660,23 @@ function MainApp() {
 
       {/* Main Content */}
       <div className="flex-1 overflow-auto w-full">
-        <div className="container mx-auto px-8 py-8">
+        <div className="container mx-auto px-8 py-8 pb-24">
           {renderPage()}
         </div>
       </div>
+
+      {/* Ad Banner (only for free users) */}
+      <AdBanner placement="bottom" />
     </div>
+  );
+}
+
+// Wrap MainApp with AuthProvider
+function App() {
+  return (
+    <AuthProvider>
+      <MainApp />
+    </AuthProvider>
   );
 }
 
