@@ -46,13 +46,13 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email</Label>
+              <Label htmlFor="email">Email or Username</Label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
                   id="email"
-                  type="email"
-                  placeholder="your@email.com"
+                  type="text"
+                  placeholder="your@email.com or username"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-9"
