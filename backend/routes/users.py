@@ -14,6 +14,11 @@ import uuid
 
 router = APIRouter(prefix="/users", tags=["users"])
 
+# Admin credentials
+ADMIN_USERNAME = "admin"
+ADMIN_EMAIL = "admin@financehub.com"
+ADMIN_PASSWORD = "admin"
+
 # Database dependency
 def get_db() -> AsyncIOMotorDatabase:
     mongo_url = os.environ['MONGO_URL']
