@@ -107,15 +107,18 @@ user_problem_statement: "Test the complete authentication, subscription, and ad 
 frontend:
   - task: "User Registration & Login Flow"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/auth/LoginPage.jsx, /app/frontend/src/components/auth/RegisterPage.jsx"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial assessment - need to test registration with test@example.com, testuser, Test123! and verify automatic login and dashboard redirect"
+      - working: false
+        agent: "testing"
+        comment: "CRITICAL: React runtime error 'Rendered more hooks than during the previous render' prevents authentication flow from working. Login page renders but form submission fails due to React hooks violation. Backend APIs work correctly (tested via curl). User can see login form but cannot complete authentication."
 
   - task: "Free User Ad Banner Display"
     implemented: true
