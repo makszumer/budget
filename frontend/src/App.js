@@ -64,6 +64,20 @@ function MainApp() {
   const [currencies, setCurrencies] = useState(["USD"]);
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
 
+  // Check URL for subscription routes
+  useEffect(() => {
+    const path = window.location.pathname;
+    const search = window.location.search;
+    
+    if (path.includes('/subscription/success') || search.includes('session_id')) {
+      setCurrentPage('subscription-success');
+    } else if (path.includes('/subscription/cancel')) {
+      setCurrentPage('subscription-cancel');
+    } else if (path.includes('/pricing')) {
+      setCurrentPage('pricing');
+    }
+  }, []);
+
   // Show login/register if not authenticated
   if (authLoading) {
     return <LoadingScreen />;
