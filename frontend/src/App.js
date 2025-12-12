@@ -592,12 +592,29 @@ function MainApp() {
         </svg>
       </button>
 
-      {/* Privacy Toggle Button */}
-      <button
-        onClick={() => setPrivacyMode(!privacyMode)}
-        className="fixed top-6 right-6 z-50 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200"
-        data-testid="privacy-toggle"
-        title={privacyMode ? "Show amounts" : "Hide amounts"}
+      {/* User Actions - Top Right */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-2">
+        {/* Premium Badge / Upgrade Button */}
+        {isPremium ? (
+          <div className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg shadow-lg flex items-center gap-2">
+            <Crown className="h-4 w-4" />
+            <span className="font-semibold text-sm">Premium</span>
+          </div>
+        ) : (
+          <button
+            onClick={() => setCurrentPage('pricing')}
+            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold text-sm"
+          >
+            Upgrade to Premium
+          </button>
+        )}
+
+        {/* Privacy Toggle Button */}
+        <button
+          onClick={() => setPrivacyMode(!privacyMode)}
+          className="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200"
+          data-testid="privacy-toggle"
+          title={privacyMode ? "Show amounts" : "Hide amounts"}
       >
         {privacyMode ? (
           <EyeOff className="w-5 h-5 text-gray-700" />
