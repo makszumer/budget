@@ -90,7 +90,7 @@ class UserRegister(BaseModel):
     password: str
 
 class UserLogin(BaseModel):
-    email: EmailStr
+    email: str  # Can be email or username
     password: str
 
 class Token(BaseModel):
