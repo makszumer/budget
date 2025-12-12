@@ -243,15 +243,18 @@ backend:
 
   - task: "User Profile API"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/backend/routes/users.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
         comment: "Initial assessment - need to test /api/users/me endpoint with auth token"
+      - working: true
+        agent: "testing"
+        comment: "✅ Backend user profile API working correctly. Tested with JWT token - returns complete user profile including user_id, email, username, subscription_level (free), and is_premium status."
 
   - task: "Subscription Checkout API"
     implemented: true
