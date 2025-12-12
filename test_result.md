@@ -143,9 +143,9 @@ frontend:
 
   - task: "Premium Upgrade Button & Badge"
     implemented: true
-    working: false
+    working: true
     file: "/app/frontend/src/App.js"
-    stuck_count: 1
+    stuck_count: 0
     priority: "high"
     needs_retesting: false
     status_history:
@@ -155,6 +155,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "Cannot test upgrade button/premium badge due to React runtime errors preventing dashboard access. Component code exists in App.js but React hooks violations prevent proper rendering."
+      - working: true
+        agent: "testing"
+        comment: "✅ WORKING: 'Upgrade to Premium' button displays correctly in top-right corner for free users. Button navigates to pricing page when clicked. Premium badge logic implemented correctly (shows Crown icon and 'Premium' text for premium users, upgrade button for free users)."
 
   - task: "Subscription Pricing Page"
     implemented: true
