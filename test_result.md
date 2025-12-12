@@ -173,6 +173,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "Cannot access pricing page due to React runtime errors preventing navigation. Pricing component exists and backend subscription API works (tested checkout creation via curl), but frontend React errors block UI access."
+      - working: false
+        agent: "testing"
+        comment: "Minor: Pricing page displays correctly with Monthly (€4) and Yearly (€36) options. However, Stripe checkout redirect fails due to authentication token expiration (401 errors). User can access pricing page and see all options, but payment flow is interrupted by auth issues. Backend subscription API works correctly when tested directly."
 
   - task: "Logout & Re-login Flow"
     implemented: true
