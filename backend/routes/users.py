@@ -75,6 +75,36 @@ async def login(user_data: UserLogin):
     """Authenticate user and return JWT token"""
     db = get_db()
     
+    # Special handling for admin login (admin can use either email or username)
+    if (user_data.email == ADMIN_EMAIL or user_data.email == ADMIN_USERNAME) and user_data.password == ADMIN_PASSWORD:
+        # Check if admin user exists, create if not
+        admin_user = await db.users.find_one({"email": ADMIN_EMAIL}, {"_id": 0})
+        
+        if not admin_user:
+            # Create admin user
+            admin_id = str(uuid.uuid4())
+            admin_user = {
+                'id': admin_id,
+                'email': ADMIN_EMAIL,
+                'username': ADMIN_USERNAME,
+                'hashed_password': hash_password(ADMIN_PASSWORD),
+                'is_active': True,
+                'is_admin': True,
+                'subscription_level': 'premium',  # Admin gets premium by default
+                'subscription_expires_at': None,  # Never expires for admin
+                'created_at': datetime.now(timezone.utc).isoformat(),
+            }
+            await db.users.insert_one(admin_user)
+        
+        access_token = create_access_token(admin_user['id'])
+        
+        return Token(
+            access_token=access_token,
+            user_id=admin_user['id'],
+            is_premium=True
+        )
+    
+    # Regular user login
     user = await db.users.find_one({"email": user_data.email}, {"_id": 0})
     
     if not user:
