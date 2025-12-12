@@ -296,20 +296,9 @@ metadata:
 
 test_plan:
   current_focus:
-    - "User Registration & Login Flow"
-    - "Free User Ad Banner Display"
-    - "Premium Upgrade Button & Badge"
     - "Subscription Pricing Page"
-    - "Logout & Re-login Flow"
-    - "Sidebar Navigation"
   stuck_tasks:
-    - "User Registration & Login Flow"
-    - "Free User Ad Banner Display"
-    - "Premium Upgrade Button & Badge"
     - "Subscription Pricing Page"
-    - "Logout & Re-login Flow"
-    - "Sidebar Navigation"
-    - "Financial Tracking Features"
   test_all: false
   test_priority: "high_first"
 
