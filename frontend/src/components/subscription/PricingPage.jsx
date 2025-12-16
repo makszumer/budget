@@ -158,7 +158,7 @@ export const PricingPage = ({ onGoBack }) => {
               <Button 
                 className="w-full bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700" 
                 onClick={() => handleSubscribe('monthly')}
-                disabled={loadingPackage === 'monthly' || isPremium}
+                disabled={loadingPackage === 'monthly'}
               >
                 {loadingPackage === 'monthly' ? (
                   <>
@@ -166,7 +166,7 @@ export const PricingPage = ({ onGoBack }) => {
                     Processing...
                   </>
                 ) : isPremium ? (
-                  'Current Plan'
+                  'Test Stripe Checkout'
                 ) : (
                   'Get Monthly Premium'
                 )}
