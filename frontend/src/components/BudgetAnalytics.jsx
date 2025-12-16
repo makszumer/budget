@@ -133,6 +133,53 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
 
   return (
     <div className="space-y-6">
+      {/* Time Filter for Pie Charts */}
+      <Card>
+        <CardHeader>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <Calendar className="h-5 w-5" />
+                Budget Analytics Time Filter
+              </CardTitle>
+              <p className="text-sm text-muted-foreground mt-1">
+                Filter pie charts by time period
+              </p>
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={pieChartFilter === "daily" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPieChartFilter("daily")}
+              >
+                Today
+              </Button>
+              <Button
+                variant={pieChartFilter === "weekly" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPieChartFilter("weekly")}
+              >
+                This Week
+              </Button>
+              <Button
+                variant={pieChartFilter === "monthly" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPieChartFilter("monthly")}
+              >
+                This Month
+              </Button>
+              <Button
+                variant={pieChartFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => setPieChartFilter("all")}
+              >
+                All Time
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
       {/* Growth Chart */}
       {budgetGrowth && budgetGrowth.data.length > 0 && (
         <Card>
