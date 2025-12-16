@@ -176,6 +176,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "Minor: Pricing page displays correctly with Monthly (€4) and Yearly (€36) options. However, Stripe checkout redirect fails due to authentication token expiration (401 errors). User can access pricing page and see all options, but payment flow is interrupted by auth issues. Backend subscription API works correctly when tested directly."
+      - working: false
+        agent: "testing"
+        comment: "COMPREHENSIVE TEST COMPLETED: ✅ Pricing page UI improvements working perfectly - back button visible, clickable, and successfully returns to dashboard. ✅ Monthly/Yearly pricing options display correctly (€4/€36). ✅ 'Get Monthly Premium' button is enabled and clickable. ❌ CRITICAL ISSUE: Stripe checkout redirect fails - clicking subscription buttons does not redirect to Stripe checkout, stays on same page. Authentication working (logged in as admin successfully). UI navigation and back button functionality working as expected, but core payment flow broken."
 
   - task: "Logout & Re-login Flow"
     implemented: true
