@@ -131,6 +131,22 @@ export const EditTransactionModal = ({ transaction, open, onClose, onSave, curre
           </div>
 
           <div className="space-y-2">
+            <Label htmlFor="edit-currency">Currency</Label>
+            <select
+              id="edit-currency"
+              className="w-full px-3 py-2 border rounded-md"
+              value={currency}
+              onChange={(e) => setCurrency(e.target.value)}
+            >
+              {currencies.map((curr) => (
+                <option key={curr} value={curr}>
+                  {curr}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <Label htmlFor="edit-category">
               Category <span className="text-destructive">*</span>
             </Label>
