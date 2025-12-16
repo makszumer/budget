@@ -27,17 +27,65 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
     }).format(amount);
   };
 
-  const expenseData = analytics.expense_breakdown.map(item => ({
-    name: item.category,
-    value: item.amount,
-    percentage: item.percentage.toFixed(1),
-  }));
+  // Filter transactions based on pie chart filter
+  const filteredTransactions = useMemo(() => {
+    if (pieChartFilter === "all") return transactions;
+    
+    const now = new Date();
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    
+    return transactions.filter(t => {
+      const transactionDate = new Date(t.date);
+      
+      if (pieChartFilter === "daily") {
+        return transactionDate >= today;
+      } else if (pieChartFilter === "weekly") {
+        const weekAgo = new Date(today);
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        return transactionDate >= weekAgo;
+      } else if (pieChartFilter === "monthly") {
+        const monthAgo = new Date(today);
+        monthAgo.setMonth(monthAgo.getMonth() - 1);
+        return transactionDate >= monthAgo;
+      }
+      return true;
+    });
+  }, [transactions, pieChartFilter]);
 
-  const incomeData = analytics.income_breakdown.map(item => ({
-    name: item.category,
-    value: item.amount,
-    percentage: item.percentage.toFixed(1),
-  }));
+  // Calculate breakdown from filtered transactions
+  const calculateBreakdown = (type) => {
+    const filtered = filteredTransactions.filter(t => t.type === type);
+    const categoryTotals = {};
+    
+    filtered.forEach(t => {
+      const category = t.category || "Other";
+      categoryTotals[category] = (categoryTotals[category] || 0) + t.amount;
+    });
+    
+    const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
+    
+    return Object.entries(categoryTotals).map(([category, amount]) => ({
+      name: category,
+      value: amount,
+      percentage: total > 0 ? ((amount / total) * 100).toFixed(1) : 0,
+    }));
+  };
+
+  const expenseData = pieChartFilter === "all" 
+    ? analytics.expense_breakdown.map(item => ({
+        name: item.category,
+        value: item.amount,
+        percentage: item.percentage.toFixed(1),
+      }))
+    : calculateBreakdown("expense");
+
+  const incomeData = pieChartFilter === "all"
+    ? analytics.income_breakdown.map(item => ({
+        name: item.category,
+        value: item.amount,
+        percentage: item.percentage.toFixed(1),
+      }))
+    : calculateBreakdown("income");
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
