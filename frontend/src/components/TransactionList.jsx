@@ -96,7 +96,7 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
                     : 'text-red-600'
                 }`}>
                   {transaction.type === 'income' ? '+' : '-'}
-                  {formatAmount(transaction.amount)}
+                  {formatAmount(transaction.amount, transaction.currency || 'USD')}
                 </span>
                 <Button
                   variant="ghost"
