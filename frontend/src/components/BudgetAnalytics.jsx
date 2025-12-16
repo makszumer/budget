@@ -161,45 +161,106 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
       {/* Time Filter for Pie Charts */}
       <Card>
         <CardHeader>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Budget Analytics Time Filter
-              </CardTitle>
-              <p className="text-sm text-muted-foreground mt-1">
-                Filter pie charts by time period
-              </p>
+          <div className="flex flex-col gap-4">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <Calendar className="h-5 w-5" />
+                  Budget Analytics Time Filter
+                </CardTitle>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Filter pie charts by time period
+                </p>
+              </div>
+              <div className="flex gap-2 flex-wrap">
+                <Button
+                  variant={pieChartFilter === "daily" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPieChartFilter("daily")}
+                >
+                  Today
+                </Button>
+                <Button
+                  variant={pieChartFilter === "weekly" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPieChartFilter("weekly")}
+                >
+                  This Week
+                </Button>
+                <Button
+                  variant={pieChartFilter === "monthly" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPieChartFilter("monthly")}
+                >
+                  This Month
+                </Button>
+                <Button
+                  variant={pieChartFilter === "yearly" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPieChartFilter("yearly")}
+                >
+                  This Year
+                </Button>
+                <Button
+                  variant={pieChartFilter === "all" ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPieChartFilter("all")}
+                >
+                  All Time
+                </Button>
+              </div>
             </div>
-            <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={pieChartFilter === "daily" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPieChartFilter("daily")}
-              >
-                Today
-              </Button>
-              <Button
-                variant={pieChartFilter === "weekly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPieChartFilter("weekly")}
-              >
-                This Week
-              </Button>
-              <Button
-                variant={pieChartFilter === "monthly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPieChartFilter("monthly")}
-              >
-                This Month
-              </Button>
-              <Button
-                variant={pieChartFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => setPieChartFilter("all")}
-              >
-                All Time
-              </Button>
+
+            {/* Year Selector */}
+            {pieChartFilter === "yearly" && (
+              <div className="flex items-center gap-4">
+                <Label htmlFor="year-select">Select Year:</Label>
+                <select
+                  id="year-select"
+                  className="px-3 py-2 border rounded-md"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(parseInt(e.target.value))}
+                >
+                  {Array.from({ length: 10 }, (_, i) => new Date().getFullYear() - i).map(year => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Custom Date Range */}
+            <div className="border-t pt-4">
+              <div className="flex flex-col sm:flex-row gap-4 items-end">
+                <div className="flex-1">
+                  <Label htmlFor="start-date">Start Date</Label>
+                  <Input
+                    id="start-date"
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                  />
+                </div>
+                <div className="flex-1">
+                  <Label htmlFor="end-date">End Date</Label>
+                  <Input
+                    id="end-date"
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                  />
+                </div>
+                <Button
+                  onClick={() => {
+                    if (startDate && endDate) {
+                      setPieChartFilter("custom");
+                    }
+                  }}
+                  disabled={!startDate || !endDate}
+                  variant={pieChartFilter === "custom" ? "default" : "outline"}
+                >
+                  Apply Custom Range
+                </Button>
+              </div>
             </div>
           </div>
         </CardHeader>
