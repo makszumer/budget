@@ -37,25 +37,45 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
     if (pieChartFilter === "all") return transactions;
     
     const now = new Date();
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     
     return transactions.filter(t => {
       const transactionDate = new Date(t.date);
       
       if (pieChartFilter === "daily") {
-        return transactionDate >= today;
+        const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const tomorrow = new Date(today);
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return transactionDate >= today && transactionDate < tomorrow;
       } else if (pieChartFilter === "weekly") {
-        const weekAgo = new Date(today);
-        weekAgo.setDate(weekAgo.getDate() - 7);
-        return transactionDate >= weekAgo;
+        // Current week (Monday to Sunday)
+        const currentDay = now.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset);
+        monday.setHours(0, 0, 0, 0);
+        
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 7);
+        
+        return transactionDate >= monday && transactionDate < sunday;
       } else if (pieChartFilter === "monthly") {
-        const monthAgo = new Date(today);
-        monthAgo.setMonth(monthAgo.getMonth() - 1);
-        return transactionDate >= monthAgo;
+        // Current month (1st to last day)
+        const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+        const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+        return transactionDate >= firstDay && transactionDate <= lastDay;
+      } else if (pieChartFilter === "yearly") {
+        // Selected year
+        return transactionDate.getFullYear() === selectedYear;
+      } else if (pieChartFilter === "custom" && startDate && endDate) {
+        const start = new Date(startDate);
+        start.setHours(0, 0, 0, 0);
+        const end = new Date(endDate);
+        end.setHours(23, 59, 59, 999);
+        return transactionDate >= start && transactionDate <= end;
       }
       return true;
     });
-  }, [transactions, pieChartFilter]);
+  }, [transactions, pieChartFilter, startDate, endDate, selectedYear]);
 
   // Calculate breakdown from filtered transactions
   const calculateBreakdown = (type) => {
