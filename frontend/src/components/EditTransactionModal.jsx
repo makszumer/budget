@@ -84,6 +84,7 @@ export const EditTransactionModal = ({ transaction, open, onClose, onSave, curre
       description,
       category,
       date,
+      currency,
     });
   };
 
