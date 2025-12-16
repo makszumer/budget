@@ -126,6 +126,7 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
         open={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onSave={handleSaveEdit}
+        currencies={currencies}
       />
     </Card>
   );
