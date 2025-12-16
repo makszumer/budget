@@ -258,7 +258,11 @@ export const BudgetEnvelopes = ({ currencies }) => {
             const remaining = envelope.target_amount - envelope.current_amount;
             
             return (
-              <Card key={envelope.id} className="relative overflow-hidden">
+              <Card 
+                key={envelope.id} 
+                className="relative overflow-hidden cursor-pointer hover:shadow-lg transition-shadow"
+                onClick={() => setViewingEnvelope(envelope)}
+              >
                 <CardHeader className="pb-3">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
