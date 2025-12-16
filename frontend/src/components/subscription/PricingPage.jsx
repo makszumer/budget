@@ -4,12 +4,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import axios from 'axios';
-import { Check, Loader2, Crown, Zap } from 'lucide-react';
+import { Check, Loader2, Crown, Zap, ArrowLeft } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-export const PricingPage = () => {
+export const PricingPage = ({ onGoBack }) => {
   const { user, token, isPremium } = useAuth();
   const [loadingPackage, setLoadingPackage] = useState(null);
 
