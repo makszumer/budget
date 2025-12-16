@@ -69,6 +69,14 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           active={currentPage === "recurring"}
         />
 
+        {/* Budget Envelopes */}
+        <MenuItem
+          icon={Wallet}
+          label="Budget Envelopes"
+          page="budget-envelopes"
+          active={currentPage === "budget-envelopes"}
+        />
+
         {/* Why Investing */}
         <div className="space-y-1">
           <button
