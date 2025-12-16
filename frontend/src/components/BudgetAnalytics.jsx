@@ -15,7 +15,10 @@ const COLORS = {
 export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, transactions = [] }) => {
   const [showExpenseLegend, setShowExpenseLegend] = useState(false);
   const [showIncomeLegend, setShowIncomeLegend] = useState(false);
-  const [pieChartFilter, setPieChartFilter] = useState("all"); // all, daily, weekly, monthly
+  const [pieChartFilter, setPieChartFilter] = useState("all"); // all, daily, weekly, monthly, custom
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   const formatAmount = (amount) => {
     if (privacyMode) {
