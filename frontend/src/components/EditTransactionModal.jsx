@@ -40,11 +40,12 @@ const categoryOptions = {
   },
 };
 
-export const EditTransactionModal = ({ transaction, open, onClose, onSave }) => {
+export const EditTransactionModal = ({ transaction, open, onClose, onSave, currencies = ["USD", "EUR", "GBP"] }) => {
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [date, setDate] = useState("");
+  const [currency, setCurrency] = useState("USD");
   const [errors, setErrors] = useState({});
 
   useEffect(() => {
@@ -53,6 +54,7 @@ export const EditTransactionModal = ({ transaction, open, onClose, onSave }) => 
       setDescription(transaction.description || "");
       setCategory(transaction.category);
       setDate(transaction.date);
+      setCurrency(transaction.currency || "USD");
       setErrors({});
     }
   }, [transaction, open]);
