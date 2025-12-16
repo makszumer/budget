@@ -303,6 +303,8 @@ function MainApp() {
         return renderDashboard();
       case "recurring":
         return <RecurringTransactions currencies={currencies} />;
+      case "budget-envelopes":
+        return <BudgetEnvelopes currencies={currencies} />;
       case "admin":
         return <AdminDashboard />;
       case "investing-overview":
