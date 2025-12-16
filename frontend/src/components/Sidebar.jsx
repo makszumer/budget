@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
