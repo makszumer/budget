@@ -426,6 +426,7 @@ function MainApp() {
                 transactions={filteredTransactions.filter(t => t.type !== "investment")}
                 onDeleteTransaction={handleDeleteTransaction}
                 onEditTransaction={handleEditTransaction}
+                currencies={currencies}
               />
             </TabsContent>
 
