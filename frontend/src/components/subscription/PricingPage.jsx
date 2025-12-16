@@ -14,14 +14,21 @@ export const PricingPage = ({ onGoBack }) => {
   const [loadingPackage, setLoadingPackage] = useState(null);
 
   const handleSubscribe = async (packageId) => {
+    console.log('handleSubscribe called with:', packageId);
+    
     if (!token) {
       toast.error('Please log in to subscribe');
       return;
     }
 
     setLoadingPackage(packageId);
+    console.log('Loading package set to:', packageId);
+    
     try {
       const originUrl = window.location.origin;
+      console.log('Making API request to:', `${API}/subscription/create-checkout`);
+      console.log('Package ID:', packageId, 'Origin URL:', originUrl);
+      
       const response = await axios.post(
         `${API}/subscription/create-checkout`,
         {
@@ -33,11 +40,23 @@ export const PricingPage = ({ onGoBack }) => {
         }
       );
 
+      console.log('Checkout response:', response.data);
+      
       // Redirect to Stripe checkout
-      window.location.href = response.data.checkout_url;
+      const checkoutUrl = response.data.checkout_url;
+      console.log('Redirecting to:', checkoutUrl);
+      
+      if (checkoutUrl) {
+        toast.success('Redirecting to Stripe checkout...');
+        window.location.href = checkoutUrl;
+      } else {
+        throw new Error('No checkout URL received');
+      }
     } catch (error) {
       console.error('Checkout error:', error);
-      toast.error(error.response?.data?.detail || 'Failed to create checkout session');
+      console.error('Error response:', error.response);
+      const errorMessage = error.response?.data?.detail || error.message || 'Failed to create checkout session';
+      toast.error(errorMessage);
       setLoadingPackage(null);
     }
   };
