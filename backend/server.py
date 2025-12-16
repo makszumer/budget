@@ -819,7 +819,91 @@ async def delete_budget_envelope(envelope_id: str):
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Budget envelope not found")
     
+    # Also delete all transactions associated with this envelope
+    await db.envelope_transactions.delete_many({"envelope_id": envelope_id})
+    
     return {"message": "Budget envelope deleted successfully"}
+
+# Envelope Transactions
+@api_router.get("/budget-envelopes/{envelope_id}/transactions")
+async def get_envelope_transactions(envelope_id: str):
+    """Get all transactions for a specific envelope"""
+    transactions = await db.envelope_transactions.find(
+        {"envelope_id": envelope_id},
+        {"_id": 0}
+    ).to_list(1000)
+    return sorted(transactions, key=lambda x: x['date'], reverse=True)
+
+@api_router.post("/budget-envelopes/{envelope_id}/transactions")
+async def create_envelope_transaction(envelope_id: str, transaction: dict):
+    """Create a transaction for an envelope"""
+    # Verify envelope exists
+    envelope = await db.budget_envelopes.find_one({"id": envelope_id}, {"_id": 0})
+    if not envelope:
+        raise HTTPException(status_code=404, detail="Budget envelope not found")
+    
+    transaction_id = str(uuid.uuid4())
+    transaction_data = {
+        "id": transaction_id,
+        "envelope_id": envelope_id,
+        "type": transaction.get("type"),
+        "amount": transaction.get("amount"),
+        "description": transaction.get("description", ""),
+        "category": transaction.get("category"),
+        "date": transaction.get("date"),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.envelope_transactions.insert_one(transaction_data)
+    
+    # Update envelope current_amount
+    amount = transaction.get("amount", 0)
+    if transaction.get("type") == "income":
+        # Add to envelope
+        await db.budget_envelopes.update_one(
+            {"id": envelope_id},
+            {"$inc": {"current_amount": amount}}
+        )
+    elif transaction.get("type") == "expense":
+        # Subtract from envelope
+        await db.budget_envelopes.update_one(
+            {"id": envelope_id},
+            {"$inc": {"current_amount": -amount}}
+        )
+    
+    return {"id": transaction_id, "message": "Transaction created successfully"}
+
+@api_router.delete("/budget-envelopes/{envelope_id}/transactions/{transaction_id}")
+async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
+    """Delete a transaction from an envelope"""
+    # Get transaction to know the amount
+    transaction = await db.envelope_transactions.find_one(
+        {"id": transaction_id, "envelope_id": envelope_id},
+        {"_id": 0}
+    )
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Delete transaction
+    await db.envelope_transactions.delete_one({"id": transaction_id})
+    
+    # Reverse the amount change
+    amount = transaction.get("amount", 0)
+    if transaction.get("type") == "income":
+        # Was income, so subtract it back
+        await db.budget_envelopes.update_one(
+            {"id": envelope_id},
+            {"$inc": {"current_amount": -amount}}
+        )
+    elif transaction.get("type") == "expense":
+        # Was expense, so add it back
+        await db.budget_envelopes.update_one(
+            {"id": envelope_id},
+            {"$inc": {"current_amount": amount}}
+        )
+    
+    return {"message": "Transaction deleted successfully"}
 
 # Include all routers
 api_router.include_router(users_router)
