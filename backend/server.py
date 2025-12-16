@@ -766,6 +766,61 @@ async def get_currencies():
         "rates": EXCHANGE_RATES
     }
 
+# Budget Envelopes (Savings Goals)
+@api_router.get("/budget-envelopes")
+async def get_budget_envelopes():
+    """Get all budget envelopes"""
+    envelopes = await db.budget_envelopes.find({}, {"_id": 0}).to_list(1000)
+    return envelopes
+
+@api_router.post("/budget-envelopes")
+async def create_budget_envelope(envelope: dict):
+    """Create a new budget envelope"""
+    envelope_id = str(uuid.uuid4())
+    envelope_data = {
+        "id": envelope_id,
+        "name": envelope.get("name"),
+        "target_amount": envelope.get("target_amount"),
+        "current_amount": envelope.get("current_amount", 0),
+        "currency": envelope.get("currency", "USD"),
+        "description": envelope.get("description", ""),
+        "created_at": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.budget_envelopes.insert_one(envelope_data)
+    return {"id": envelope_id, "message": "Budget envelope created successfully"}
+
+@api_router.post("/budget-envelopes/{envelope_id}/allocate")
+async def allocate_to_envelope(envelope_id: str, allocation: dict):
+    """Allocate money to a budget envelope"""
+    amount = allocation.get("amount", 0)
+    
+    envelope = await db.budget_envelopes.find_one({"id": envelope_id}, {"_id": 0})
+    if not envelope:
+        raise HTTPException(status_code=404, detail="Budget envelope not found")
+    
+    new_amount = envelope["current_amount"] + amount
+    
+    await db.budget_envelopes.update_one(
+        {"id": envelope_id},
+        {"$set": {"current_amount": new_amount}}
+    )
+    
+    return {
+        "message": "Money allocated successfully",
+        "new_amount": new_amount
+    }
+
+@api_router.delete("/budget-envelopes/{envelope_id}")
+async def delete_budget_envelope(envelope_id: str):
+    """Delete a budget envelope"""
+    result = await db.budget_envelopes.delete_one({"id": envelope_id})
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Budget envelope not found")
+    
+    return {"message": "Budget envelope deleted successfully"}
+
 # Include all routers
 api_router.include_router(users_router)
 api_router.include_router(subscription_router)
