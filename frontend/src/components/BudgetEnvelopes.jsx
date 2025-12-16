@@ -137,6 +137,17 @@ export const BudgetEnvelopes = ({ currencies }) => {
     );
   }
 
+  // Show envelope detail view
+  if (viewingEnvelope) {
+    return (
+      <EnvelopeDetail
+        envelope={viewingEnvelope}
+        onBack={() => setViewingEnvelope(null)}
+        onUpdate={fetchEnvelopes}
+      />
+    );
+  }
+
   return (
     <div className="space-y-6">
       <Card>
