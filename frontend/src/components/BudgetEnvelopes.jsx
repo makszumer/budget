@@ -25,6 +25,7 @@ export const BudgetEnvelopes = ({ currencies }) => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [allocateDialogOpen, setAllocateDialogOpen] = useState(false);
   const [selectedEnvelope, setSelectedEnvelope] = useState(null);
+  const [viewingEnvelope, setViewingEnvelope] = useState(null);
   
   const [formData, setFormData] = useState({
     name: "",
