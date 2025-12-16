@@ -566,7 +566,7 @@ function MainApp() {
 
   // Handle subscription routes
   if (currentPage === 'pricing') {
-    return <PricingPage />;
+    return <PricingPage onGoBack={() => setCurrentPage('dashboard')} />;
   }
 
   if (currentPage === 'subscription-success') {
