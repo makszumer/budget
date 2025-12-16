@@ -5,7 +5,7 @@ import { Trash2, Edit } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { EditTransactionModal } from "@/components/EditTransactionModal";
 
-export const TransactionList = ({ transactions, onDeleteTransaction, onEditTransaction }) => {
+export const TransactionList = ({ transactions, onDeleteTransaction, onEditTransaction, currencies = ["USD"] }) => {
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
