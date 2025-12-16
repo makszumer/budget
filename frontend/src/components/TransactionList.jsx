@@ -28,10 +28,10 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
     });
   };
 
-  const formatAmount = (amount) => {
+  const formatAmount = (amount, currency = 'USD') => {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
-      currency: 'USD',
+      currency: currency,
     }).format(amount);
   };
 
