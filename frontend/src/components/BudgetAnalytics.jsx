@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Calendar } from "lucide-react";
 import { CategoryTrends } from "@/components/CategoryTrends";
 
 const COLORS = {
@@ -13,6 +13,7 @@ const COLORS = {
 export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, transactions = [] }) => {
   const [showExpenseLegend, setShowExpenseLegend] = useState(false);
   const [showIncomeLegend, setShowIncomeLegend] = useState(false);
+  const [pieChartFilter, setPieChartFilter] = useState("all"); // all, daily, weekly, monthly
 
   const formatAmount = (amount) => {
     if (privacyMode) {
