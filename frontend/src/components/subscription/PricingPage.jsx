@@ -197,7 +197,7 @@ export const PricingPage = ({ onGoBack }) => {
                   className="w-full bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700" 
                   size="lg"
                   onClick={() => handleSubscribe('yearly')}
-                  disabled={loadingPackage === 'yearly' || isPremium}
+                  disabled={loadingPackage === 'yearly'}
                 >
                   {loadingPackage === 'yearly' ? (
                     <>
@@ -205,7 +205,7 @@ export const PricingPage = ({ onGoBack }) => {
                       Processing...
                     </>
                   ) : isPremium ? (
-                    'Current Plan'
+                    'Test Stripe Checkout'
                   ) : (
                     'Get Yearly Premium'
                   )}
