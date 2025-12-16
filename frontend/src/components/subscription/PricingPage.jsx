@@ -45,6 +45,17 @@ export const PricingPage = ({ onGoBack }) => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 py-12 px-4">
       <div className="max-w-6xl mx-auto">
+        {/* Back Button */}
+        {onGoBack && (
+          <button
+            onClick={onGoBack}
+            className="mb-6 flex items-center gap-2 text-slate-600 hover:text-slate-900 transition-colors"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <span className="font-medium">Back to Dashboard</span>
+          </button>
+        )}
+
         <div className="text-center mb-12">
           <h1 className="text-4xl font-bold text-slate-900 mb-4">
             Choose Your Plan
