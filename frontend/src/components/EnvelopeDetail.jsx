@@ -391,7 +391,21 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleDelete(transaction.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleEdit(transaction);
+                      }}
+                      className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                    >
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(transaction.id);
+                      }}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
                     >
                       <Trash2 className="h-4 w-4" />
