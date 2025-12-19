@@ -881,8 +881,23 @@ async def create_envelope_transaction(envelope_id: str, transaction: dict):
             {"id": envelope_id},
             {"$inc": {"current_amount": amount}}
         )
+        
+        # Also create an expense in main budget (money moved from savings to envelope)
+        main_transaction_id = str(uuid.uuid4())
+        main_transaction_data = {
+            "id": main_transaction_id,
+            "type": "expense",
+            "amount": amount,
+            "description": f"Allocated to {envelope['name']} - {transaction.get('category', '')}",
+            "category": "Budget Allocation / Envelope Transfer",
+            "date": transaction.get("date"),
+            "currency": envelope.get("currency", "USD"),
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+        }
+        await db.transactions.insert_one(main_transaction_data)
+        
     elif transaction.get("type") == "expense":
-        # Subtract from envelope
+        # Subtract from envelope (just tracking spending, no main budget impact)
         await db.budget_envelopes.update_one(
             {"id": envelope_id},
             {"$inc": {"current_amount": -amount}}
