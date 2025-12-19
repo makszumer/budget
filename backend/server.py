@@ -1150,14 +1150,19 @@ Please provide a clear, concise answer with specific numbers and details. If ask
 """
     
     try:
-        client = LlmChat.with_model("gpt-4o-mini")(
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        client = LlmChat(
             api_key=llm_key,
             session_id="financial_assistant",
             system_message="You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."
-        )
+        ).with_model("openai", "gpt-4o-mini")
+        
+        # Create user message
+        user_msg = UserMessage(text=prompt)
         
         # Send message
-        answer = client.send_message(user_message=prompt)
+        answer = client.send_message(user_msg)
         
         return {"answer": answer, "question": question}
         
