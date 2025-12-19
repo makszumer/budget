@@ -1138,8 +1138,6 @@ async def ai_assistant(request: dict):
     if not llm_key:
         raise HTTPException(status_code=500, detail="AI service not configured")
     
-    client = LlmChat(api_key=llm_key)
-    
     # Create prompt
     prompt = f"""You are a financial assistant analyzing transaction data. Answer the user's question based on this data.
 
@@ -1152,12 +1150,15 @@ Please provide a clear, concise answer with specific numbers and details. If ask
 """
     
     try:
+        client = LlmChat(
+            api_key=llm_key,
+            session_id="financial_assistant",
+            system_message="You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."
+        )
+        
         response = client.chat_completion(
             model="gpt-4o-mini",
-            messages=[
-                {"role": "system", "content": "You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."},
-                {"role": "user", "content": prompt}
-            ],
+            messages=[{"role": "user", "content": prompt}],
             temperature=0.3,
             max_tokens=500
         )
@@ -1167,6 +1168,8 @@ Please provide a clear, concise answer with specific numbers and details. If ask
         return {"answer": answer, "question": question}
         
     except Exception as e:
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
 
 # Include all routers
