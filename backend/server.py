@@ -875,6 +875,7 @@ async def create_envelope_transaction(envelope_id: str, transaction: dict):
     
     # Update envelope current_amount
     amount = transaction.get("amount", 0)
+    
     if transaction.get("type") == "income":
         # Add to envelope
         await db.budget_envelopes.update_one(
@@ -882,26 +883,42 @@ async def create_envelope_transaction(envelope_id: str, transaction: dict):
             {"$inc": {"current_amount": amount}}
         )
         
-        # Also create an expense in main budget (money moved from savings to envelope)
+        # Create expense in main budget (money moved from main account to envelope)
         main_transaction_id = str(uuid.uuid4())
         main_transaction_data = {
             "id": main_transaction_id,
             "type": "expense",
             "amount": amount,
-            "description": f"Allocated to {envelope['name']} - {transaction.get('category', '')}",
+            "description": f"[{envelope['name']}] {transaction.get('description', transaction.get('category', 'Allocation'))}",
             "category": "Budget Allocation / Envelope Transfer",
             "date": transaction.get("date"),
             "currency": envelope.get("currency", "USD"),
             "createdAt": datetime.now(timezone.utc).isoformat(),
+            "envelope_transaction_id": transaction_id,  # Link to envelope transaction
         }
         await db.transactions.insert_one(main_transaction_data)
         
     elif transaction.get("type") == "expense":
-        # Subtract from envelope (just tracking spending, no main budget impact)
+        # Subtract from envelope
         await db.budget_envelopes.update_one(
             {"id": envelope_id},
             {"$inc": {"current_amount": -amount}}
         )
+        
+        # ALSO create expense in main budget (spending from the envelope)
+        main_transaction_id = str(uuid.uuid4())
+        main_transaction_data = {
+            "id": main_transaction_id,
+            "type": "expense",
+            "amount": amount,
+            "description": f"[{envelope['name']}] {transaction.get('description', transaction.get('category', 'Expense'))}",
+            "category": transaction.get("category"),
+            "date": transaction.get("date"),
+            "currency": envelope.get("currency", "USD"),
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "envelope_transaction_id": transaction_id,  # Link to envelope transaction
+        }
+        await db.transactions.insert_one(main_transaction_data)
     
     return {"id": transaction_id, "message": "Transaction created successfully"}
 
