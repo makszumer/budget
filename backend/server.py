@@ -1150,14 +1150,11 @@ Please provide a clear, concise answer with specific numbers and details. If ask
 """
     
     try:
-        client = LlmChat(
+        client = LlmChat.with_model("gpt-4o-mini")(
             api_key=llm_key,
             session_id="financial_assistant",
             system_message="You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."
         )
-        
-        # Set model
-        client = client.with_model("gpt-4o-mini")
         
         # Send message
         answer = client.send_message(user_message=prompt)
