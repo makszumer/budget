@@ -1092,7 +1092,7 @@ async def ai_assistant(request: dict):
         })
     
     # Use emergentintegrations to call OpenAI
-    from emergentintegrations.llm.openai import OpenAIClient
+    from emergentintegrations.llm.openai import LlmChat
     
     # Get Emergent LLM key
     llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
@@ -1100,7 +1100,7 @@ async def ai_assistant(request: dict):
     if not llm_key:
         raise HTTPException(status_code=500, detail="AI service not configured")
     
-    client = OpenAIClient(api_key=llm_key)
+    client = LlmChat(api_key=llm_key)
     
     # Create prompt
     prompt = f"""You are a financial assistant analyzing transaction data. Answer the user's question based on this data.
@@ -1124,7 +1124,7 @@ Please provide a clear, concise answer with specific numbers and details. If ask
             max_tokens=500
         )
         
-        answer = response.choices[0].message.content
+        answer = response["choices"][0]["message"]["content"]
         
         return {"answer": answer, "question": question}
         
