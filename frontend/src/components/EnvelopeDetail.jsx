@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import axios from "axios";
-import { ArrowLeft, Plus, Trash2, TrendingDown, TrendingUp, Wallet } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, TrendingDown, TrendingUp, Wallet, Edit } from "lucide-react";
 import {
   Select,
   SelectContent,
