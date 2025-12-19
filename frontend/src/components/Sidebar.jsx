@@ -77,6 +77,14 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           active={currentPage === "budget-envelopes"}
         />
 
+        {/* AI Financial Assistant */}
+        <MenuItem
+          icon={Sparkles}
+          label="AI Assistant"
+          page="ai-assistant"
+          active={currentPage === "ai-assistant"}
+        />
+
         {/* Why Investing */}
         <div className="space-y-1">
           <button
