@@ -24,6 +24,7 @@ import { InvestmentAnalytics } from "@/components/InvestmentAnalytics";
 import { CompoundCalculator } from "@/components/CompoundCalculator";
 import { RecurringTransactions } from "@/components/RecurringTransactions";
 import { BudgetEnvelopes } from "@/components/BudgetEnvelopes";
+import { FinancialAssistant } from "@/components/FinancialAssistant";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
 import { InvestingOverview } from "@/components/education/InvestingOverview";
 import { CryptoGuide } from "@/components/education/CryptoGuide";
