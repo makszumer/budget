@@ -1162,7 +1162,7 @@ Please provide a clear, concise answer with specific numbers and details. If ask
         user_msg = UserMessage(text=prompt)
         
         # Send message
-        answer = client.send_message(user_msg)
+        answer = await client.send_message(user_msg)
         
         return {"answer": answer, "question": question}
         
