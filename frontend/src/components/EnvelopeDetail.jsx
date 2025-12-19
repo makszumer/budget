@@ -71,12 +71,26 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
     }
 
     try {
-      await axios.post(`${API}/budget-envelopes/${envelope.id}/transactions`, {
-        ...formData,
-        amount: parseFloat(formData.amount),
-      });
+      if (editingTransaction) {
+        // Update existing transaction
+        await axios.put(
+          `${API}/budget-envelopes/${envelope.id}/transactions/${editingTransaction.id}`,
+          {
+            ...formData,
+            amount: parseFloat(formData.amount),
+          }
+        );
+        toast.success("Transaction updated!");
+        setEditingTransaction(null);
+      } else {
+        // Create new transaction
+        await axios.post(`${API}/budget-envelopes/${envelope.id}/transactions`, {
+          ...formData,
+          amount: parseFloat(formData.amount),
+        });
+        toast.success("Transaction added!");
+      }
       
-      toast.success("Transaction added!");
       setShowAddForm(false);
       setFormData({
         type: "expense",
@@ -88,9 +102,33 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
       fetchTransactions();
       onUpdate(); // Refresh envelope data
     } catch (error) {
-      console.error("Error adding transaction:", error);
-      toast.error("Failed to add transaction");
+      console.error("Error saving transaction:", error);
+      toast.error("Failed to save transaction");
     }
+  };
+
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setFormData({
+      type: transaction.type,
+      amount: transaction.amount.toString(),
+      description: transaction.description || "",
+      category: transaction.category,
+      date: transaction.date,
+    });
+    setShowAddForm(true);
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTransaction(null);
+    setShowAddForm(false);
+    setFormData({
+      type: "expense",
+      amount: "",
+      description: "",
+      category: "",
+      date: new Date().toISOString().split('T')[0],
+    });
   };
 
   const handleDelete = async (transactionId) => {
