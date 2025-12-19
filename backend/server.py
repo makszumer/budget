@@ -965,49 +965,40 @@ async def update_envelope_transaction(envelope_id: str, transaction_id: str, upd
                 {"id": envelope_id},
                 {"$inc": {"current_amount": amount_diff}}
             )
-            
-            # Update main budget expense
-            await db.transactions.update_one(
-                {
-                    "type": "expense",
-                    "category": "Budget Allocation / Envelope Transfer",
-                    "amount": old_amount,
-                    "date": old_transaction.get("date"),
-                    "description": {"$regex": f".*{envelope['name']}.*"}
-                },
-                {"$set": {
-                    "amount": new_amount,
-                    "date": updated_transaction.get("date", old_transaction.get("date")),
-                }}
-            )
         else:
             # expense
             await db.budget_envelopes.update_one(
                 {"id": envelope_id},
                 {"$inc": {"current_amount": -amount_diff}}
             )
+        
+        # Update main budget transaction (for both income and expense)
+        await db.transactions.update_one(
+            {"envelope_transaction_id": transaction_id},
+            {"$set": {
+                "amount": new_amount,
+                "date": updated_transaction.get("date", old_transaction.get("date")),
+                "description": f"[{envelope['name']}] {updated_transaction.get('description', updated_transaction.get('category', ''))}",
+                "category": transaction.get("category") if new_type == "expense" else "Budget Allocation / Envelope Transfer"
+            }}
+        )
     else:
         # Type changed - reverse old and apply new
         if old_type == "income":
-            # Remove old income
+            # Remove old income from envelope
             await db.budget_envelopes.update_one(
                 {"id": envelope_id},
                 {"$inc": {"current_amount": -old_amount}}
             )
-            # Delete old main budget expense
-            await db.transactions.delete_one({
-                "type": "expense",
-                "category": "Budget Allocation / Envelope Transfer",
-                "amount": old_amount,
-                "date": old_transaction.get("date"),
-                "description": {"$regex": f".*{envelope['name']}.*"}
-            })
         else:
-            # Remove old expense
+            # Remove old expense from envelope
             await db.budget_envelopes.update_one(
                 {"id": envelope_id},
                 {"$inc": {"current_amount": old_amount}}
             )
+        
+        # Delete old main budget transaction
+        await db.transactions.delete_one({"envelope_transaction_id": transaction_id})
         
         # Apply new type
         if new_type == "income":
@@ -1015,23 +1006,26 @@ async def update_envelope_transaction(envelope_id: str, transaction_id: str, upd
                 {"id": envelope_id},
                 {"$inc": {"current_amount": new_amount}}
             )
-            # Create main budget expense
-            main_transaction_id = str(uuid.uuid4())
-            await db.transactions.insert_one({
-                "id": main_transaction_id,
-                "type": "expense",
-                "amount": new_amount,
-                "description": f"Allocated to {envelope['name']} - {updated_transaction.get('category', '')}",
-                "category": "Budget Allocation / Envelope Transfer",
-                "date": updated_transaction.get("date"),
-                "currency": envelope.get("currency", "USD"),
-                "createdAt": datetime.now(timezone.utc).isoformat(),
-            })
         else:
             await db.budget_envelopes.update_one(
                 {"id": envelope_id},
                 {"$inc": {"current_amount": -new_amount}}
             )
+        
+        # Create new main budget transaction
+        main_transaction_id = str(uuid.uuid4())
+        main_transaction_data = {
+            "id": main_transaction_id,
+            "type": "expense",
+            "amount": new_amount,
+            "description": f"[{envelope['name']}] {updated_transaction.get('description', updated_transaction.get('category', ''))}",
+            "category": updated_transaction.get("category") if new_type == "expense" else "Budget Allocation / Envelope Transfer",
+            "date": updated_transaction.get("date"),
+            "currency": envelope.get("currency", "USD"),
+            "createdAt": datetime.now(timezone.utc).isoformat(),
+            "envelope_transaction_id": transaction_id,
+        }
+        await db.transactions.insert_one(main_transaction_data)
     
     return {"message": "Transaction updated successfully"}
 
