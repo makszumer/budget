@@ -342,7 +342,7 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
               </div>
 
               <Button type="submit" className="w-full">
-                Add Transaction
+                {editingTransaction ? "Update Transaction" : "Add Transaction"}
               </Button>
             </form>
           </CardContent>
