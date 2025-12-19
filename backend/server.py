@@ -1156,12 +1156,11 @@ Please provide a clear, concise answer with specific numbers and details. If ask
             system_message="You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."
         )
         
-        response = client.send_message(
-            model="gpt-4o-mini",
-            user_message=prompt
-        )
+        # Set model
+        client = client.with_model("gpt-4o-mini")
         
-        answer = response.get("message", "")
+        # Send message
+        answer = client.send_message(user_message=prompt)
         
         return {"answer": answer, "question": question}
         
