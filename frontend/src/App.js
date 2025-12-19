@@ -306,6 +306,8 @@ function MainApp() {
         return <RecurringTransactions currencies={currencies} />;
       case "budget-envelopes":
         return <BudgetEnvelopes currencies={currencies} />;
+      case "ai-assistant":
+        return <FinancialAssistant />;
       case "admin":
         return <AdminDashboard />;
       case "investing-overview":
