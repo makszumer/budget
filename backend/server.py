@@ -1067,6 +1067,70 @@ async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
     
     return {"message": "Transaction deleted successfully"}
 
+# AI Assistant Endpoint
+@api_router.post("/ai-assistant")
+async def ai_assistant(request: dict):
+    """Natural language query about finances using AI"""
+    question = request.get("question", "")
+    
+    if not question:
+        raise HTTPException(status_code=400, detail="Question is required")
+    
+    # Get all transactions
+    all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
+    
+    # Prepare data summary for AI
+    transaction_summary = []
+    for t in all_transactions[-100:]:  # Last 100 transactions
+        transaction_summary.append({
+            "date": t.get("date"),
+            "type": t.get("type"),
+            "amount": t.get("amount"),
+            "category": t.get("category"),
+            "description": t.get("description", ""),
+            "currency": t.get("currency", "USD"),
+        })
+    
+    # Use emergentintegrations to call OpenAI
+    from emergentintegrations.llm.openai import OpenAIClient
+    
+    # Get Emergent LLM key
+    llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
+    
+    if not llm_key:
+        raise HTTPException(status_code=500, detail="AI service not configured")
+    
+    client = OpenAIClient(api_key=llm_key)
+    
+    # Create prompt
+    prompt = f"""You are a financial assistant analyzing transaction data. Answer the user's question based on this data.
+
+User Question: {question}
+
+Transaction Data (last 100 transactions):
+{str(transaction_summary)}
+
+Please provide a clear, concise answer with specific numbers and details. If asking about spending or income, calculate totals and provide breakdown.
+"""
+    
+    try:
+        response = client.chat_completion(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."},
+                {"role": "user", "content": prompt}
+            ],
+            temperature=0.3,
+            max_tokens=500
+        )
+        
+        answer = response.choices[0].message.content
+        
+        return {"answer": answer, "question": question}
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
+
 # Include all routers
 api_router.include_router(users_router)
 api_router.include_router(subscription_router)
