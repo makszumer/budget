@@ -917,19 +917,33 @@ async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
+    # Get envelope details
+    envelope = await db.budget_envelopes.find_one({"id": envelope_id}, {"_id": 0})
+    
     # Delete transaction
     await db.envelope_transactions.delete_one({"id": transaction_id})
     
     # Reverse the amount change
     amount = transaction.get("amount", 0)
     if transaction.get("type") == "income":
-        # Was income, so subtract it back
+        # Was income, so subtract it back from envelope
         await db.budget_envelopes.update_one(
             {"id": envelope_id},
             {"$inc": {"current_amount": -amount}}
         )
+        
+        # Also remove the corresponding expense from main budget
+        # Find and delete the allocation transaction
+        await db.transactions.delete_one({
+            "type": "expense",
+            "category": "Budget Allocation / Envelope Transfer",
+            "amount": amount,
+            "date": transaction.get("date"),
+            "description": {"$regex": f".*{envelope['name']}.*"}
+        })
+        
     elif transaction.get("type") == "expense":
-        # Was expense, so add it back
+        # Was expense, so add it back to envelope
         await db.budget_envelopes.update_one(
             {"id": envelope_id},
             {"$inc": {"current_amount": amount}}
