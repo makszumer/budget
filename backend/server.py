@@ -180,10 +180,48 @@ async def update_transaction(transaction_id: str, transaction: TransactionCreate
 
 @api_router.delete("/transactions/{transaction_id}")
 async def delete_transaction(transaction_id: str):
+    # Get transaction first to check if it's linked to an envelope
+    transaction = await db.transactions.find_one({"id": transaction_id}, {"_id": 0})
+    
+    if not transaction:
+        raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # Delete the transaction
     result = await db.transactions.delete_one({"id": transaction_id})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
+    
+    # If this transaction is linked to an envelope, delete the envelope transaction too
+    envelope_transaction_id = transaction.get("envelope_transaction_id")
+    if envelope_transaction_id:
+        # Get the envelope transaction to adjust envelope balance
+        envelope_txn = await db.envelope_transactions.find_one(
+            {"id": envelope_transaction_id},
+            {"_id": 0}
+        )
+        
+        if envelope_txn:
+            envelope_id = envelope_txn.get("envelope_id")
+            amount = envelope_txn.get("amount", 0)
+            txn_type = envelope_txn.get("type")
+            
+            # Delete envelope transaction
+            await db.envelope_transactions.delete_one({"id": envelope_transaction_id})
+            
+            # Adjust envelope balance
+            if txn_type == "income":
+                # Was income, subtract it back
+                await db.budget_envelopes.update_one(
+                    {"id": envelope_id},
+                    {"$inc": {"current_amount": -amount}}
+                )
+            elif txn_type == "expense":
+                # Was expense, add it back
+                await db.budget_envelopes.update_one(
+                    {"id": envelope_id},
+                    {"$inc": {"current_amount": amount}}
+                )
     
     return {"message": "Transaction deleted successfully"}
 
