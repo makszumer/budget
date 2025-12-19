@@ -36,6 +36,7 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
   const [transactions, setTransactions] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
   
   const [formData, setFormData] = useState({
     type: "expense",
