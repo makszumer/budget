@@ -1053,7 +1053,7 @@ async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
     # Delete transaction
     await db.envelope_transactions.delete_one({"id": transaction_id})
     
-    # Reverse the amount change
+    # Reverse the amount change in envelope
     amount = transaction.get("amount", 0)
     if transaction.get("type") == "income":
         # Was income, so subtract it back from envelope
@@ -1061,23 +1061,15 @@ async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
             {"id": envelope_id},
             {"$inc": {"current_amount": -amount}}
         )
-        
-        # Also remove the corresponding expense from main budget
-        # Find and delete the allocation transaction
-        await db.transactions.delete_one({
-            "type": "expense",
-            "category": "Budget Allocation / Envelope Transfer",
-            "amount": amount,
-            "date": transaction.get("date"),
-            "description": {"$regex": f".*{envelope['name']}.*"}
-        })
-        
     elif transaction.get("type") == "expense":
         # Was expense, so add it back to envelope
         await db.budget_envelopes.update_one(
             {"id": envelope_id},
             {"$inc": {"current_amount": amount}}
         )
+    
+    # Delete the linked main budget transaction
+    await db.transactions.delete_one({"envelope_transaction_id": transaction_id})
     
     return {"message": "Transaction deleted successfully"}
 
