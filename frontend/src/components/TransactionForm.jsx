@@ -23,7 +23,7 @@ const categoryOptions = {
     "Health & Wellness": ["Health Insurance", "Doctor / Dentist Visits", "Prescriptions", "Gym / Fitness / Sports", "Mental Health Services"],
     "Personal & Lifestyle": ["Clothing & Shoes", "Haircuts / Grooming", "Beauty & Cosmetics", "Hobbies", "Subscriptions"],
     "Family & Education": ["Childcare / School Fees", "Tuition / Courses / Learning Apps", "Pet Care"],
-    "Financial Obligations": ["Debt Payments", "Savings / Investments", "Taxes", "Bank Fees"],
+    "Financial Obligations": ["Debt Payments", "Savings / Investments", "Taxes", "Bank Fees", "Budget Allocation / Envelope Transfer"],
     "Entertainment & Leisure": ["Travel / Vacations", "Movies / Concerts / Events", "Gifts & Celebrations"],
     "Miscellaneous": ["Donations / Charity", "Unexpected Expenses", "Other / Uncategorized"],
   },
