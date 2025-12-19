@@ -1117,20 +1117,79 @@ async def ai_assistant(request: dict):
     # Get all transactions
     all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
     
-    # Prepare data summary for AI
-    transaction_summary = []
-    for t in all_transactions[-100:]:  # Last 100 transactions
-        transaction_summary.append({
+    # Pre-calculate summaries for better accuracy
+    from collections import defaultdict
+    from datetime import datetime as dt
+    
+    # Calculate totals by type
+    total_income = sum(t.get("amount", 0) for t in all_transactions if t.get("type") == "income")
+    total_expense = sum(t.get("amount", 0) for t in all_transactions if t.get("type") == "expense")
+    
+    # Calculate by category
+    income_by_category = defaultdict(float)
+    expense_by_category = defaultdict(float)
+    
+    for t in all_transactions:
+        amount = t.get("amount", 0)
+        category = t.get("category", "Other")
+        if t.get("type") == "income":
+            income_by_category[category] += amount
+        elif t.get("type") == "expense":
+            expense_by_category[category] += amount
+    
+    # Calculate by month
+    transactions_by_month = defaultdict(lambda: {"income": 0, "expense": 0})
+    
+    for t in all_transactions:
+        try:
+            date_str = t.get("date", "")
+            if date_str:
+                # Parse date
+                date_obj = dt.fromisoformat(date_str.split('T')[0])
+                month_key = date_obj.strftime("%B %Y")  # e.g., "November 2024"
+                
+                amount = t.get("amount", 0)
+                if t.get("type") == "income":
+                    transactions_by_month[month_key]["income"] += amount
+                elif t.get("type") == "expense":
+                    transactions_by_month[month_key]["expense"] += amount
+        except:
+            pass
+    
+    # Get recent transactions (last 20 for context)
+    recent_transactions = []
+    for t in all_transactions[-20:]:
+        recent_transactions.append({
             "date": t.get("date"),
             "type": t.get("type"),
             "amount": t.get("amount"),
             "category": t.get("category"),
             "description": t.get("description", ""),
-            "currency": t.get("currency", "USD"),
         })
     
+    # Create structured summary
+    data_summary = f"""
+FINANCIAL SUMMARY:
+
+TOTAL INCOME: ${total_income:.2f}
+TOTAL EXPENSES: ${total_expense:.2f}
+NET BALANCE: ${(total_income - total_expense):.2f}
+
+INCOME BY CATEGORY:
+{chr(10).join([f'  - {cat}: ${amt:.2f}' for cat, amt in sorted(income_by_category.items(), key=lambda x: -x[1])])}
+
+EXPENSES BY CATEGORY:
+{chr(10).join([f'  - {cat}: ${amt:.2f}' for cat, amt in sorted(expense_by_category.items(), key=lambda x: -x[1])])}
+
+MONTHLY BREAKDOWN:
+{chr(10).join([f'  {month}: Income ${data["income"]:.2f}, Expenses ${data["expense"]:.2f}' for month, data in sorted(transactions_by_month.items())])}
+
+RECENT TRANSACTIONS (Last 20):
+{chr(10).join([f'  {t["date"]}: {t["type"].upper()} ${t["amount"]:.2f} - {t["category"]} ({t["description"]})' for t in recent_transactions])}
+"""
+    
     # Use emergentintegrations to call OpenAI
-    from emergentintegrations.llm.openai import LlmChat
+    from emergentintegrations.llm.chat import LlmChat, UserMessage
     
     # Get Emergent LLM key
     llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
@@ -1139,23 +1198,25 @@ async def ai_assistant(request: dict):
         raise HTTPException(status_code=500, detail="AI service not configured")
     
     # Create prompt
-    prompt = f"""You are a financial assistant analyzing transaction data. Answer the user's question based on this data.
+    prompt = f"""User Question: {question}
 
-User Question: {question}
+{data_summary}
 
-Transaction Data (last 100 transactions):
-{str(transaction_summary)}
+INSTRUCTIONS:
+1. Use ONLY the numbers provided above - they are already calculated correctly
+2. Do NOT recalculate totals - use the pre-calculated values
+3. Answer in the SAME language as the question
+4. Be precise with numbers - copy them exactly as shown
+5. If a specific category is asked about, find it in the lists above
+6. For monthly questions, use the "MONTHLY BREAKDOWN" section
 
-Please provide a clear, concise answer with specific numbers and details. If asking about spending or income, calculate totals and provide breakdown.
-"""
+Answer the question clearly and accurately using the data above."""
     
     try:
-        from emergentintegrations.llm.chat import LlmChat, UserMessage
-        
         client = LlmChat(
             api_key=llm_key,
             session_id="financial_assistant",
-            system_message="You are a helpful financial assistant. Analyze transaction data and provide clear, specific answers with numbers."
+            system_message="You are a financial assistant. Answer questions using ONLY the pre-calculated numbers provided. Do NOT recalculate. Copy numbers exactly as given. Answer in the same language as the question."
         ).with_model("openai", "gpt-4o-mini")
         
         # Create user message
