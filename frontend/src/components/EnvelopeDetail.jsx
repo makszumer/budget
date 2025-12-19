@@ -254,11 +254,18 @@ export const EnvelopeDetail = ({ envelope, onBack, onUpdate }) => {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Transactions</CardTitle>
-            <Button onClick={() => setShowAddForm(!showAddForm)}>
-              <Plus className="h-4 w-4 mr-2" />
-              {showAddForm ? "Cancel" : "Add Transaction"}
-            </Button>
+            <CardTitle>{editingTransaction ? "Edit Transaction" : "Transactions"}</CardTitle>
+            {!showAddForm && (
+              <Button onClick={() => setShowAddForm(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Add Transaction
+              </Button>
+            )}
+            {showAddForm && (
+              <Button variant="outline" onClick={handleCancelEdit}>
+                Cancel
+              </Button>
+            )}
           </div>
         </CardHeader>
         {showAddForm && (
