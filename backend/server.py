@@ -792,7 +792,7 @@ async def create_budget_envelope(envelope: dict):
 
 @api_router.post("/budget-envelopes/{envelope_id}/allocate")
 async def allocate_to_envelope(envelope_id: str, allocation: dict):
-    """Allocate money to a budget envelope"""
+    """Allocate money to a budget envelope and create expense transaction"""
     amount = allocation.get("amount", 0)
     
     envelope = await db.budget_envelopes.find_one({"id": envelope_id}, {"_id": 0})
@@ -801,14 +801,31 @@ async def allocate_to_envelope(envelope_id: str, allocation: dict):
     
     new_amount = envelope["current_amount"] + amount
     
+    # Update envelope
     await db.budget_envelopes.update_one(
         {"id": envelope_id},
         {"$set": {"current_amount": new_amount}}
     )
     
+    # Create expense transaction in main budget
+    transaction_id = str(uuid.uuid4())
+    transaction_data = {
+        "id": transaction_id,
+        "type": "expense",
+        "amount": amount,
+        "description": f"Allocated to {envelope['name']}",
+        "category": "Budget Allocation / Envelope Transfer",
+        "date": datetime.now(timezone.utc).isoformat().split('T')[0],
+        "currency": envelope.get("currency", "USD"),
+        "createdAt": datetime.now(timezone.utc).isoformat(),
+    }
+    
+    await db.transactions.insert_one(transaction_data)
+    
     return {
-        "message": "Money allocated successfully",
-        "new_amount": new_amount
+        "message": "Money allocated successfully and expense recorded",
+        "new_amount": new_amount,
+        "transaction_id": transaction_id
     }
 
 @api_router.delete("/budget-envelopes/{envelope_id}")
