@@ -1202,21 +1202,22 @@ RECENT TRANSACTIONS (Last 20):
 
 {data_summary}
 
-INSTRUCTIONS:
-1. Use ONLY the numbers provided above - they are already calculated correctly
-2. Do NOT recalculate totals - use the pre-calculated values
-3. Answer in the SAME language as the question
-4. Be precise with numbers - copy them exactly as shown
-5. If a specific category is asked about, find it in the lists above
-6. For monthly questions, use the "MONTHLY BREAKDOWN" section
+CRITICAL INSTRUCTIONS:
+1. ALWAYS answer in ENGLISH only, regardless of the question language
+2. Use ONLY the exact numbers from "FINANCIAL SUMMARY" section above
+3. Do NOT perform any calculations - the numbers are already correct
+4. Copy the dollar amounts EXACTLY as shown (including cents)
+5. If asked about a specific category, find it in the category lists
+6. If asked about a month, use the "MONTHLY BREAKDOWN" section
+7. Be direct and concise - just state the numbers
 
-Answer the question clearly and accurately using the data above."""
+Answer the question in ENGLISH using the exact numbers above."""
     
     try:
         client = LlmChat(
             api_key=llm_key,
             session_id="financial_assistant",
-            system_message="You are a financial assistant. Answer questions using ONLY the pre-calculated numbers provided. Do NOT recalculate. Copy numbers exactly as given. Answer in the same language as the question."
+            system_message="You are a financial assistant. ALWAYS respond in ENGLISH. Use ONLY the pre-calculated numbers provided - do NOT recalculate anything. Copy dollar amounts exactly as given."
         ).with_model("openai", "gpt-4o-mini")
         
         # Create user message
