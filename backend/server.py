@@ -666,11 +666,71 @@ class VoiceTransactionResponse(BaseModel):
     message: Optional[str] = None
     data: Optional[TransactionCreate] = None
     needs_clarification: bool = False
-    needs_type_clarification: bool = False  # New: ask if income or expense
-    suggested_categories: Optional[List[str]] = None
+    needs_type_clarification: bool = False
+    all_categories: Optional[dict] = None  # All available categories grouped
+    matched_categories: Optional[List[str]] = None  # Best matches found
     parsed_amount: Optional[float] = None
     parsed_type: Optional[str] = None
     parsed_description: Optional[str] = None
+
+# Complete list of all default categories
+DEFAULT_EXPENSE_CATEGORIES = {
+    "Living & Housing": ["Rent / Mortgage", "Utilities", "Home Maintenance / Repairs", "Property Tax", "Home Insurance"],
+    "Transportation": ["Car Payment / Lease", "Fuel / Gas", "Public Transport", "Maintenance & Repairs", "Parking & Tolls", "Insurance"],
+    "Food & Dining": ["Groceries", "Restaurants / Cafes", "Takeout / Delivery", "Work Lunches / Snacks"],
+    "Health & Wellness": ["Health Insurance", "Doctor / Dentist Visits", "Prescriptions", "Gym / Fitness / Sports", "Mental Health Services"],
+    "Personal & Lifestyle": ["Clothing & Shoes", "Haircuts / Grooming", "Beauty & Cosmetics", "Hobbies", "Subscriptions"],
+    "Family & Education": ["Childcare / School Fees", "Tuition / Courses / Learning Apps", "Pet Care"],
+    "Financial Obligations": ["Debt Payments", "Savings / Investments", "Taxes", "Bank Fees", "Budget Allocation / Envelope Transfer"],
+    "Entertainment & Leisure": ["Travel / Vacations", "Movies / Concerts / Events", "Gifts & Celebrations"],
+    "Miscellaneous": ["Donations / Charity", "Unexpected Expenses", "Other / Uncategorized"],
+}
+
+DEFAULT_INCOME_CATEGORIES = {
+    "Employment Income": ["Salary / wages", "Overtime / bonuses", "Commissions / tips"],
+    "Self-Employment / Business": ["Freelance income", "Business sales", "Consulting / side hustle"],
+    "Transfers & Support": ["Government benefits", "Family support / alimony", "Reimbursements"],
+    "Other Income": ["Gifts", "Lottery / windfalls", "One-time payments"],
+}
+
+DEFAULT_INVESTMENT_CATEGORIES = ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other"]
+
+# Comprehensive synonym mapping for better matching
+CATEGORY_SYNONYMS = {
+    # Expense categories
+    "Groceries": ["grocery", "groceries", "supermarket", "food shopping", "walmart", "costco", "trader joe", "whole foods", "aldi", "kroger", "market"],
+    "Restaurants / Cafes": ["restaurant", "restaurants", "cafe", "coffee", "starbucks", "mcdonalds", "eating out", "dine", "dining", "dinner out", "lunch out", "brunch", "fast food", "takeout", "doordash", "ubereats", "grubhub"],
+    "Takeout / Delivery": ["takeout", "delivery", "doordash", "ubereats", "grubhub", "postmates", "seamless"],
+    "Fuel / Gas": ["gas", "gasoline", "fuel", "petrol", "shell", "chevron", "exxon", "bp", "filling station", "gas station"],
+    "Public Transport": ["uber", "lyft", "taxi", "cab", "bus", "train", "metro", "subway", "transit", "transportation", "commute", "fare"],
+    "Utilities": ["electricity", "electric", "power", "water", "gas bill", "internet", "wifi", "utility", "utilities", "cable", "phone bill", "mobile"],
+    "Rent / Mortgage": ["rent", "mortgage", "housing", "apartment", "lease"],
+    "Car Payment / Lease": ["car payment", "auto payment", "vehicle payment", "car lease"],
+    "Maintenance & Repairs": ["car repair", "mechanic", "oil change", "tire", "auto repair", "car maintenance"],
+    "Insurance": ["insurance", "car insurance", "auto insurance"],
+    "Health Insurance": ["health insurance", "medical insurance", "healthcare"],
+    "Doctor / Dentist Visits": ["doctor", "dentist", "medical", "hospital", "clinic", "checkup", "appointment"],
+    "Prescriptions": ["prescription", "pharmacy", "medicine", "medication", "drugs", "cvs", "walgreens"],
+    "Gym / Fitness / Sports": ["gym", "fitness", "workout", "exercise", "yoga", "pilates", "crossfit", "sports", "planet fitness"],
+    "Clothing & Shoes": ["clothes", "clothing", "shirt", "pants", "shoes", "dress", "jacket", "apparel", "fashion", "zara", "h&m", "nike", "adidas"],
+    "Haircuts / Grooming": ["haircut", "barber", "salon", "grooming", "spa"],
+    "Beauty & Cosmetics": ["makeup", "cosmetics", "beauty", "skincare", "sephora", "ulta"],
+    "Subscriptions": ["subscription", "netflix", "spotify", "hulu", "disney", "amazon prime", "youtube premium", "apple music", "streaming"],
+    "Movies / Concerts / Events": ["movie", "movies", "cinema", "concert", "show", "event", "ticket", "theater", "theatre", "entertainment"],
+    "Travel / Vacations": ["travel", "vacation", "trip", "hotel", "airbnb", "flight", "airline", "booking"],
+    "Gifts & Celebrations": ["gift", "gifts", "present", "birthday", "christmas", "anniversary", "celebration"],
+    "Pet Care": ["pet", "dog", "cat", "vet", "veterinarian", "pet food", "pet store"],
+    "Donations / Charity": ["donation", "charity", "donate", "nonprofit", "giving"],
+    "Other / Uncategorized": ["other", "misc", "miscellaneous"],
+    # Income categories  
+    "Salary / wages": ["salary", "paycheck", "wages", "pay", "income", "work"],
+    "Overtime / bonuses": ["bonus", "overtime", "extra pay"],
+    "Commissions / tips": ["commission", "tip", "tips", "gratuity"],
+    "Freelance income": ["freelance", "gig", "side hustle", "contract", "consulting"],
+    "Business sales": ["business", "sales", "revenue"],
+    "Reimbursements": ["reimbursement", "refund", "expense report"],
+    "Gifts": ["gift", "present", "birthday money"],
+}
 
 @api_router.post("/parse-voice-transaction", response_model=VoiceTransactionResponse)
 async def parse_voice_transaction(
@@ -702,8 +762,7 @@ async def parse_voice_transaction(
                 message="Could not detect amount. Please say the dollar amount clearly (e.g., '50 dollars' or '$50')."
             )
         
-        # ============ IMPROVED INTENT DETECTION ============
-        # Keywords that strongly indicate INCOME
+        # ============ INTENT DETECTION (Income vs Expense) ============
         income_keywords = [
             "earned", "income", "salary", "wages", "paycheck", 
             "paid me", "received", "got paid", "made money",
@@ -711,7 +770,6 @@ async def parse_voice_transaction(
             "profit", "revenue", "freelance", "gig money"
         ]
         
-        # Keywords that strongly indicate EXPENSE
         expense_keywords = [
             "spent", "expense", "paid for", "bought", "purchased",
             "cost me", "charged", "paid", "payment", "bill",
@@ -719,18 +777,15 @@ async def parse_voice_transaction(
             "utilities", "shopping"
         ]
         
-        # Keywords for investment
         investment_keywords = [
             "invested", "investment", "bought stock", "bought stocks",
             "bought crypto", "stock purchase", "etf", "mutual fund"
         ]
         
-        # Count matches for each type
         income_score = sum(1 for kw in income_keywords if kw in text)
         expense_score = sum(1 for kw in expense_keywords if kw in text)
         investment_score = sum(1 for kw in investment_keywords if kw in text)
         
-        # Determine transaction type based on scores
         transaction_type = None
         type_confident = False
         
@@ -739,15 +794,11 @@ async def parse_voice_transaction(
             type_confident = True
         elif income_score > expense_score:
             transaction_type = "income"
-            type_confident = income_score >= 1  # Need at least 1 keyword match
+            type_confident = income_score >= 1
         elif expense_score > income_score:
             transaction_type = "expense"
             type_confident = expense_score >= 1
-        elif expense_score == income_score and expense_score > 0:
-            # Ambiguous - both have equal matches, ask for clarification
-            type_confident = False
         else:
-            # No keywords found at all - need to ask
             type_confident = False
         
         # If type is not confident, ask for clarification FIRST
@@ -760,94 +811,83 @@ async def parse_voice_transaction(
                 parsed_description=text[:100]
             )
         
-        # ============ CATEGORY DETECTION ============
-        category_keywords = {
-            "expense": {
-                "groceries": ["grocery", "groceries", "food shopping", "supermarket", "food"],
-                "restaurants": ["restaurant", "eating out", "dinner", "lunch", "coffee shop", "cafe", "coffee"],
-                "gas": ["gas", "fuel", "petrol", "gasoline"],
-                "utilities": ["electricity", "water bill", "utility", "utilities", "internet", "electric", "power bill"],
-                "rent": ["rent", "mortgage", "housing"],
-                "car": ["car payment", "auto", "car insurance"],
-                "gym": ["gym", "fitness", "workout", "exercise"],
-                "clothing": ["clothes", "clothing", "shirt", "shoes", "apparel"],
-                "entertainment": ["movie", "concert", "entertainment", "netflix", "spotify", "streaming"],
-                "transport": ["uber", "lyft", "taxi", "bus", "train", "transportation", "transit"]
-            },
-            "income": {
-                "salary": ["salary", "paycheck", "wages", "pay"],
-                "freelance": ["freelance", "gig", "side hustle", "contract work"],
-                "bonus": ["bonus", "overtime", "commission"],
-                "tips": ["tip", "tips", "gratuity"]
-            }
-        }
+        # ============ CATEGORY MATCHING WITH SYNONYMS ============
+        # Find ALL matching categories based on synonyms
+        matched_categories = []
+        match_scores = {}
         
-        category = None
-        category_confident = False
+        for category, synonyms in CATEGORY_SYNONYMS.items():
+            score = 0
+            for synonym in synonyms:
+                if synonym in text:
+                    # Partial word matching - check if synonym is part of any word
+                    score += 2  # Exact match gets higher score
+                elif any(synonym in word or word in synonym for word in text.split()):
+                    score += 1  # Partial match
+            
+            if score > 0:
+                match_scores[category] = score
         
-        if transaction_type in category_keywords:
-            for cat, keywords in category_keywords[transaction_type].items():
-                if any(keyword in text for keyword in keywords):
-                    category = cat
-                    category_confident = True
-                    break
-        
-        # Map to actual category names
-        category_map = {
-            "groceries": "Groceries",
-            "restaurants": "Restaurants / Cafes",
-            "gas": "Fuel / Gas",
-            "utilities": "Utilities",
-            "rent": "Rent / Mortgage",
-            "car": "Car Payment / Lease",
-            "gym": "Gym / Fitness / Sports",
-            "clothing": "Clothing & Shoes",
-            "entertainment": "Movies / Concerts / Events",
-            "transport": "Public Transport",
-            "salary": "Salary / wages",
-            "freelance": "Freelance income",
-            "bonus": "Overtime / bonuses",
-            "tips": "Commissions / tips"
-        }
-        
-        mapped_category = category_map.get(category) if category else None
+        # Sort by score and get top matches
+        if match_scores:
+            sorted_matches = sorted(match_scores.items(), key=lambda x: x[1], reverse=True)
+            matched_categories = [cat for cat, score in sorted_matches[:5]]  # Top 5 matches
         
         # Extract description
         description = text
         for pattern in amount_patterns:
             description = re.sub(pattern, "", description)
-        
-        # Clean up description
         description = re.sub(r'\b(spent|paid|bought|earned|received|got|for|on|at|today|yesterday|dollars?|bucks?|add|an?)\b', '', description)
         description = description.strip()
         if not description or len(description) < 3:
             description = f"{transaction_type.capitalize()} via voice"
         
-        # If category is not confident, ask for clarification
-        if not category_confident or not mapped_category:
-            # Get user's custom categories if user_id provided
-            custom_cats = []
-            user_id_to_use = request.user_id or user_id
-            if user_id_to_use:
-                try:
-                    cat_type = "expense" if transaction_type == "expense" else "income"
-                    user_cats = await db.custom_categories.find(
-                        {"user_id": user_id_to_use, "type": cat_type},
-                        {"_id": 0, "name": 1}
-                    ).to_list(20)
-                    custom_cats = [c["name"] for c in user_cats]
-                except:
-                    pass
-            
-            # Build suggested categories list
-            if transaction_type == "expense":
-                suggested = custom_cats + ["Groceries", "Restaurants / Cafes", "Fuel / Gas", "Utilities", "Entertainment", "Other / Uncategorized"]
-            elif transaction_type == "income":
-                suggested = custom_cats + ["Salary / wages", "Freelance income", "Commissions / tips", "Overtime / bonuses", "Other Income"]
-            else:
-                suggested = ["Stocks", "Bonds", "Crypto", "Real Estate", "Other"]
-            
-            # Remove duplicates while preserving order
+        # ============ ALWAYS ASK FOR CATEGORY CONFIRMATION ============
+        # Get user's custom categories
+        custom_cats = []
+        user_id_to_use = request.user_id or user_id
+        if user_id_to_use:
+            try:
+                cat_type = "expense" if transaction_type == "expense" else "income"
+                user_cats = await db.custom_categories.find(
+                    {"user_id": user_id_to_use, "type": cat_type},
+                    {"_id": 0, "name": 1}
+                ).to_list(50)
+                custom_cats = [c["name"] for c in user_cats]
+            except:
+                pass
+        
+        # Build complete category list
+        if transaction_type == "expense":
+            all_categories = {
+                "Custom Categories": custom_cats if custom_cats else [],
+                **DEFAULT_EXPENSE_CATEGORIES
+            }
+        elif transaction_type == "income":
+            all_categories = {
+                "Custom Categories": custom_cats if custom_cats else [],
+                **DEFAULT_INCOME_CATEGORIES
+            }
+        else:
+            all_categories = {
+                "Custom Categories": custom_cats if custom_cats else [],
+                "Investment Types": DEFAULT_INVESTMENT_CATEGORIES
+            }
+        
+        # Remove empty groups
+        all_categories = {k: v for k, v in all_categories.items() if v}
+        
+        # ALWAYS return needs_clarification - never auto-save
+        return VoiceTransactionResponse(
+            success=False,
+            needs_clarification=True,
+            message=f"Which category should this {transaction_type} be added to?",
+            all_categories=all_categories,
+            matched_categories=matched_categories if matched_categories else None,
+            parsed_amount=amount,
+            parsed_type=transaction_type,
+            parsed_description=description[:100]
+        )
             seen = set()
             suggested = [x for x in suggested if not (x in seen or seen.add(x))]
             
