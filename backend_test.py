@@ -323,73 +323,27 @@ class BackendTester:
             print(f"❌ Voice input improvements test error: {str(e)}")
             return False
     
-    def test_analytics_date_filtering(self) -> bool:
-        """Test Analytics endpoints for custom date range filtering functionality"""
-        print("\n🔍 Testing Analytics Date Range Filtering...")
+    def test_analytics_date_filtering_detailed(self) -> bool:
+        """Detailed test of Analytics endpoints for date filtering functionality"""
+        print("\n🔍 Detailed Testing of Analytics Date Range Filtering...")
         
         try:
-            # First, let's create some test transactions with specific dates
-            print("📝 Creating test transactions for date filtering...")
+            # Test 1: Check current analytics endpoint implementation
+            print("📋 Testing current analytics endpoints without date filtering...")
             
-            test_transactions = [
-                {
-                    "type": "expense",
-                    "amount": 100.0,
-                    "description": "Test expense 1",
-                    "category": "Groceries",
-                    "date": "2025-01-15"
-                },
-                {
-                    "type": "income", 
-                    "amount": 1000.0,
-                    "description": "Test income 1",
-                    "category": "Salary / wages",
-                    "date": "2025-01-01"
-                },
-                {
-                    "type": "expense",
-                    "amount": 50.0,
-                    "description": "Test expense 2", 
-                    "category": "Restaurants / Cafes",
-                    "date": "2025-06-15"
-                },
-                {
-                    "type": "income",
-                    "amount": 500.0,
-                    "description": "Test income 2",
-                    "category": "Freelance income", 
-                    "date": "2025-06-30"
-                }
-            ]
-            
-            # Create test transactions
-            for transaction in test_transactions:
-                response = self.session.post(
-                    f"{BASE_URL}/transactions",
-                    json=transaction,
-                    timeout=10
-                )
-                if response.status_code != 200:
-                    print(f"❌ Failed to create test transaction: {response.status_code}")
-                    return False
-            
-            print("✅ Test transactions created successfully")
-            
-            # Test 1: Check if analytics endpoints support date filtering
-            print("\n🔍 Testing /api/analytics endpoint...")
-            
-            # Test basic analytics endpoint
+            # Get all analytics data
             response = self.session.get(f"{BASE_URL}/analytics", timeout=10)
-            
             if response.status_code != 200:
-                print(f"❌ Analytics endpoint failed: {response.status_code} - {response.text}")
+                print(f"❌ Analytics endpoint failed: {response.status_code}")
                 return False
             
-            analytics_data = response.json()
+            all_analytics = response.json()
             print("✅ Basic analytics endpoint working")
+            print(f"   Expense categories: {len(all_analytics.get('expense_breakdown', []))}")
+            print(f"   Income categories: {len(all_analytics.get('income_breakdown', []))}")
             
-            # Test with date parameters (this will likely fail as the endpoint doesn't support it)
-            print("\n🔍 Testing analytics with date range parameters...")
+            # Test 2: Try date filtering parameters
+            print("\n🔍 Testing date filtering parameters...")
             
             date_params = {
                 "start_date": "2025-01-01",
@@ -403,16 +357,34 @@ class BackendTester:
             )
             
             if response.status_code != 200:
-                print(f"❌ Analytics with date parameters failed: {response.status_code}")
-                print("❌ CRITICAL: Analytics endpoint does not support date filtering")
+                print(f"❌ CRITICAL: Analytics endpoint rejects date parameters: {response.status_code}")
+                print(f"   Error: {response.text}")
                 return False
             
-            filtered_data = response.json()
-            print("✅ Analytics endpoint supports date filtering")
+            filtered_analytics = response.json()
             
-            # Test 2: Budget Growth Analytics with date filtering
-            print("\n🔍 Testing /api/analytics/budget-growth with date filtering...")
+            # Compare the data structures
+            if all_analytics == filtered_analytics:
+                print("❌ CRITICAL: Date filtering is NOT implemented")
+                print("   Filtered and unfiltered data are identical")
+                print("   The backend analytics endpoints do not support date range filtering")
+                return False
+            else:
+                print("✅ Date filtering appears to be working")
             
+            # Test 3: Budget Growth endpoint
+            print("\n🔍 Testing budget growth endpoint...")
+            
+            response = self.session.get(f"{BASE_URL}/analytics/budget-growth", timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Budget growth endpoint failed: {response.status_code}")
+                return False
+            
+            budget_data = response.json()
+            print("✅ Budget growth endpoint working")
+            print(f"   Data points: {len(budget_data.get('data', []))}")
+            
+            # Test with date parameters
             response = self.session.get(
                 f"{BASE_URL}/analytics/budget-growth",
                 params=date_params,
@@ -420,56 +392,52 @@ class BackendTester:
             )
             
             if response.status_code != 200:
-                print(f"❌ Budget growth analytics with date filtering failed: {response.status_code}")
-                print("❌ CRITICAL: Budget growth endpoint does not support date filtering")
+                print(f"❌ Budget growth with date params failed: {response.status_code}")
                 return False
             
-            budget_growth_data = response.json()
-            print("✅ Budget growth analytics supports date filtering")
+            filtered_budget_data = response.json()
             
-            # Test 3: Investment Growth Analytics with date filtering  
-            print("\n🔍 Testing /api/analytics/investment-growth with date filtering...")
+            if budget_data == filtered_budget_data:
+                print("❌ CRITICAL: Budget growth date filtering is NOT implemented")
+                return False
+            else:
+                print("✅ Budget growth date filtering working")
             
+            # Test 4: Investment Growth endpoint  
+            print("\n🔍 Testing investment growth endpoint...")
+            
+            response = self.session.get(f"{BASE_URL}/analytics/investment-growth", timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Investment growth endpoint failed: {response.status_code}")
+                return False
+            
+            investment_data = response.json()
+            print("✅ Investment growth endpoint working")
+            
+            # Test with date parameters
             response = self.session.get(
-                f"{BASE_URL}/analytics/investment-growth", 
+                f"{BASE_URL}/analytics/investment-growth",
                 params=date_params,
                 timeout=10
             )
             
             if response.status_code != 200:
-                print(f"❌ Investment growth analytics with date filtering failed: {response.status_code}")
-                print("❌ CRITICAL: Investment growth endpoint does not support date filtering")
+                print(f"❌ Investment growth with date params failed: {response.status_code}")
                 return False
             
-            investment_growth_data = response.json()
-            print("✅ Investment growth analytics supports date filtering")
+            filtered_investment_data = response.json()
             
-            # Test 4: Verify filtered data is actually filtered
-            print("\n🔍 Verifying that date filtering actually works...")
-            
-            # Get all data without filtering
-            all_analytics = self.session.get(f"{BASE_URL}/analytics", timeout=10).json()
-            
-            # Get filtered data
-            filtered_analytics = self.session.get(
-                f"{BASE_URL}/analytics",
-                params=date_params,
-                timeout=10
-            ).json()
-            
-            # Compare results - filtered should be different from all data
-            # (This is a basic check - in a real scenario we'd verify specific date ranges)
-            if all_analytics == filtered_analytics:
-                print("⚠️ WARNING: Filtered and unfiltered analytics data are identical")
-                print("   This suggests date filtering may not be working properly")
+            if investment_data == filtered_investment_data:
+                print("❌ CRITICAL: Investment growth date filtering is NOT implemented")
+                return False
             else:
-                print("✅ Date filtering appears to be working - filtered data differs from all data")
+                print("✅ Investment growth date filtering working")
             
-            print("\n✅ Analytics date filtering tests completed")
+            print("\n✅ All analytics endpoints support date filtering")
             return True
             
         except Exception as e:
-            print(f"❌ Analytics date filtering test error: {str(e)}")
+            print(f"❌ Analytics detailed test error: {str(e)}")
             return False
     
     def run_all_tests(self) -> Dict[str, bool]:
