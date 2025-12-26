@@ -260,9 +260,9 @@ frontend:
 
   - task: "Voice Input Clarification Flow"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/VoiceInput.jsx, /app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -272,6 +272,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ BACKEND TESTING COMPLETE: Voice input clarification flow fully working. POST /api/parse-voice-transaction correctly handles unclear text ('spent 50 dollars') by returning needs_clarification=true with suggested categories ['Groceries', 'Restaurants / Cafes', 'Fuel / Gas', 'Utilities', 'Entertainment', 'Other / Uncategorized']. Clear text ('spent 50 dollars on groceries') processes successfully with correct amount ($50.0) and category (Groceries). Parsing logic working as expected."
+      - working: false
+        agent: "testing"
+        comment: "FRONTEND TESTING FAILED: ❌ CRITICAL: Voice Input button not found on dashboard. Component with data-testid='voice-start' is missing from the UI. Backend API is working correctly but frontend VoiceInput component is not being rendered or is not accessible. Voice Input functionality is completely unavailable to users despite backend implementation being complete."
 
 backend:
   - task: "User Registration API"
