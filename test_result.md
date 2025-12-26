@@ -242,9 +242,9 @@ frontend:
 
   - task: "Custom Categories Feature"
     implemented: true
-    working: true
+    working: false
     file: "/app/frontend/src/components/CustomCategoryManager.jsx, /app/backend/server.py"
-    stuck_count: 0
+    stuck_count: 1
     priority: "high"
     needs_retesting: false
     status_history:
@@ -254,6 +254,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ BACKEND TESTING COMPLETE: Custom categories feature fully working. All CRUD operations tested successfully: GET /api/categories/custom (retrieves existing categories), POST /api/categories/custom (creates new expense/income categories), PUT /api/categories/custom/{id} (updates category names), DELETE /api/categories/custom/{id} (removes categories). Created test categories 'Coffee Shop Visits' (expense) and 'Freelance Tips' (income), updated and verified they appear in category lists correctly."
+      - working: false
+        agent: "testing"
+        comment: "FRONTEND TESTING FAILED: ✅ Login with admin/admin works correctly. ✅ Sidebar opens when clicking 3-dots menu icon. ✅ 'Custom Categories' menu item found and clickable. ❌ CRITICAL: Custom Categories page fails to load properly - shows loading spinner indefinitely and 'Add Custom Category' form never appears. Frontend component is not rendering correctly despite backend APIs working. Navigation and routing working but component loading is broken."
 
   - task: "Voice Input Clarification Flow"
     implemented: true
