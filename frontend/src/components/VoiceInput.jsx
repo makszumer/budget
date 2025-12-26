@@ -1,6 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2, HelpCircle, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Mic, MicOff, Loader2, HelpCircle, Search, Check, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
 import { useAuth } from "@/context/AuthContext";
@@ -12,15 +13,10 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Badge } from "@/components/ui/badge";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -69,7 +65,7 @@ const VoiceInstructionsModal = ({ open, onClose }) => {
           <div className="bg-blue-50 p-3 rounded-lg">
             <p className="text-sm text-blue-800">
               <strong>Tip:</strong> Use keywords like "earned", "received", "got paid" for income, 
-              and "spent", "paid", "bought" for expenses. If I'm not sure, I'll ask you to confirm!
+              and "spent", "paid", "bought" for expenses. I'll always ask you to confirm the category!
             </p>
           </div>
         </div>
@@ -81,6 +77,130 @@ const VoiceInstructionsModal = ({ open, onClose }) => {
         </DialogFooter>
       </DialogContent>
     </Dialog>
+  );
+};
+
+// Searchable Category Selector Component
+const CategorySelector = ({ 
+  allCategories, 
+  matchedCategories, 
+  selectedCategory, 
+  onSelect,
+  transactionType 
+}) => {
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Flatten all categories for searching
+  const flatCategories = useMemo(() => {
+    const result = [];
+    if (allCategories) {
+      Object.entries(allCategories).forEach(([group, items]) => {
+        if (Array.isArray(items)) {
+          items.forEach(item => {
+            result.push({ group, name: item });
+          });
+        }
+      });
+    }
+    return result;
+  }, [allCategories]);
+  
+  // Filter categories based on search
+  const filteredCategories = useMemo(() => {
+    if (!searchQuery.trim()) return allCategories;
+    
+    const query = searchQuery.toLowerCase();
+    const filtered = {};
+    
+    Object.entries(allCategories || {}).forEach(([group, items]) => {
+      if (Array.isArray(items)) {
+        const matchingItems = items.filter(item => 
+          item.toLowerCase().includes(query)
+        );
+        if (matchingItems.length > 0) {
+          filtered[group] = matchingItems;
+        }
+      }
+    });
+    
+    return filtered;
+  }, [allCategories, searchQuery]);
+  
+  const hasResults = Object.keys(filteredCategories || {}).length > 0;
+  
+  return (
+    <div className="space-y-3">
+      {/* Search Input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Input
+          placeholder="Search categories..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9"
+        />
+      </div>
+      
+      {/* Matched Categories (Best Matches) */}
+      {matchedCategories && matchedCategories.length > 0 && !searchQuery && (
+        <div className="space-y-2">
+          <Label className="text-xs text-slate-500 uppercase tracking-wide">Best Matches</Label>
+          <div className="flex flex-wrap gap-2">
+            {matchedCategories.map((cat) => (
+              <Badge
+                key={cat}
+                variant={selectedCategory === cat ? "default" : "outline"}
+                className={`cursor-pointer transition-all ${
+                  selectedCategory === cat 
+                    ? "bg-blue-600 hover:bg-blue-700" 
+                    : "hover:bg-slate-100"
+                }`}
+                onClick={() => onSelect(cat)}
+              >
+                {selectedCategory === cat && <Check className="h-3 w-3 mr-1" />}
+                {cat}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      )}
+      
+      {/* All Categories */}
+      <ScrollArea className="h-[250px] rounded-md border p-2">
+        {hasResults ? (
+          Object.entries(filteredCategories).map(([group, items]) => (
+            <div key={group} className="mb-4 last:mb-0">
+              <Label className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2 block">
+                {group === "Custom Categories" ? "✨ " + group : group}
+              </Label>
+              <div className="space-y-1">
+                {Array.isArray(items) && items.map((item) => (
+                  <button
+                    key={item}
+                    onClick={() => onSelect(item)}
+                    className={`w-full text-left px-3 py-2 rounded-md text-sm transition-all flex items-center justify-between ${
+                      selectedCategory === item
+                        ? "bg-blue-100 text-blue-800 font-medium"
+                        : "hover:bg-slate-100 text-slate-700"
+                    }`}
+                  >
+                    <span>{item}</span>
+                    {selectedCategory === item && (
+                      <Check className="h-4 w-4 text-blue-600" />
+                    )}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ))
+        ) : (
+          <div className="text-center py-8 text-slate-500">
+            <p>No categories found for "{searchQuery}"</p>
+          </div>
+        )}
+      </ScrollArea>
+    </div>
   );
 };
 
@@ -104,7 +224,8 @@ export const VoiceInput = ({ onTransactionCreated }) => {
   const [clarificationOpen, setClarificationOpen] = useState(false);
   const [pendingTransaction, setPendingTransaction] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
-  const [suggestedCategories, setSuggestedCategories] = useState([]);
+  const [allCategories, setAllCategories] = useState(null);
+  const [matchedCategories, setMatchedCategories] = useState([]);
 
   useEffect(() => {
     // Check if user has seen instructions
@@ -152,11 +273,7 @@ export const VoiceInput = ({ onTransactionCreated }) => {
 
       const result = response.data;
       
-      if (result.success && result.data) {
-        // Direct success - create the transaction
-        await onTransactionCreated(result.data);
-        toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
-      } else if (result.needs_type_clarification) {
+      if (result.needs_type_clarification) {
         // Need to ask: income or expense?
         setPendingTypeData({
           amount: result.parsed_amount,
@@ -166,15 +283,20 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         setSelectedType("");
         setTypeDialogOpen(true);
       } else if (result.needs_clarification) {
-        // Need user to confirm category
+        // Need user to confirm category - ALWAYS happens now
         setPendingTransaction({
           amount: result.parsed_amount,
           type: result.parsed_type,
           description: result.parsed_description,
         });
-        setSuggestedCategories(result.suggested_categories || []);
+        setAllCategories(result.all_categories || {});
+        setMatchedCategories(result.matched_categories || []);
         setSelectedCategory("");
         setClarificationOpen(true);
+      } else if (result.success && result.data) {
+        // Direct success (shouldn't happen anymore with new logic)
+        await onTransactionCreated(result.data);
+        toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
       } else {
         toast.error(result.message || "Could not understand the transaction");
       }
@@ -210,17 +332,15 @@ export const VoiceInput = ({ onTransactionCreated }) => {
 
       const result = response.data;
       
-      if (result.success && result.data) {
-        await onTransactionCreated(result.data);
-        toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
-      } else if (result.needs_clarification) {
-        // Now need category
+      if (result.needs_clarification) {
+        // Now need category confirmation
         setPendingTransaction({
           amount: result.parsed_amount,
           type: selectedType,
           description: result.parsed_description,
         });
-        setSuggestedCategories(result.suggested_categories || []);
+        setAllCategories(result.all_categories || {});
+        setMatchedCategories(result.matched_categories || []);
         setSelectedCategory("");
         setClarificationOpen(true);
       } else {
@@ -259,6 +379,8 @@ export const VoiceInput = ({ onTransactionCreated }) => {
       setClarificationOpen(false);
       setPendingTransaction(null);
       setSelectedCategory("");
+      setAllCategories(null);
+      setMatchedCategories([]);
     } catch (error) {
       console.error("Error creating transaction:", error);
       toast.error("Failed to create transaction");
@@ -274,6 +396,8 @@ export const VoiceInput = ({ onTransactionCreated }) => {
     setPendingTypeData(null);
     setSelectedCategory("");
     setSelectedType("");
+    setAllCategories(null);
+    setMatchedCategories([]);
     toast.info("Transaction cancelled");
   };
 
@@ -419,41 +543,54 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         </DialogContent>
       </Dialog>
 
-      {/* Category Clarification Dialog */}
+      {/* Category Clarification Dialog with Full Category List */}
       <Dialog open={clarificationOpen} onOpenChange={setClarificationOpen}>
-        <DialogContent>
+        <DialogContent className="max-w-lg">
           <DialogHeader>
             <DialogTitle>Select Category</DialogTitle>
-            <DialogDescription>
-              {pendingTransaction?.type === 'income' ? '💰' : '💸'} {pendingTransaction?.type?.charAt(0).toUpperCase() + pendingTransaction?.type?.slice(1)} of ${pendingTransaction?.amount}
-              {pendingTransaction?.description && ` - ${pendingTransaction.description}`}
+            <DialogDescription className="flex items-center gap-2">
+              <span className={pendingTransaction?.type === 'income' ? 'text-green-600' : 'text-red-600'}>
+                {pendingTransaction?.type === 'income' ? '💰' : '💸'}
+              </span>
+              <span>
+                {pendingTransaction?.type?.charAt(0).toUpperCase() + pendingTransaction?.type?.slice(1)} of ${pendingTransaction?.amount}
+              </span>
+              {pendingTransaction?.description && pendingTransaction.description !== `${pendingTransaction?.type?.charAt(0).toUpperCase() + pendingTransaction?.type?.slice(1)} via voice` && (
+                <span className="text-slate-500">— {pendingTransaction.description}</span>
+              )}
             </DialogDescription>
           </DialogHeader>
           
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="category-select">What category is this?</Label>
-              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                <SelectTrigger id="category-select">
-                  <SelectValue placeholder="Select a category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {suggestedCategories.map((cat) => (
-                    <SelectItem key={cat} value={cat}>
-                      {cat}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+          <div className="py-4">
+            <Label className="text-sm font-medium mb-3 block">
+              Which category should this be added to?
+            </Label>
+            <CategorySelector
+              allCategories={allCategories}
+              matchedCategories={matchedCategories}
+              selectedCategory={selectedCategory}
+              onSelect={setSelectedCategory}
+              transactionType={pendingTransaction?.type}
+            />
           </div>
 
           <DialogFooter>
             <Button variant="outline" onClick={handleClarificationCancel}>
               Cancel
             </Button>
-            <Button onClick={handleClarificationConfirm} disabled={!selectedCategory || processing}>
-              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Transaction'}
+            <Button 
+              onClick={handleClarificationConfirm} 
+              disabled={!selectedCategory || processing}
+              className="min-w-[120px]"
+            >
+              {processing ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Check className="h-4 w-4 mr-2" />
+                  Add Transaction
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
