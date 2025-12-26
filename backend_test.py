@@ -455,7 +455,7 @@ class BackendTester:
         # Run tests
         results = {
             "login": True,
-            "analytics_date_filtering": self.test_analytics_date_filtering()
+            "analytics_date_filtering": self.test_analytics_date_filtering_detailed()
         }
         
         # Summary
