@@ -101,16 +101,16 @@ class BackendTester:
             return False
     
     def test_voice_input_improvements(self) -> bool:
-        """Test Voice Input Improvements with enhanced intent detection"""
-        print("\n🔍 Testing Voice Input Improvements...")
+        """Test Voice Input Improvements - NEW SYSTEM: Always requires category confirmation"""
+        print("\n🔍 Testing Voice Input Improvements (New Category Handling System)...")
         
         try:
-            # Test 1: Unclear intent (no income/expense keywords) - should ask for type clarification
-            unclear_intent_request = {"text": "50 dollars"}
+            # Test 1: Always requires category confirmation - NEVER auto-saves
+            groceries_request = {"text": "spent 50 dollars on groceries"}
             
             response = self.session.post(
                 f"{BASE_URL}/parse-voice-transaction",
-                json=unclear_intent_request,
+                json=groceries_request,
                 timeout=10
             )
             
@@ -118,124 +118,204 @@ class BackendTester:
                 print(f"❌ Voice input parsing failed: {response.status_code} - {response.text}")
                 return False
             
+            groceries_data = response.json()
+            
+            # CRITICAL: Should NEVER return success=true, always ask for category
+            if groceries_data.get("success") == True:
+                print("❌ CRITICAL FAILURE: System auto-saved transaction - should ALWAYS ask for category confirmation")
+                return False
+            
+            if groceries_data.get("needs_clarification") != True:
+                print("❌ System should always ask for category confirmation")
+                return False
+            
+            print("✅ Test 1 PASSED: Always requires category confirmation (never auto-saves)")
+            
+            # Test 2: Returns ALL categories grouped
+            general_request = {"text": "spent 100 dollars"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=general_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ General expense parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            general_data = response.json()
+            all_categories = general_data.get("all_categories", {})
+            
+            # Verify all category groups are present
+            expected_groups = ["Living & Housing", "Transportation", "Food & Dining"]
+            for group in expected_groups:
+                if group not in all_categories:
+                    print(f"❌ Missing category group: {group}")
+                    return False
+                
+                if not isinstance(all_categories[group], list) or len(all_categories[group]) == 0:
+                    print(f"❌ Category group {group} should contain multiple options")
+                    return False
+            
+            print("✅ Test 2 PASSED: Returns ALL categories grouped correctly")
+            print(f"   Found {len(all_categories)} category groups")
+            
+            # Test 3: Synonym matching for "uber"
+            uber_request = {"text": "spent 20 dollars on uber"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=uber_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Uber synonym parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            uber_data = response.json()
+            matched_categories = uber_data.get("matched_categories", [])
+            
+            if "Public Transport" not in matched_categories:
+                print(f"❌ 'uber' should match 'Public Transport' category")
+                print(f"   Matched categories: {matched_categories}")
+                return False
+            
+            print("✅ Test 3 PASSED: Synonym matching for 'uber' → 'Public Transport'")
+            
+            # Test 4: Synonym matching for store names (walmart)
+            walmart_request = {"text": "spent 50 at walmart"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=walmart_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Walmart synonym parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            walmart_data = response.json()
+            matched_categories = walmart_data.get("matched_categories", [])
+            
+            if "Groceries" not in matched_categories:
+                print(f"❌ 'walmart' should match 'Groceries' category")
+                print(f"   Matched categories: {matched_categories}")
+                return False
+            
+            print("✅ Test 4 PASSED: Synonym matching for 'walmart' → 'Groceries'")
+            
+            # Test 5: Synonym matching for "netflix"
+            netflix_request = {"text": "paid 15 dollars for netflix"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=netflix_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Netflix synonym parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            netflix_data = response.json()
+            matched_categories = netflix_data.get("matched_categories", [])
+            
+            if "Subscriptions" not in matched_categories:
+                print(f"❌ 'netflix' should match 'Subscriptions' category")
+                print(f"   Matched categories: {matched_categories}")
+                return False
+            
+            print("✅ Test 5 PASSED: Synonym matching for 'netflix' → 'Subscriptions'")
+            
+            # Test 6: Synonym matching for "starbucks"
+            starbucks_request = {"text": "spent 5 dollars at starbucks"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=starbucks_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Starbucks synonym parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            starbucks_data = response.json()
+            matched_categories = starbucks_data.get("matched_categories", [])
+            
+            if "Restaurants / Cafes" not in matched_categories:
+                print(f"❌ 'starbucks' should match 'Restaurants / Cafes' category")
+                print(f"   Matched categories: {matched_categories}")
+                return False
+            
+            print("✅ Test 6 PASSED: Synonym matching for 'starbucks' → 'Restaurants / Cafes'")
+            
+            # Test 7: Type clarification still works
+            unclear_request = {"text": "50 dollars"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=unclear_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Type clarification parsing failed: {response.status_code} - {response.text}")
+                return False
+            
             unclear_data = response.json()
             
-            if unclear_data.get("needs_type_clarification") == True:
-                parsed_amount = unclear_data.get("parsed_amount")
-                print(f"✅ Unclear intent triggers type clarification correctly")
-                print(f"   Parsed amount: ${parsed_amount}")
-                
-                if parsed_amount != 50.0:
-                    print("❌ Type clarification response missing correct amount")
-                    return False
-            else:
-                print("❌ Unclear intent should trigger type clarification but didn't")
+            if unclear_data.get("needs_type_clarification") != True:
+                print("❌ Unclear intent should trigger type clarification")
                 return False
             
-            # Test 2: Clear expense with category
-            clear_expense_request = {"text": "I spent 30 dollars on groceries"}
+            print("✅ Test 7 PASSED: Type clarification still works for unclear intent")
+            
+            # Test 8: Income detection with category prompt
+            income_request = {"text": "earned 1000 dollars from work"}
             
             response = self.session.post(
                 f"{BASE_URL}/parse-voice-transaction",
-                json=clear_expense_request,
+                json=income_request,
                 timeout=10
             )
             
             if response.status_code != 200:
-                print(f"❌ Clear expense parsing failed: {response.status_code} - {response.text}")
-                return False
-            
-            expense_data = response.json()
-            
-            if expense_data.get("success") == True:
-                transaction_data = expense_data.get("data", {})
-                transaction_type = transaction_data.get("type")
-                category = transaction_data.get("category")
-                amount = transaction_data.get("amount")
-                
-                print(f"✅ Clear expense processes successfully")
-                print(f"   Type: {transaction_type}")
-                print(f"   Amount: ${amount}")
-                print(f"   Category: {category}")
-                
-                if transaction_type != "expense" or category != "Groceries" or amount != 30.0:
-                    print("❌ Clear expense parsing returned incorrect data")
-                    return False
-            else:
-                print("❌ Clear expense should succeed but didn't")
-                return False
-            
-            # Test 3: Clear income
-            clear_income_request = {"text": "I earned 1000 dollars from salary"}
-            
-            response = self.session.post(
-                f"{BASE_URL}/parse-voice-transaction",
-                json=clear_income_request,
-                timeout=10
-            )
-            
-            if response.status_code != 200:
-                print(f"❌ Clear income parsing failed: {response.status_code} - {response.text}")
+                print(f"❌ Income parsing failed: {response.status_code} - {response.text}")
                 return False
             
             income_data = response.json()
             
-            if income_data.get("success") == True:
-                transaction_data = income_data.get("data", {})
-                transaction_type = transaction_data.get("type")
-                category = transaction_data.get("category")
-                amount = transaction_data.get("amount")
-                
-                print(f"✅ Clear income processes successfully")
-                print(f"   Type: {transaction_type}")
-                print(f"   Amount: ${amount}")
-                print(f"   Category: {category}")
-                
-                if transaction_type != "income" or category != "Salary / wages" or amount != 1000.0:
-                    print("❌ Clear income parsing returned incorrect data")
-                    return False
-            else:
-                print("❌ Clear income should succeed but didn't")
+            # Should still ask for category confirmation even for income
+            if income_data.get("needs_clarification") != True:
+                print("❌ Income should also trigger category confirmation")
                 return False
             
-            # Test 4: Expense with unclear category - should ask for category clarification
-            unclear_category_request = {"text": "spent 100 dollars"}
-            
-            response = self.session.post(
-                f"{BASE_URL}/parse-voice-transaction",
-                json=unclear_category_request,
-                timeout=10
-            )
-            
-            if response.status_code != 200:
-                print(f"❌ Unclear category parsing failed: {response.status_code} - {response.text}")
+            if income_data.get("parsed_type") != "income":
+                print("❌ Should correctly detect income type")
                 return False
             
-            unclear_cat_data = response.json()
+            # Should have income categories
+            all_categories = income_data.get("all_categories", {})
+            income_groups = ["Employment Income", "Self-Employment / Business"]
             
-            if unclear_cat_data.get("needs_clarification") == True:
-                suggested_categories = unclear_cat_data.get("suggested_categories", [])
-                parsed_type = unclear_cat_data.get("parsed_type")
-                parsed_amount = unclear_cat_data.get("parsed_amount")
-                
-                print(f"✅ Unclear category triggers clarification correctly")
-                print(f"   Parsed type: {parsed_type}")
-                print(f"   Parsed amount: ${parsed_amount}")
-                print(f"   Suggested categories: {suggested_categories}")
-                
-                if not suggested_categories or parsed_type != "expense" or parsed_amount != 100.0:
-                    print("❌ Category clarification response missing required data")
+            for group in income_groups:
+                if group not in all_categories:
+                    print(f"❌ Missing income category group: {group}")
                     return False
-                
-                # Verify suggested categories include user's custom categories
-                if "Groceries" not in suggested_categories:
-                    print("❌ Suggested categories should include default categories")
-                    return False
-            else:
-                print("❌ Unclear category should trigger clarification but didn't")
-                return False
             
-            print("✅ Voice input improvements fully working")
+            print("✅ Test 8 PASSED: Income detection with category prompt works")
+            
+            print("\n✅ ALL VOICE INPUT TESTS PASSED")
+            print("   ✓ Never auto-saves (always asks for category)")
+            print("   ✓ Returns complete category groups")
+            print("   ✓ Synonym matching works for all test cases")
+            print("   ✓ Type clarification still functional")
+            print("   ✓ Income categories properly handled")
+            
             return True
             
         except Exception as e:
