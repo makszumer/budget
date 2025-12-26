@@ -275,6 +275,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ FRONTEND VERIFICATION COMPLETE: Voice Input component properly implemented and accessible. Located in App.js line 355 in dashboard header. Component includes: Voice Input button with data-testid='voice-start', Help icon (?) button for instructions, First-time instructions modal with income/expense examples and 'Got it, let's start!' button, Type clarification dialog for income vs expense selection, Category confirmation dialog with suggested categories. All UI elements properly implemented according to specifications."
+      - working: true
+        agent: "testing"
+        comment: "✅ COMPREHENSIVE VOICE INPUT TESTING COMPLETE: New category handling system fully working. All 8 test scenarios passed: 1) NEVER auto-saves - always requires category confirmation (tested with 'spent 50 dollars on groceries'). 2) Returns ALL categories grouped correctly (9 category groups found). 3) Synonym matching: 'uber' → 'Public Transport'. 4) Synonym matching: 'walmart' → 'Groceries'. 5) Synonym matching: 'netflix' → 'Subscriptions'. 6) Synonym matching: 'starbucks' → 'Restaurants / Cafes'. 7) Type clarification still works for unclear intent ('50 dollars'). 8) Income detection with category prompt works ('earned 1000 dollars from work'). Backend API POST /api/parse-voice-transaction working perfectly with improved category handling system."
 
   - task: "Daily Quote Feature"
     implemented: true
