@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Mic, MicOff, Loader2 } from "lucide-react";
+import { Mic, MicOff, Loader2, HelpCircle, X } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import { useAuth } from "@/context/AuthContext";
 import {
   Dialog,
   DialogContent,
@@ -19,24 +20,98 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
+// First-time instructions modal component
+const VoiceInstructionsModal = ({ open, onClose }) => {
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Mic className="h-5 w-5 text-blue-600" />
+            How to Use Voice Input
+          </DialogTitle>
+          <DialogDescription>
+            Speak naturally to add transactions. Here are some examples:
+          </DialogDescription>
+        </DialogHeader>
+        
+        <div className="space-y-4 py-4">
+          {/* Income Examples */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-green-600 flex items-center gap-2">
+              💰 For Income (money coming in):
+            </h4>
+            <div className="bg-green-50 p-3 rounded-lg space-y-1.5 text-sm">
+              <p className="text-slate-700">"I <strong>earned</strong> 500 dollars from salary"</p>
+              <p className="text-slate-700">"<strong>Received</strong> 100 dollars in tips"</p>
+              <p className="text-slate-700">"<strong>Got paid</strong> 2000 dollars"</p>
+            </div>
+          </div>
+          
+          {/* Expense Examples */}
+          <div className="space-y-2">
+            <h4 className="text-sm font-semibold text-red-600 flex items-center gap-2">
+              💸 For Expenses (money going out):
+            </h4>
+            <div className="bg-red-50 p-3 rounded-lg space-y-1.5 text-sm">
+              <p className="text-slate-700">"I <strong>spent</strong> 50 dollars on groceries"</p>
+              <p className="text-slate-700">"<strong>Paid</strong> 30 dollars for gas"</p>
+              <p className="text-slate-700">"<strong>Bought</strong> coffee for 5 dollars"</p>
+            </div>
+          </div>
+          
+          {/* Tips */}
+          <div className="bg-blue-50 p-3 rounded-lg">
+            <p className="text-sm text-blue-800">
+              <strong>Tip:</strong> Use keywords like "earned", "received", "got paid" for income, 
+              and "spent", "paid", "bought" for expenses. If I'm not sure, I'll ask you to confirm!
+            </p>
+          </div>
+        </div>
+
+        <DialogFooter>
+          <Button onClick={onClose} className="w-full">
+            Got it, let's start!
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 export const VoiceInput = ({ onTransactionCreated }) => {
+  const { token, user } = useAuth();
   const [isListening, setIsListening] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);
   
-  // Clarification dialog state
+  // Instructions modal state
+  const [showInstructions, setShowInstructions] = useState(false);
+  const [hasSeenInstructions, setHasSeenInstructions] = useState(false);
+  
+  // Type clarification state (income vs expense)
+  const [typeDialogOpen, setTypeDialogOpen] = useState(false);
+  const [pendingTypeData, setPendingTypeData] = useState(null);
+  const [selectedType, setSelectedType] = useState("");
+  
+  // Category clarification state
   const [clarificationOpen, setClarificationOpen] = useState(false);
   const [pendingTransaction, setPendingTransaction] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("");
   const [suggestedCategories, setSuggestedCategories] = useState([]);
 
   useEffect(() => {
-    // Check if browser supports speech recognition
+    // Check if user has seen instructions
+    const seen = localStorage.getItem('voiceInstructionsSeen');
+    setHasSeenInstructions(seen === 'true');
+    
+    // Setup speech recognition
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     
     if (SpeechRecognition) {
@@ -49,8 +124,6 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         const text = event.results[0][0].transcript;
         setTranscript(text);
         setIsListening(false);
-        
-        // Process the transcript
         await processVoiceInput(text);
       };
 
@@ -72,9 +145,9 @@ export const VoiceInput = ({ onTransactionCreated }) => {
     setProcessing(true);
     
     try {
-      // Send to backend for AI parsing
       const response = await axios.post(`${API}/parse-voice-transaction`, {
-        text: text
+        text: text,
+        user_id: user?.id || null
       });
 
       const result = response.data;
@@ -83,6 +156,15 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         // Direct success - create the transaction
         await onTransactionCreated(result.data);
         toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
+      } else if (result.needs_type_clarification) {
+        // Need to ask: income or expense?
+        setPendingTypeData({
+          amount: result.parsed_amount,
+          description: result.parsed_description,
+          originalText: text
+        });
+        setSelectedType("");
+        setTypeDialogOpen(true);
       } else if (result.needs_clarification) {
         // Need user to confirm category
         setPendingTransaction({
@@ -102,6 +184,55 @@ export const VoiceInput = ({ onTransactionCreated }) => {
     } finally {
       setProcessing(false);
       setTranscript("");
+    }
+  };
+
+  // Handle type selection (income vs expense)
+  const handleTypeConfirm = async () => {
+    if (!selectedType || !pendingTypeData) {
+      toast.error("Please select income or expense");
+      return;
+    }
+
+    setTypeDialogOpen(false);
+    setProcessing(true);
+    
+    try {
+      // Re-process with the selected type hint
+      const enhancedText = selectedType === "income" 
+        ? `earned ${pendingTypeData.amount} dollars ${pendingTypeData.description || ''}`
+        : `spent ${pendingTypeData.amount} dollars ${pendingTypeData.description || ''}`;
+      
+      const response = await axios.post(`${API}/parse-voice-transaction`, {
+        text: enhancedText,
+        user_id: user?.id || null
+      });
+
+      const result = response.data;
+      
+      if (result.success && result.data) {
+        await onTransactionCreated(result.data);
+        toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
+      } else if (result.needs_clarification) {
+        // Now need category
+        setPendingTransaction({
+          amount: result.parsed_amount,
+          type: selectedType,
+          description: result.parsed_description,
+        });
+        setSuggestedCategories(result.suggested_categories || []);
+        setSelectedCategory("");
+        setClarificationOpen(true);
+      } else {
+        toast.error(result.message || "Failed to process");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("Failed to process transaction");
+    } finally {
+      setProcessing(false);
+      setPendingTypeData(null);
+      setSelectedType("");
     }
   };
 
@@ -138,12 +269,21 @@ export const VoiceInput = ({ onTransactionCreated }) => {
 
   const handleClarificationCancel = () => {
     setClarificationOpen(false);
+    setTypeDialogOpen(false);
     setPendingTransaction(null);
+    setPendingTypeData(null);
     setSelectedCategory("");
+    setSelectedType("");
     toast.info("Transaction cancelled");
   };
 
   const startListening = () => {
+    // Show instructions on first use
+    if (!hasSeenInstructions) {
+      setShowInstructions(true);
+      return;
+    }
+    
     if (!recognition) {
       toast.error("Voice input not supported in this browser");
       return;
@@ -155,11 +295,29 @@ export const VoiceInput = ({ onTransactionCreated }) => {
     toast.info("Listening... Speak now!");
   };
 
+  const handleInstructionsDismiss = () => {
+    setShowInstructions(false);
+    setHasSeenInstructions(true);
+    localStorage.setItem('voiceInstructionsSeen', 'true');
+    
+    // Start listening after dismissing instructions
+    if (recognition) {
+      setTranscript("");
+      setIsListening(true);
+      recognition.start();
+      toast.info("Listening... Speak now!");
+    }
+  };
+
   const stopListening = () => {
     if (recognition) {
       recognition.stop();
     }
     setIsListening(false);
+  };
+
+  const showHelp = () => {
+    setShowInstructions(true);
   };
 
   if (processing) {
@@ -187,36 +345,94 @@ export const VoiceInput = ({ onTransactionCreated }) => {
 
   return (
     <>
-      <Button 
-        onClick={startListening}
-        variant="outline"
-        className="gap-2"
-        data-testid="voice-start"
-      >
-        <Mic className="h-4 w-4" />
-        Voice Input
-      </Button>
+      <div className="flex items-center gap-1">
+        <Button 
+          onClick={startListening}
+          variant="outline"
+          className="gap-2"
+          data-testid="voice-start"
+        >
+          <Mic className="h-4 w-4" />
+          Voice Input
+        </Button>
+        <Button
+          onClick={showHelp}
+          variant="ghost"
+          size="icon"
+          className="h-9 w-9"
+          title="How to use voice input"
+        >
+          <HelpCircle className="h-4 w-4 text-slate-400" />
+        </Button>
+      </div>
 
-      {/* Clarification Dialog */}
-      <Dialog open={clarificationOpen} onOpenChange={setClarificationOpen}>
+      {/* First-time Instructions Modal */}
+      <VoiceInstructionsModal 
+        open={showInstructions} 
+        onClose={handleInstructionsDismiss} 
+      />
+
+      {/* Type Clarification Dialog (Income vs Expense) */}
+      <Dialog open={typeDialogOpen} onOpenChange={setTypeDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirm Category</DialogTitle>
+            <DialogTitle>Is this income or expense?</DialogTitle>
             <DialogDescription>
-              I detected a {pendingTransaction?.type} of ${pendingTransaction?.amount}, but I'm not sure about the category. 
-              Please select the correct category:
+              I detected ${pendingTypeData?.amount}, but I need to know if this is money coming in or going out.
             </DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4 py-4">
-            {pendingTransaction?.description && (
-              <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
-                <strong>Description:</strong> {pendingTransaction.description}
-              </div>
-            )}
-            
+            <div className="grid grid-cols-2 gap-4">
+              <Card 
+                className={`cursor-pointer transition-all ${selectedType === 'income' ? 'ring-2 ring-green-500 bg-green-50' : 'hover:bg-slate-50'}`}
+                onClick={() => setSelectedType('income')}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">💰</div>
+                  <p className="font-semibold text-green-600">Income</p>
+                  <p className="text-xs text-slate-500">Money I received</p>
+                </CardContent>
+              </Card>
+              
+              <Card 
+                className={`cursor-pointer transition-all ${selectedType === 'expense' ? 'ring-2 ring-red-500 bg-red-50' : 'hover:bg-slate-50'}`}
+                onClick={() => setSelectedType('expense')}
+              >
+                <CardContent className="p-4 text-center">
+                  <div className="text-3xl mb-2">💸</div>
+                  <p className="font-semibold text-red-600">Expense</p>
+                  <p className="text-xs text-slate-500">Money I spent</p>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClarificationCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleTypeConfirm} disabled={!selectedType || processing}>
+              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Continue'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Category Clarification Dialog */}
+      <Dialog open={clarificationOpen} onOpenChange={setClarificationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Select Category</DialogTitle>
+            <DialogDescription>
+              {pendingTransaction?.type === 'income' ? '💰' : '💸'} {pendingTransaction?.type?.charAt(0).toUpperCase() + pendingTransaction?.type?.slice(1)} of ${pendingTransaction?.amount}
+              {pendingTransaction?.description && ` - ${pendingTransaction.description}`}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="category-select">Category</Label>
+              <Label htmlFor="category-select">What category is this?</Label>
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger id="category-select">
                   <SelectValue placeholder="Select a category" />
@@ -237,7 +453,7 @@ export const VoiceInput = ({ onTransactionCreated }) => {
               Cancel
             </Button>
             <Button onClick={handleClarificationConfirm} disabled={!selectedCategory || processing}>
-              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
+              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Add Transaction'}
             </Button>
           </DialogFooter>
         </DialogContent>
