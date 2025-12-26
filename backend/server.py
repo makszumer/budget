@@ -261,6 +261,96 @@ async def get_summary():
         balance=balance
     )
 
+# Custom Categories endpoints
+from fastapi import Depends
+
+@api_router.get("/categories/custom")
+async def get_custom_categories(user_id: str = Depends(get_current_user)):
+    """Get all custom categories for the current user"""
+    categories = await db.custom_categories.find(
+        {"user_id": user_id}, 
+        {"_id": 0}
+    ).to_list(100)
+    return categories
+
+@api_router.post("/categories/custom", response_model=CustomCategory)
+async def create_custom_category(
+    category: CustomCategoryCreate,
+    user_id: str = Depends(get_current_user)
+):
+    """Create a new custom category for the user"""
+    # Check if category with same name and type already exists
+    existing = await db.custom_categories.find_one({
+        "user_id": user_id,
+        "name": category.name,
+        "type": category.type
+    })
+    
+    if existing:
+        raise HTTPException(status_code=400, detail="Category with this name already exists")
+    
+    cat_obj = CustomCategory(
+        user_id=user_id,
+        name=category.name,
+        type=category.type
+    )
+    
+    doc = cat_obj.model_dump()
+    doc['createdAt'] = doc['createdAt'].isoformat()
+    
+    await db.custom_categories.insert_one(doc)
+    return cat_obj
+
+@api_router.put("/categories/custom/{category_id}")
+async def update_custom_category(
+    category_id: str,
+    update_data: CustomCategoryUpdate,
+    user_id: str = Depends(get_current_user)
+):
+    """Update a custom category"""
+    # Check if category exists and belongs to user
+    existing = await db.custom_categories.find_one({
+        "id": category_id,
+        "user_id": user_id
+    })
+    
+    if not existing:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    # Check if new name already exists
+    duplicate = await db.custom_categories.find_one({
+        "user_id": user_id,
+        "name": update_data.name,
+        "type": existing["type"],
+        "id": {"$ne": category_id}
+    })
+    
+    if duplicate:
+        raise HTTPException(status_code=400, detail="Category with this name already exists")
+    
+    await db.custom_categories.update_one(
+        {"id": category_id},
+        {"$set": {"name": update_data.name}}
+    )
+    
+    return {"message": "Category updated successfully"}
+
+@api_router.delete("/categories/custom/{category_id}")
+async def delete_custom_category(
+    category_id: str,
+    user_id: str = Depends(get_current_user)
+):
+    """Delete a custom category"""
+    result = await db.custom_categories.delete_one({
+        "id": category_id,
+        "user_id": user_id
+    })
+    
+    if result.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Category not found")
+    
+    return {"message": "Category deleted successfully"}
+
 # Portfolio specific endpoints
 class PortfolioHolding(BaseModel):
     asset: str
