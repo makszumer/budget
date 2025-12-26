@@ -3,6 +3,22 @@ import { Button } from "@/components/ui/button";
 import { Mic, MicOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import axios from "axios";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
@@ -12,6 +28,12 @@ export const VoiceInput = ({ onTransactionCreated }) => {
   const [processing, setProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [recognition, setRecognition] = useState(null);
+  
+  // Clarification dialog state
+  const [clarificationOpen, setClarificationOpen] = useState(false);
+  const [pendingTransaction, setPendingTransaction] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [suggestedCategories, setSuggestedCategories] = useState([]);
 
   useEffect(() => {
     // Check if browser supports speech recognition
@@ -55,14 +77,24 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         text: text
       });
 
-      const transaction = response.data;
+      const result = response.data;
       
-      if (transaction.success) {
-        // Create the transaction
-        await onTransactionCreated(transaction.data);
-        toast.success(`${transaction.data.type.charAt(0).toUpperCase() + transaction.data.type.slice(1)} of $${transaction.data.amount} added!`);
+      if (result.success && result.data) {
+        // Direct success - create the transaction
+        await onTransactionCreated(result.data);
+        toast.success(`${result.data.type.charAt(0).toUpperCase() + result.data.type.slice(1)} of $${result.data.amount} added!`);
+      } else if (result.needs_clarification) {
+        // Need user to confirm category
+        setPendingTransaction({
+          amount: result.parsed_amount,
+          type: result.parsed_type,
+          description: result.parsed_description,
+        });
+        setSuggestedCategories(result.suggested_categories || []);
+        setSelectedCategory("");
+        setClarificationOpen(true);
       } else {
-        toast.error(transaction.message || "Could not understand the transaction");
+        toast.error(result.message || "Could not understand the transaction");
       }
     } catch (error) {
       console.error("Error processing voice input:", error);
@@ -71,6 +103,44 @@ export const VoiceInput = ({ onTransactionCreated }) => {
       setProcessing(false);
       setTranscript("");
     }
+  };
+
+  const handleClarificationConfirm = async () => {
+    if (!selectedCategory || !pendingTransaction) {
+      toast.error("Please select a category");
+      return;
+    }
+
+    setProcessing(true);
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const transactionData = {
+        type: pendingTransaction.type,
+        amount: pendingTransaction.amount,
+        description: pendingTransaction.description || `${pendingTransaction.type} via voice`,
+        category: selectedCategory,
+        date: today,
+        currency: "USD"
+      };
+      
+      await onTransactionCreated(transactionData);
+      toast.success(`${transactionData.type.charAt(0).toUpperCase() + transactionData.type.slice(1)} of $${transactionData.amount} added!`);
+      setClarificationOpen(false);
+      setPendingTransaction(null);
+      setSelectedCategory("");
+    } catch (error) {
+      console.error("Error creating transaction:", error);
+      toast.error("Failed to create transaction");
+    } finally {
+      setProcessing(false);
+    }
+  };
+
+  const handleClarificationCancel = () => {
+    setClarificationOpen(false);
+    setPendingTransaction(null);
+    setSelectedCategory("");
+    toast.info("Transaction cancelled");
   };
 
   const startListening = () => {
@@ -116,14 +186,62 @@ export const VoiceInput = ({ onTransactionCreated }) => {
   }
 
   return (
-    <Button 
-      onClick={startListening}
-      variant="outline"
-      className="gap-2"
-      data-testid="voice-start"
-    >
-      <Mic className="h-4 w-4" />
-      Voice Input
-    </Button>
+    <>
+      <Button 
+        onClick={startListening}
+        variant="outline"
+        className="gap-2"
+        data-testid="voice-start"
+      >
+        <Mic className="h-4 w-4" />
+        Voice Input
+      </Button>
+
+      {/* Clarification Dialog */}
+      <Dialog open={clarificationOpen} onOpenChange={setClarificationOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Category</DialogTitle>
+            <DialogDescription>
+              I detected a {pendingTransaction?.type} of ${pendingTransaction?.amount}, but I'm not sure about the category. 
+              Please select the correct category:
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            {pendingTransaction?.description && (
+              <div className="text-sm text-slate-600 bg-slate-50 p-3 rounded-lg">
+                <strong>Description:</strong> {pendingTransaction.description}
+              </div>
+            )}
+            
+            <div className="space-y-2">
+              <Label htmlFor="category-select">Category</Label>
+              <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+                <SelectTrigger id="category-select">
+                  <SelectValue placeholder="Select a category" />
+                </SelectTrigger>
+                <SelectContent>
+                  {suggestedCategories.map((cat) => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={handleClarificationCancel}>
+              Cancel
+            </Button>
+            <Button onClick={handleClarificationConfirm} disabled={!selectedCategory || processing}>
+              {processing ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Confirm'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 };
