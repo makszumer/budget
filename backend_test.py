@@ -182,17 +182,66 @@ class BackendTester:
             print(f"❌ Custom categories test error: {str(e)}")
             return False
     
-    def test_voice_input_clarification(self) -> bool:
-        """Test Voice Input Clarification Flow"""
-        print("\n🔍 Testing Voice Input Clarification Flow...")
+    def test_daily_quote_feature(self) -> bool:
+        """Test Daily Quote Feature"""
+        print("\n🔍 Testing Daily Quote Feature...")
         
         try:
-            # Test 1: Unclear text that should trigger clarification
-            unclear_request = {"text": "spent 50 dollars"}
+            # Test 1: Get quote of the day
+            response = self.session.get(f"{BASE_URL}/quote-of-day", timeout=10)
+            
+            if response.status_code != 200:
+                print(f"❌ Daily quote API failed: {response.status_code} - {response.text}")
+                return False
+            
+            quote_data = response.json()
+            
+            # Verify required fields
+            required_fields = ["quote", "author", "date", "category"]
+            for field in required_fields:
+                if field not in quote_data:
+                    print(f"❌ Missing required field: {field}")
+                    return False
+            
+            print(f"✅ Daily quote API working")
+            print(f"   Quote: {quote_data['quote'][:50]}...")
+            print(f"   Author: {quote_data['author']}")
+            print(f"   Date: {quote_data['date']}")
+            print(f"   Category: {quote_data['category']}")
+            
+            # Test 2: Call again to verify caching (should return same quote)
+            response2 = self.session.get(f"{BASE_URL}/quote-of-day", timeout=10)
+            
+            if response2.status_code != 200:
+                print(f"❌ Second daily quote call failed: {response2.status_code}")
+                return False
+            
+            quote_data2 = response2.json()
+            
+            if quote_data["quote"] == quote_data2["quote"] and quote_data["date"] == quote_data2["date"]:
+                print("✅ Quote caching working - same quote returned for same day")
+            else:
+                print("❌ Quote caching failed - different quotes returned")
+                return False
+            
+            print("✅ Daily quote feature fully working")
+            return True
+            
+        except Exception as e:
+            print(f"❌ Daily quote test error: {str(e)}")
+            return False
+    
+    def test_voice_input_improvements(self) -> bool:
+        """Test Voice Input Improvements with enhanced intent detection"""
+        print("\n🔍 Testing Voice Input Improvements...")
+        
+        try:
+            # Test 1: Unclear intent (no income/expense keywords) - should ask for type clarification
+            unclear_intent_request = {"text": "50 dollars"}
             
             response = self.session.post(
                 f"{BASE_URL}/parse-voice-transaction",
-                json=unclear_request,
+                json=unclear_intent_request,
                 timeout=10
             )
             
@@ -202,57 +251,126 @@ class BackendTester:
             
             unclear_data = response.json()
             
-            if unclear_data.get("needs_clarification") == True:
-                suggested_categories = unclear_data.get("suggested_categories", [])
+            if unclear_data.get("needs_type_clarification") == True:
                 parsed_amount = unclear_data.get("parsed_amount")
-                
-                print(f"✅ Unclear text triggers clarification correctly")
+                print(f"✅ Unclear intent triggers type clarification correctly")
                 print(f"   Parsed amount: ${parsed_amount}")
-                print(f"   Suggested categories: {suggested_categories}")
                 
-                if not suggested_categories or parsed_amount != 50.0:
-                    print("❌ Clarification response missing required data")
+                if parsed_amount != 50.0:
+                    print("❌ Type clarification response missing correct amount")
                     return False
             else:
-                print("❌ Unclear text should trigger clarification but didn't")
+                print("❌ Unclear intent should trigger type clarification but didn't")
                 return False
             
-            # Test 2: Clear text that should succeed
-            clear_request = {"text": "spent 50 dollars on groceries"}
+            # Test 2: Clear expense with category
+            clear_expense_request = {"text": "I spent 30 dollars on groceries"}
             
             response = self.session.post(
                 f"{BASE_URL}/parse-voice-transaction",
-                json=clear_request,
+                json=clear_expense_request,
                 timeout=10
             )
             
             if response.status_code != 200:
-                print(f"❌ Clear voice input parsing failed: {response.status_code} - {response.text}")
+                print(f"❌ Clear expense parsing failed: {response.status_code} - {response.text}")
                 return False
             
-            clear_data = response.json()
+            expense_data = response.json()
             
-            if clear_data.get("success") == True and clear_data.get("needs_clarification") == False:
-                transaction_data = clear_data.get("data", {})
+            if expense_data.get("success") == True:
+                transaction_data = expense_data.get("data", {})
+                transaction_type = transaction_data.get("type")
                 category = transaction_data.get("category")
                 amount = transaction_data.get("amount")
                 
-                print(f"✅ Clear text processes successfully")
+                print(f"✅ Clear expense processes successfully")
+                print(f"   Type: {transaction_type}")
                 print(f"   Amount: ${amount}")
                 print(f"   Category: {category}")
                 
-                if category != "Groceries" or amount != 50.0:
-                    print("❌ Clear text parsing returned incorrect data")
+                if transaction_type != "expense" or category != "Groceries" or amount != 30.0:
+                    print("❌ Clear expense parsing returned incorrect data")
                     return False
             else:
-                print("❌ Clear text should succeed but didn't")
+                print("❌ Clear expense should succeed but didn't")
                 return False
             
-            print("✅ Voice input clarification flow fully working")
+            # Test 3: Clear income
+            clear_income_request = {"text": "I earned 1000 dollars from salary"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=clear_income_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Clear income parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            income_data = response.json()
+            
+            if income_data.get("success") == True:
+                transaction_data = income_data.get("data", {})
+                transaction_type = transaction_data.get("type")
+                category = transaction_data.get("category")
+                amount = transaction_data.get("amount")
+                
+                print(f"✅ Clear income processes successfully")
+                print(f"   Type: {transaction_type}")
+                print(f"   Amount: ${amount}")
+                print(f"   Category: {category}")
+                
+                if transaction_type != "income" or category != "Salary / wages" or amount != 1000.0:
+                    print("❌ Clear income parsing returned incorrect data")
+                    return False
+            else:
+                print("❌ Clear income should succeed but didn't")
+                return False
+            
+            # Test 4: Expense with unclear category - should ask for category clarification
+            unclear_category_request = {"text": "spent 100 dollars"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/parse-voice-transaction",
+                json=unclear_category_request,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Unclear category parsing failed: {response.status_code} - {response.text}")
+                return False
+            
+            unclear_cat_data = response.json()
+            
+            if unclear_cat_data.get("needs_clarification") == True:
+                suggested_categories = unclear_cat_data.get("suggested_categories", [])
+                parsed_type = unclear_cat_data.get("parsed_type")
+                parsed_amount = unclear_cat_data.get("parsed_amount")
+                
+                print(f"✅ Unclear category triggers clarification correctly")
+                print(f"   Parsed type: {parsed_type}")
+                print(f"   Parsed amount: ${parsed_amount}")
+                print(f"   Suggested categories: {suggested_categories}")
+                
+                if not suggested_categories or parsed_type != "expense" or parsed_amount != 100.0:
+                    print("❌ Category clarification response missing required data")
+                    return False
+                
+                # Verify suggested categories include user's custom categories
+                if "Groceries" not in suggested_categories:
+                    print("❌ Suggested categories should include default categories")
+                    return False
+            else:
+                print("❌ Unclear category should trigger clarification but didn't")
+                return False
+            
+            print("✅ Voice input improvements fully working")
             return True
             
         except Exception as e:
-            print(f"❌ Voice input test error: {str(e)}")
+            print(f"❌ Voice input improvements test error: {str(e)}")
             return False
     
     def run_all_tests(self) -> Dict[str, bool]:
