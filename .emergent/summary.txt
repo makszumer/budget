@@ -1,123 +1,156 @@
 <analysis>**original_problem_statement:**
-The initial request was to take a provided React component () and make it previewable. This evolved through a series of user requests into building a full-featured financial tracking application.
-
-The core requirements that have been added incrementally are:
-- A full-stack application to track income, expenses, and investments.
-- A dashboard to provide a summary of financial health (total income, expenses, investments, balance).
-- A dedicated investment portfolio tracker with ROI calculations using real-time market data.
-- Analytics, including pie charts for financial breakdowns and growth charts over time.
-- A navigation menu with educational content about investing (Stocks, Crypto, Bonds, ETFs, Inflation) and a compound interest calculator.
-- A privacy mode to obscure financial numbers on the screen.
-- Date filtering to view transactions by day, week, month, or year.
-- Voice input to add transactions by speaking.
-- The ability to edit and delete any transaction.
-- Support for recurring transactions (standing orders) and multiple currencies.
-- A feature to search for spending by category and view trends over time.
-- UI/UX refinements like a collapsible sidebar, improved loading screens, and fixes for layout issues.
+The user's initial request was to build a full-stack financial tracking application. During this session, the user significantly expanded the scope with several major new requirements:
+1.  **Monetization & Authentication**: Implement a complete user authentication system (login/register) and integrate Stripe for subscription-based access (, ). The app should support a freemium model with ads for non-paying users.
+2.  **Admin Functionality**: Create an admin user (/) with access to a special dashboard.
+3.  **Advertising**: Integrate Google AdMob for displaying banner ads in the free version.
+4.  **Mobile App Export**: The user requested the ability to export the application as a fully functional native iOS and Android app. The agent explained the limitations and proceeded with building a responsive web application.
+5.  **Advanced Analytics**:
+    *   Add time-based filtering (daily, weekly, monthly, yearly, custom range) to the analytics pie charts.
+    *   Create a Budget Envelopes feature for specific goals (e.g., vacations), allowing users to allocate funds and track spending within a separate budget.
+6.  **AI Financial Assistant**: Implement a natural language search feature (using an LLM like ChatGPT via Emergent LLM Key) to answer user questions about their financial data (e.g., How much did I spend on groceries in November?).
+7.  **Bug Fixes**:
+    *   Fix an issue where editing a transaction defaulted its currency to USD.
+    *   Fix the Sign In button not working.
+    *   Fix issues on the premium subscription page where buttons were not clickable and there was no way to navigate back.
+    *   Ensure all financial accounts are interconnected (e.g., allocating money to an envelope automatically creates a corresponding expense transaction in the main budget).
+    *   Fix the inability to delete transactions within an envelope.
 
 **User's preferred language**: English
 
 **what currently exists?**
-A comprehensive full-stack financial management application built with a React frontend, FastAPI backend, and MongoDB database.
-
-**Key Features:**
-- **Dashboard:** Displays overall balance, total income, expenses, and investments. Includes a privacy mode to hide amounts.
-- **Budgeting:** Separate forms and lists for adding, viewing, editing, and deleting income and expense transactions.
-- **Investment Tracking:** A dedicated section to track investments by asset (e.g., AAPL, BTC). It calculates total portfolio value, gain/loss, and ROI using real-time prices fetched from the  library.
-- **Analytics:**
-    - Separate analytics sections for Budget and Investments.
-    - Pie charts for expense/income breakdowns.
-    - Line charts showing budget (net savings) and investment portfolio growth over time.
-    - A feature to search for a specific expense category and see spending grouped by month.
-- **Recurring Transactions:** A UI to create and manage recurring transactions (e.g., subscriptions).
-- **Multi-Currency Support:** Allows adding transactions in 10 different currencies, with conversions based on hardcoded rates.
-- **Voice Input:** A microphone button on the dashboard allows users to add transactions by speaking (e.g., I spent 0 on coffee).
-- **Educational Content:** A Why Investing section in the menu with guides on stocks, crypto, bonds, ETFs, and inflation.
-- **Tools:** A compound interest calculator.
-- **UX Improvements:** A collapsible sidebar, a loading screen for server wake-up, and a keep-alive feature to prevent the server from sleeping while the app is open.
+A comprehensive full-stack financial management application with a React frontend, FastAPI backend, and MongoDB. The application now includes:
+-   **User Authentication**: JWT-based login and registration system.
+-   **Admin Role**: A special admin user with access to an admin dashboard.
+-   **Subscription Model**: Stripe integration for monthly and yearly premium subscriptions. Non-premium users see a placeholder ad banner.
+-   **Financial Tracking**: Full CRUD for income, expenses, and investments.
+-   **Budget Envelopes**: A feature to create separate budgets for specific goals, with dedicated transaction tracking that syncs with the main budget.
+-   **Advanced Analytics**: Time-filterable pie charts and category spending trends.
+-   **AI Financial Assistant**: A chat interface that uses an LLM to answer natural language questions about the user's financial data.
+-   **Other Features**: Investment portfolio tracking, recurring transaction UI (backend logic pending), privacy mode, and voice input.
 
 **Last working item**:
-- **Last item agent was working:** Implementing a drill-down feature in the Category Spending Trends analytics. The user wants to click on a month (e.g., November: 50) and see a detailed list of all transactions that make up that total for the selected category.
-- **Status:** IN PROGRESS
-- **Agent Testing Done:** N
-- **Which testing method agent to use?** Frontend testing agent. The agent should verify that clicking on a month in the category trends section expands a list of individual transactions for that month, showing details like date, amount, and description.
+- **Last item agent was working:** The agent was trying to fix the AI Financial Assistant. The user reported that it provided inconsistent answers in different languages, gave incorrect calculations, and sometimes answered in Spanish instead of English. The agent attempted a fix by pre-summarizing data sent to the LLM and hardcoding the language preference in the system prompt.
+- **Status:** USER VERIFICATION PENDING
+- **Agent Testing Done:** N (The agent restarted the backend but did not re-test the AI with specific prompts after the last fix).
+- **Which testing method agent to use?** Manual testing. The next agent should:
+    1. Log in.
+    2. Navigate to the Financial Assistant.
+    3. Ask a question about finances in English (e.g., What was my total income last month?).
+    4. Ask the same question in a different language (e.g., Slovene).
+    5. Verify that the numerical answer is identical and the response language is English in both cases.
 - **User Testing Done:** N
 
 **All Pending/In progress Issue list**:
-- **Issue 1:** (P0) Complete the drill-down feature for Category Spending Trends.
-- **Issue 2:** (P1) Backend logic for recurring transactions is incomplete.
-- **Issue 3:** (P2) Currency exchange rates are hardcoded.
-- **Issue 4:** (P3) Voice transaction parsing is very basic.
+- **Issue 1:** (P0) AI Assistant is unreliable.
+- **Issue 2:** (P1) Cannot delete a transaction within a Budget Envelope.
+- **Issue 3:** (P2) Stripe checkout redirect fails during frontend testing.
+- **Issue 4:** (P3) Backend logic for recurring transactions is incomplete.
+- **Issue 5:** (P4) Currency exchange rates are hardcoded.
 
 **Issues Detail:**
-- **Issue 1: Complete drill-down in Category Trends**
-    - **Attempted fixes:** The agent started adding state () and an  handler to the  component to show/hide the transaction list for a selected month.
+- **Issue 1: AI Assistant is unreliable**
+    - **Attempted fixes:** The agent identified several issues with the  library usage (wrong import, incorrect method call, async/await issues, wrong parameters). The last fix involved pre-calculating financial summaries before sending them to the LLM and adding  to the system prompt to improve accuracy and control the output language.
     - **Next debug checklist:**
-        1.  Verify the state change in  when a month is clicked.
-        2.  Ensure the detailed transaction list is correctly filtered and displayed below the clicked month.
-        3.  Style the expanded list to be clear and readable, including date, description, and amount.
-        4.  Ensure clicking another month collapses the previous one and expands the new one.
-    - **Why fix this issue and what will be achieved with the fix?** This will fulfill the user's request for a more detailed view within the analytics, allowing them to inspect their spending habits more closely.
+        1.  Verify the fix by testing with multi-language prompts as described in Last working item.
+        2.  If the issue persists, check the backend logs () for errors during the API call to .
+        3.  Examine the prompt being constructed in  in the  function. Ensure the financial summary is accurate and the system message is correctly formatted.
+        4.  Consider making the prompt even more explicit about its role as a math-focused financial assistant.
+    - **Why fix this issue and what will be achieved with the fix?** The AI assistant is a key feature requested by the user. It needs to be reliable and accurate to be useful.
     - **Status:** IN PROGRESS
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** Backend
+    - **Blocked on other issue:** None
+
+- **Issue 2: Cannot delete a transaction within a Budget Envelope**
+    - **Attempted fixes:** The agent confirmed the delete button exists in  and the backend endpoint  exists in . The user confirmed that deleting a transaction from the main dashboard correctly deletes the linked envelope transaction, but the reverse (deleting directly from the envelope page) does not work. The agent did not find the root cause.
+    - **Next debug checklist:**
+        1.  Check the browser's developer console for any Javascript errors when the delete button is clicked in the  component.
+        2.  Add  statements inside the  function in  to ensure it is being called with the correct .
+        3.  Use  to test the  endpoint directly to confirm if the issue is on the frontend or backend.
+        4.  Review the backend implementation of this endpoint in  for any logic errors.
+    - **Why fix this issue and what will be achieved with the fix?** This is a core CRUD functionality for the Budget Envelopes feature.
+    - **Status:** IN PROGRESS
+    - **Is recurring issue?** Y
+    - **Should Test frontend/backend/both after fix?** Both
+    - **Blocked on other issue:** None
+
+- **Issue 3: Stripe checkout redirect fails during frontend testing**
+    - **Attempted fixes:** The agent confirmed the backend  endpoint works correctly via  and returns a valid Stripe URL. However, the frontend testing agent reported that the redirect fails after clicking the subscription button. The agent added  blocks and  to  but did not verify a fix.
+    - **Next debug checklist:**
+        1.  Review the  function in .
+        2.  Check the browser console logs from the last  run () for JavaScript errors related to the redirect. The agent did not do this.
+        3.  The frontend might be blocking the  redirect. Ensure this is being called correctly in the response handler for the API call.
+    - **Why fix this issue and what will be achieved with the fix?** The monetization of the app depends on a working Stripe checkout flow.
+    - **Status:** TESTING PENDING
     - **Is recurring issue?** N
     - **Should Test frontend/backend/both after fix?** Frontend
     - **Blocked on other issue:** None
 
-- **Issue 2: Backend logic for recurring transactions is incomplete**
-    - **Attempted fixes:** The agent created the API endpoints () and the MongoDB collection to store the rules for recurring transactions (e.g., deduct 5 for Netflix every month).
-    - **Next debug checklist:** There is no backend mechanism (like a cron job or a scheduler) to automatically execute these rules and create the actual expense/income transactions in the main  collection.
-    - **Why fix this issue and what will be achieved with this?** The Standing Orders feature is currently non-functional. Implementing this will make the feature work as the user expects, automatically adding transactions on schedule.
-    - **Status:** NOT STARTED (backend part)
-    - **Is recurring issue?** N
+- **Issue 4: Backend logic for recurring transactions is incomplete**
+    - **Attempted fixes:** None in this session. This is a carry-over from the previous state. The API and DB schema exist, but there is no scheduler to automatically create the transactions.
+    - **Next debug checklist:** Implement a scheduler (e.g., using  or a similar library in FastAPI) to run periodically, check the  collection, and create new entries in the  collection.
+    - **Why fix this issue and what will be achieved with this?** This will make the Standing Orders feature functional as the user expects.
+    - **Status:** NOT STARTED
+    - **Is recurring issue?** Y
     - **Should Test frontend/backend/both after fix?** Backend
     - **Blocked on other issue:** None
 
-- **Issue 3: Currency exchange rates are hardcoded**
-    - **Attempted fixes:** None. The agent implemented the  endpoint with a static dictionary of exchange rates.
-    - **Next debug checklist:** The backend should be updated to fetch real-time or daily exchange rates from a reliable third-party API instead of using hardcoded values.
-    - **Why fix this issue and what will be achieved with this?** This will make the multi-currency feature accurate and reliable for financial tracking.
+- **Issue 5: Currency exchange rates are hardcoded**
+    - **Attempted fixes:** None. This is a carry-over from the previous state.
+    - **Next debug checklist:** Integrate a third-party currency exchange API to fetch real-time or daily rates in the backend. Update the  endpoint.
+    - **Why fix this issue and what will be achieved with this?** This will provide accurate multi-currency financial tracking.
     - **Status:** NOT STARTED
-    - **Is recurring issue?** N
-    - **Should Test frontend/backend/both after fix?** Backend
-    - **Blocked on other issue:** None
-
-- **Issue 4: Voice transaction parsing is very basic**
-    - **Attempted fixes:** The backend endpoint  uses simple keyword matching to parse the user's speech.
-    - **Next debug checklist:** This implementation is brittle and will fail with slightly complex sentences. It should be improved, potentially using a more robust NLP library or an external AI service for entity extraction (amount, category, type).
-    - **Why fix this issue and what will be achieved with this?** This will make the voice input feature more robust, reliable, and user-friendly.
-    - **Status:** NOT STARTED
-    - **Is recurring issue?** N
+    - **Is recurring issue?** Y
     - **Should Test frontend/backend/both after fix?** Backend
     - **Blocked on other issue:** None
 
 **In progress Task List**:
-- **Task 1: Finish Category Trends Drill-Down UI**
-    - **Where to resume:** Continue editing . The click handlers and state management are partially implemented. The next step is to render the list of filtered transactions when a month is expanded.
-    - **What will be achieved with this?** A fully interactive category spending report as requested by the user.
+- **Task 1: Stabilize and Verify AI Assistant**
+    - **Where to resume:** Test the latest fix for the AI assistant as described in the Last working item section. If it fails, follow the debug checklist for Issue 1.
+    - **What will be achieved with this?** A reliable, accurate, and English-speaking AI financial assistant.
     - **Status:** IN PROGRESS
-    - **Should Test frontend/backend/both after fix?** Frontend
+    - **Should Test frontend/backend/both after fix?** Backend
     - **Blocked on something:** None
 
 **Upcoming and Future Tasks**
-- None. All user requests have been addressed or are in progress.
+- **Upcoming Tasks:**
+    - (P0) Resolve all pending issues, starting with the AI Assistant, Envelope Delete, and Stripe Checkout.
+    - (P1) Revisit the user's request for an **iOS/Android app export**. Clarify with the user that the current stack (React/FastAPI) cannot be directly exported. Propose building a Progressive Web App (PWA) for a native-like experience or using a mobile agent for a separate native build.
+- **Future Tasks:**
+    - (P2) Implement the backend scheduler for recurring transactions.
+    - (P3) Integrate a live currency exchange rate API.
+    - (P4) Improve the basic voice transaction parsing logic.
 
 **Completed work in this session**
-- **Financial Core:** Full CRUD API and UI for income, expense, and investment transactions.
-- **Investment Portfolio:** Portfolio tracking with real-time price fetching () and ROI calculation.
-- **Advanced Analytics:** Implemented budget/investment growth charts and category spending analysis.
-- **UI/UX Features:**
-    - Privacy Mode (hide numbers).
-    - Date filtering for transactions.
-    - Collapsible navigation sidebar.
-    - Improved loading screen and a server keep-alive mechanism.
-- **User Input Methods:** Added voice commands for creating transactions.
-- **Data Management:** Implemented editing for existing transactions.
-- **Internationalization:** Added multi-currency support (with static rates).
-- **Automation:** Created UI and storage for recurring transactions (backend execution pending).
-- **Educational Content:** Built a Why Investing section and a Compound Interest Calculator.
+- **User Authentication & Admin Role**:
+    - Implemented a full JWT-based authentication system (, ).
+    - Created Login and Register pages ().
+    - Established an  user with an admin dashboard ().
+- **Stripe Subscription Integration**:
+    - Added backend endpoints for creating Stripe checkout sessions ().
+    - Created a pricing page UI () and success/cancel pages.
+- **AdMob Integration**:
+    - Added a placeholder ad banner component ().
+- **Budget Envelopes Feature**:
+    - Created UI (, ) and backend endpoints for creating envelopes and managing transactions within them.
+    - Implemented logic to automatically sync envelope allocations/spending with the main budget transactions.
+- **Analytics Enhancements**:
+    - Added time-based filtering (Day, Week, Month, Year, Custom) to the budget analytics pie charts ().
+- **AI Financial Assistant**:
+    - Created a frontend component () and a backend endpoint () using the Emergent LLM Key to answer user queries.
+- **Major Refactoring & Integration**:
+    - Restructured the backend to use a  directory for modularity.
+    - Heavily modified  to manage authentication state, routing, and integrate all new features.
+- **Bug Fixes**:
+    - Fixed a bug where the login form only accepted emails, not usernames.
+    - Fixed a bug preventing the currency from being saved correctly when editing a transaction.
+    - Added a Back button and enabled subscription buttons on the .
+    - Fixed an issue where the Sign In button was not working due to a backend validation error.
 
 **Earlier issues found/mentioned but not fixed**
-- See All Pending/In progress Issue list. The main unaddressed items are the backend execution of recurring transactions and the use of static currency rates.
+- **Issue 1: Backend logic for recurring transactions is incomplete.** The UI was created in a previous session, but the core backend job to execute these transactions was never implemented.
+- **Issue 2: Currency exchange rates are hardcoded.** This was identified in the initial handoff and remains unfixed.
+- **Issue 3: Cannot delete a transaction within a Budget Envelope.** The user has reported this twice, and the agent has not been able to fix it.
 
 **Known issue recurrence from previous fork**
 - None.
@@ -126,66 +159,93 @@ A comprehensive full-stack financial management application built with a React f
 
 
 **Key Technical Concepts**
-- **Frontend:** React, TailwindCSS, ShadCN UI, Recharts (for charts), Browser Speech Recognition API.
-- **Backend:** FastAPI, MongoDB (with Pydantic models for data validation).
-- **Real-time Data:**  Python library for fetching stock/crypto prices.
-- **Architecture:** Full-stack monolithic repository with a separate frontend and backend.
+- **Frontend:** React, TailwindCSS, ShadCN UI, Recharts, , Context API.
+- **Backend:** FastAPI, MongoDB, Pydantic.
+- **Authentication:** JWT (JSON Web Tokens) with  and .
+- **Payments:** Stripe API for subscriptions.
+- **AI:** OpenAI GPT-4o-mini via  library and Emergent LLM Key.
 
 **key DB schema**
-- **transactions:** 
-- **recurring_transactions:** 
+- **users**: 
+- **transactions**: 
+- **budget_envelopes**: 
+- **envelope_transactions**: 
+- **recurring_transactions**: (Schema exists but is not functionally used by backend logic).
+
+**changes in tech stack**
+- **Backend**: Added , , , .
+- **Frontend**: Added , , .
 
 **All files of reference**
-*   : Contains the entire backend logic, including all API endpoints, database interactions, and business logic for calculations.
-*   : The core of the frontend application. It manages all state, data fetching, and composition of all other components.
-*   : The file currently being worked on to implement the drill-down feature.
-*   : Contains the pie charts and the  component.
-*   : Contains investment-specific charts.
-*   : The primary form for adding income/expenses.
+*   **Backend Core Logic**: 
+*   **Authentication**: , 
+*   **Subscriptions**: , 
+*   **AI Assistant**:  (the  endpoint), 
+*   **Budget Envelopes**:  (endpoints), , 
+*   **Frontend Main**: 
+*   **Auth Context**: 
+
+**Areas that need refactoring**:
+- The  file is becoming monolithic again. The new endpoints for Budget Envelopes and the AI Assistant were added directly to , while authentication and subscriptions were correctly modularized into the  directory. These endpoints should be moved to their own route files for consistency and maintainability.
+
+**key api endpoints**
+- **Auth**: ,  (login)
+- **Subscription**: , 
+- **Admin**:  (one-time setup)
+- **Budget Envelopes**: , , 
+- **AI**: 
 
 **Critical Info for New Agent**
-- **Recurring Transactions Incomplete:** The backend does **not** automatically create transactions based on the recurring rules. It only stores the rules. This is the biggest functional gap.
-- **Static Data:** Currency exchange rates are hardcoded in . This should be replaced with a live API for accuracy.
-- **Simplistic AI:** The voice-to-transaction feature in  uses very basic string matching. It is not robust and should be improved if the user relies on it heavily.
-- **Keep-Alive Mechanism:** The server keep-alive is a frontend polling mechanism. It only works if the user has the app open in a browser tab. The server will still sleep if the app is closed.
+- **Admin Login**: Use username  and password  to test admin-specific features.
+- **Emergent LLM Key**: The key is stored in  and is required for the AI Assistant. The correct usage of the  library was a major struggle; refer to the final implementation in 's  function.
+- **Mobile App Export**: This was a major user request that has not been fulfilled. The user agreed to a web app for now, but this topic will likely come up again. Be prepared to discuss PWA capabilities or the process of starting a new project with a mobile-specific agent.
+- **Stripe Keys**: A test Stripe key is managed by the environment. Do not ask the user for keys. The implementation uses this key.
 
-**Last 10 User Messages and any pending user messages**
-1.  **Request:** Fix analytics legend overflow.
-    - **Status:** Completed. The agent made the legends scrollable.
-2.  **Request:** Add recurring transactions (standing orders) and multi-currency support.
-    - **Status:** Completed (with pending backend logic for recurrence).
-3.  **Request:** Add analytics to track spending on a specific category over time (e.g., search for groceries and see monthly totals).
-    - **Status:** Completed.
-4.  **Feedback:** The category trends feature is sloppy and has too many graphics. Simplify it.
-    - **Status:** Completed. The agent replaced the chart with a simple text-based list.
-5.  **Request:** In the simplified category trends, make the months clickable to drill down and see individual transactions.
-    - **Status:** **IN PROGRESS**. This is the last active task.
-6.  **Request:** Add voice input to create transactions. (Handled before the above requests).
-    - **Status:** Completed.
-7.  **Request:** Allow editing previous transactions. (Handled before the above requests).
-    - **Status:** Completed.
-8.  **Question:** Can you export to an iOS/Android app? (Handled before the above requests).
-    - **Status:** Answered by .
-9.  **Request:** Allow deleting investment transactions. (Handled before the above requests).
-    - **Status:** Completed.
-10. **Feedback:** Server wake-up time is too long. (Handled before the above requests).
-    - **Status:** Answered by , and a loading screen/keep-alive was implemented.
+**documents and test_reports created in this job**
+- None.
+
+**Last 10 User Messages and any pending HUMAN messages**
+1.  **user**: ai is working. but when I ask it about my income in Slovene and English I get two different answers. make sure it adds the numbers correctly and is good in maths
+2.  **user**: ai assistant started answering in Spanish. make it that it always answers in English. make sure it starts doing calculations correctly
+3.  **user**: ai assistant it says failed to answer when I ask it something. I still can't delete a transaction on an envelope. if I delete it on dashboard delete it on an envelope as well. fix all this stuff
+4.  **user**: when I deleted transaction on dashboard it deleted it on an envelope as well. you did good. I still can't delete transaction in the envelope folder. ai assistant was thinking but it still doesn't answer. fix it
+5.  **user**: Everything that is in the app is the same account... I still cannot delete a transaction on my envelopes... If I edit the transaction on envelope... Make the same added on my dashboard on my savings account as well. It’s all connected... Also make it that I can have like a search engine... if I ask it, how much money did they make in tips in the month of November? I want you to answer me. You can use ChatGPT...
+6.  **user**: Yes, I can see it on my envelope, but if I make a transaction from my savings account, I want you to also deduct the same amount of money from my savings account. and make it that I can edit and delete a transaction in an envelope
+7.  **user**: Make it that when I allocate money to my budget envelopes, the same amount automatically gets deducted from my savings account so it's shown on my transactions as well as an expense.
+8.  **user**: You are getting closer. So on analytics and pie charts for each month, week, day separately. Also add a year and make it like a calendar where I can pick... also the currency's still not correct... on the Budget app... when I press on it, it opens up like a new dashboard and I have money there and I can add different expenses...
+9.  **user**: Also, make a pie chart for each month separately... For example, if somebody wants to go on vacation and set a budget of ,000... keep a separate budget for this specific vacation... And also, when you edit, different currencies. Uh, whenever I pick any of the currencies, it automatically goes to US dollars. Can you fix that?
+10. **user**: When i press upgrade to premium it opens correctly but i cant pick any options and I cant go back
 
 **Project Health Check:**
-- **Broken:** The core functionality of Standing Orders is broken because the backend does not automatically process them.
-- **Mocked:** Currency exchange rates are effectively mocked with static, hardcoded values.
+- **Broken**:
+    - **AI Assistant**: Functionality is unreliable; gives inconsistent answers and may not respect language settings.
+    - **Envelope Transaction Deletion**: Deleting a transaction directly from the envelope detail page does not work.
+    - **Stripe Checkout**: The final redirect to the Stripe page is failing on the frontend.
+    - **Recurring Transactions**: Feature is non-functional as the backend scheduler is missing.
+- **Mocked**:
+    - **Currency Rates**: Still using a hardcoded dictionary of exchange rates.
+    - **Google AdMob**: A UI placeholder  exists, but it's not connected to the AdMob SDK or a real ad account.
 
 **3rd Party Integrations**
-- **TradingView TA:** Used via a Python library () on the backend to fetch real-time prices for stocks and cryptocurrencies. This does not appear to require an API key.
+- **Stripe (Payments)** — uses a test API key from the environment.
+- **OpenAI GPT-4o-mini** — uses Emergent LLM Key via  library.
+- **TradingView TA** — used via Python library for investment price fetching, no key required.
+- **Google AdMob** — UI placeholder only, not a real integration.
 
 **Testing status**
-- **Testing agent used after significant changes:** NO. The agent primarily used  for backend testing and checked for frontend compilation success.
-- **Troubleshoot agent used after agent stuck in loop:** NO. The agent has not been stuck.
+- **Testing agent used after significant changes:** YES. It was used to test the authentication and subscription flow. It found critical bugs with React hooks and the Stripe redirect, which the agent attempted to fix.
+- **Troubleshoot agent used after agent stuck in loop:** NO.
 - **Test files created:** None.
-- **Known regressions:** None identified.
+- **Known regressions:** None identified, but several new features are buggy (AI, envelope delete, Stripe redirect).
 
 **Credentials to test flow:**
-- No authentication is implemented. The application is open to use.
+- **Admin User**:
+    - Username: 
+    - Password: 
+- **Regular User**: A new user can be created via the registration page.
 
 **What agent forgot to execute**
-- The agent forgot to implement the backend scheduler or cron job required to make the recurring transactions feature functional. It only built the part that saves the user's intent.</analysis>
+- The agent never fully verified the fix for the Stripe checkout redirect after the testing agent reported it as broken.
+- The agent did not follow up on the user's report about being unable to delete transactions in an envelope, despite the user mentioning it multiple times.
+- The agent did not circle back to the original pending tasks from the first handoff: implementing the recurring transaction scheduler and fetching live currency rates.
+- The agent did not resolve the mobile app export request definitively. It was left open-ended after an initial explanation.</analysis>
