@@ -26,6 +26,7 @@ import { RecurringTransactions } from "@/components/RecurringTransactions";
 import { BudgetEnvelopes } from "@/components/BudgetEnvelopes";
 import { FinancialAssistant } from "@/components/FinancialAssistant";
 import { AdminDashboard } from "@/components/admin/AdminDashboard";
+import { CustomCategoryManager } from "@/components/CustomCategoryManager";
 import { InvestingOverview } from "@/components/education/InvestingOverview";
 import { CryptoGuide } from "@/components/education/CryptoGuide";
 import { StocksGuide } from "@/components/education/StocksGuide";
