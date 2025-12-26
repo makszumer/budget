@@ -664,6 +664,11 @@ class VoiceTransactionResponse(BaseModel):
     success: bool
     message: Optional[str] = None
     data: Optional[TransactionCreate] = None
+    needs_clarification: bool = False
+    suggested_categories: Optional[List[str]] = None
+    parsed_amount: Optional[float] = None
+    parsed_type: Optional[str] = None
+    parsed_description: Optional[str] = None
 
 @api_router.post("/parse-voice-transaction", response_model=VoiceTransactionResponse)
 async def parse_voice_transaction(request: VoiceTransactionRequest):
@@ -718,11 +723,15 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
             }
         }
         
-        category = "Other"
+        # Track confidence - if we find a match it's confident
+        category = None
+        category_confident = False
+        
         if transaction_type in category_keywords:
             for cat, keywords in category_keywords[transaction_type].items():
                 if any(keyword in text for keyword in keywords):
-                    category = cat.capitalize()
+                    category = cat
+                    category_confident = True
                     break
         
         # Map to actual category names
@@ -742,7 +751,7 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
             "bonus": "Overtime / bonuses"
         }
         
-        category = category_map.get(category.lower(), "Other / Uncategorized")
+        mapped_category = category_map.get(category, "Other / Uncategorized") if category else "Other / Uncategorized"
         
         # Extract description (remaining text after removing amount)
         description = text
@@ -755,6 +764,24 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
         if not description:
             description = f"{transaction_type.capitalize()} via voice"
         
+        # If category is not confident, ask for clarification
+        if not category_confident:
+            # Suggest common categories based on type
+            if transaction_type == "expense":
+                suggested = ["Groceries", "Restaurants / Cafes", "Fuel / Gas", "Utilities", "Entertainment", "Other / Uncategorized"]
+            else:
+                suggested = ["Salary / wages", "Freelance income", "Overtime / bonuses", "Other Income"]
+            
+            return VoiceTransactionResponse(
+                success=False,
+                needs_clarification=True,
+                message="I couldn't determine the category. Please select one:",
+                suggested_categories=suggested,
+                parsed_amount=amount,
+                parsed_type=transaction_type,
+                parsed_description=description[:100]
+            )
+        
         # Use today's date
         today = date_module.today().isoformat()
         
@@ -762,7 +789,7 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
             type=transaction_type,
             amount=amount,
             description=description[:100],  # Limit length
-            category=category,
+            category=mapped_category,
             date=today
         )
         
