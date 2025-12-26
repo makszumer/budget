@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
@@ -75,6 +75,14 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           label="Budget Envelopes"
           page="budget-envelopes"
           active={currentPage === "budget-envelopes"}
+        />
+
+        {/* Custom Categories */}
+        <MenuItem
+          icon={Tag}
+          label="Custom Categories"
+          page="custom-categories"
+          active={currentPage === "custom-categories"}
         />
 
         {/* AI Financial Assistant */}
