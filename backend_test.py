@@ -59,7 +59,10 @@ class BackendTester:
             # Test monthly subscription checkout creation
             response = self.session.post(
                 f"{BASE_URL}/subscription/create-checkout",
-                json={"package": "monthly"},
+                json={
+                    "package_id": "monthly",
+                    "origin_url": "https://fintrack-522.preview.emergentagent.com"
+                },
                 timeout=10
             )
             
