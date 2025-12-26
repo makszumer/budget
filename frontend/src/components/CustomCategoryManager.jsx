@@ -46,12 +46,21 @@ export const CustomCategoryManager = () => {
   const [categoryToDelete, setCategoryToDelete] = useState(null);
 
   useEffect(() => {
-    fetchCategories();
+    if (token) {
+      fetchCategories();
+    } else {
+      // No token yet, stop loading
+      setLoading(false);
+    }
   }, [token]);
 
   const fetchCategories = async () => {
-    if (!token) return;
+    if (!token) {
+      setLoading(false);
+      return;
+    }
     
+    setLoading(true);
     try {
       const response = await axios.get(`${API}/categories/custom`, {
         headers: { Authorization: `Bearer ${token}` }
