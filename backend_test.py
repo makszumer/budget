@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Backend API Testing Script for Financial Tracker
-Tests the newly implemented features: Premium Buttons, Custom Categories, Voice Input
+Tests the newly implemented features: Daily Quote Feature and Voice Input Improvements
 """
 
 import requests
