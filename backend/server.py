@@ -21,6 +21,7 @@ sys.path.append(str(ROOT_DIR))
 from routes.users import router as users_router
 from routes.subscription import router as subscription_router
 from routes.admin import router as admin_router
+from auth import get_current_user, get_current_user_optional
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
