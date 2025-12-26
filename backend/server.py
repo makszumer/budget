@@ -659,19 +659,24 @@ from datetime import date as date_module
 
 class VoiceTransactionRequest(BaseModel):
     text: str
+    user_id: Optional[str] = None  # To fetch user's custom categories
 
 class VoiceTransactionResponse(BaseModel):
     success: bool
     message: Optional[str] = None
     data: Optional[TransactionCreate] = None
     needs_clarification: bool = False
+    needs_type_clarification: bool = False  # New: ask if income or expense
     suggested_categories: Optional[List[str]] = None
     parsed_amount: Optional[float] = None
     parsed_type: Optional[str] = None
     parsed_description: Optional[str] = None
 
 @api_router.post("/parse-voice-transaction", response_model=VoiceTransactionResponse)
-async def parse_voice_transaction(request: VoiceTransactionRequest):
+async def parse_voice_transaction(
+    request: VoiceTransactionRequest,
+    user_id: Optional[str] = None
+):
     text = request.text.lower()
     
     try:
@@ -679,7 +684,9 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
         amount_patterns = [
             r'\$?(\d+(?:\.\d{2})?)',
             r'(\d+)\s*dollars?',
-            r'(\d+)\s*bucks?'
+            r'(\d+)\s*bucks?',
+            r'(\d+)\s*euros?',
+            r'€(\d+(?:\.\d{2})?)'
         ]
         
         amount = None
@@ -692,38 +699,89 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
         if not amount:
             return VoiceTransactionResponse(
                 success=False,
-                message="Could not detect amount. Please say the dollar amount clearly."
+                message="Could not detect amount. Please say the dollar amount clearly (e.g., '50 dollars' or '$50')."
             )
         
-        # Determine transaction type
-        transaction_type = "expense"  # default
-        if any(word in text for word in ["earned", "income", "salary", "paid me", "received", "got paid"]):
-            transaction_type = "income"
-        elif any(word in text for word in ["invested", "bought stock", "bought crypto", "investment"]):
-            transaction_type = "investment"
+        # ============ IMPROVED INTENT DETECTION ============
+        # Keywords that strongly indicate INCOME
+        income_keywords = [
+            "earned", "income", "salary", "wages", "paycheck", 
+            "paid me", "received", "got paid", "made money",
+            "bonus", "commission", "tip", "tips", "refund",
+            "profit", "revenue", "freelance", "gig money"
+        ]
         
-        # Extract category based on keywords
+        # Keywords that strongly indicate EXPENSE
+        expense_keywords = [
+            "spent", "expense", "paid for", "bought", "purchased",
+            "cost me", "charged", "paid", "payment", "bill",
+            "subscription", "rent", "groceries", "food", "gas",
+            "utilities", "shopping"
+        ]
+        
+        # Keywords for investment
+        investment_keywords = [
+            "invested", "investment", "bought stock", "bought stocks",
+            "bought crypto", "stock purchase", "etf", "mutual fund"
+        ]
+        
+        # Count matches for each type
+        income_score = sum(1 for kw in income_keywords if kw in text)
+        expense_score = sum(1 for kw in expense_keywords if kw in text)
+        investment_score = sum(1 for kw in investment_keywords if kw in text)
+        
+        # Determine transaction type based on scores
+        transaction_type = None
+        type_confident = False
+        
+        if investment_score > 0 and investment_score >= income_score and investment_score >= expense_score:
+            transaction_type = "investment"
+            type_confident = True
+        elif income_score > expense_score:
+            transaction_type = "income"
+            type_confident = income_score >= 1  # Need at least 1 keyword match
+        elif expense_score > income_score:
+            transaction_type = "expense"
+            type_confident = expense_score >= 1
+        elif expense_score == income_score and expense_score > 0:
+            # Ambiguous - both have equal matches, ask for clarification
+            type_confident = False
+        else:
+            # No keywords found at all - need to ask
+            type_confident = False
+        
+        # If type is not confident, ask for clarification FIRST
+        if not type_confident:
+            return VoiceTransactionResponse(
+                success=False,
+                needs_type_clarification=True,
+                message="Is this money you received (income) or money you spent (expense)?",
+                parsed_amount=amount,
+                parsed_description=text[:100]
+            )
+        
+        # ============ CATEGORY DETECTION ============
         category_keywords = {
             "expense": {
-                "groceries": ["grocery", "groceries", "food shopping", "supermarket"],
-                "restaurants": ["restaurant", "eating out", "dinner", "lunch out", "coffee shop", "cafe"],
-                "gas": ["gas", "fuel", "petrol"],
-                "utilities": ["electricity", "water bill", "utility", "utilities", "internet"],
-                "rent": ["rent", "mortgage"],
-                "car": ["car payment", "auto"],
-                "gym": ["gym", "fitness", "workout"],
-                "clothing": ["clothes", "clothing", "shirt", "shoes"],
-                "entertainment": ["movie", "concert", "entertainment", "netflix", "spotify"],
-                "transport": ["uber", "lyft", "taxi", "bus", "train", "transportation"]
+                "groceries": ["grocery", "groceries", "food shopping", "supermarket", "food"],
+                "restaurants": ["restaurant", "eating out", "dinner", "lunch", "coffee shop", "cafe", "coffee"],
+                "gas": ["gas", "fuel", "petrol", "gasoline"],
+                "utilities": ["electricity", "water bill", "utility", "utilities", "internet", "electric", "power bill"],
+                "rent": ["rent", "mortgage", "housing"],
+                "car": ["car payment", "auto", "car insurance"],
+                "gym": ["gym", "fitness", "workout", "exercise"],
+                "clothing": ["clothes", "clothing", "shirt", "shoes", "apparel"],
+                "entertainment": ["movie", "concert", "entertainment", "netflix", "spotify", "streaming"],
+                "transport": ["uber", "lyft", "taxi", "bus", "train", "transportation", "transit"]
             },
             "income": {
-                "salary": ["salary", "paycheck", "wages"],
-                "freelance": ["freelance", "gig", "side hustle"],
-                "bonus": ["bonus", "overtime"]
+                "salary": ["salary", "paycheck", "wages", "pay"],
+                "freelance": ["freelance", "gig", "side hustle", "contract work"],
+                "bonus": ["bonus", "overtime", "commission"],
+                "tips": ["tip", "tips", "gratuity"]
             }
         }
         
-        # Track confidence - if we find a match it's confident
         category = None
         category_confident = False
         
@@ -748,35 +806,56 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
             "transport": "Public Transport",
             "salary": "Salary / wages",
             "freelance": "Freelance income",
-            "bonus": "Overtime / bonuses"
+            "bonus": "Overtime / bonuses",
+            "tips": "Commissions / tips"
         }
         
-        mapped_category = category_map.get(category, "Other / Uncategorized") if category else "Other / Uncategorized"
+        mapped_category = category_map.get(category) if category else None
         
-        # Extract description (remaining text after removing amount)
+        # Extract description
         description = text
         for pattern in amount_patterns:
             description = re.sub(pattern, "", description)
         
         # Clean up description
-        description = re.sub(r'\b(spent|paid|bought|earned|received|got|for|on|at|today|yesterday)\b', '', description)
+        description = re.sub(r'\b(spent|paid|bought|earned|received|got|for|on|at|today|yesterday|dollars?|bucks?|add|an?)\b', '', description)
         description = description.strip()
-        if not description:
+        if not description or len(description) < 3:
             description = f"{transaction_type.capitalize()} via voice"
         
         # If category is not confident, ask for clarification
-        if not category_confident:
-            # Suggest common categories based on type
+        if not category_confident or not mapped_category:
+            # Get user's custom categories if user_id provided
+            custom_cats = []
+            user_id_to_use = request.user_id or user_id
+            if user_id_to_use:
+                try:
+                    cat_type = "expense" if transaction_type == "expense" else "income"
+                    user_cats = await db.custom_categories.find(
+                        {"user_id": user_id_to_use, "type": cat_type},
+                        {"_id": 0, "name": 1}
+                    ).to_list(20)
+                    custom_cats = [c["name"] for c in user_cats]
+                except:
+                    pass
+            
+            # Build suggested categories list
             if transaction_type == "expense":
-                suggested = ["Groceries", "Restaurants / Cafes", "Fuel / Gas", "Utilities", "Entertainment", "Other / Uncategorized"]
+                suggested = custom_cats + ["Groceries", "Restaurants / Cafes", "Fuel / Gas", "Utilities", "Entertainment", "Other / Uncategorized"]
+            elif transaction_type == "income":
+                suggested = custom_cats + ["Salary / wages", "Freelance income", "Commissions / tips", "Overtime / bonuses", "Other Income"]
             else:
-                suggested = ["Salary / wages", "Freelance income", "Overtime / bonuses", "Other Income"]
+                suggested = ["Stocks", "Bonds", "Crypto", "Real Estate", "Other"]
+            
+            # Remove duplicates while preserving order
+            seen = set()
+            suggested = [x for x in suggested if not (x in seen or seen.add(x))]
             
             return VoiceTransactionResponse(
                 success=False,
                 needs_clarification=True,
-                message="I couldn't determine the category. Please select one:",
-                suggested_categories=suggested,
+                message=f"What category is this {transaction_type}?",
+                suggested_categories=suggested[:8],  # Limit to 8 options
                 parsed_amount=amount,
                 parsed_type=transaction_type,
                 parsed_description=description[:100]
@@ -788,7 +867,7 @@ async def parse_voice_transaction(request: VoiceTransactionRequest):
         transaction_data = TransactionCreate(
             type=transaction_type,
             amount=amount,
-            description=description[:100],  # Limit length
+            description=description[:100],
             category=mapped_category,
             date=today
         )
