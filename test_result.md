@@ -161,11 +161,11 @@ frontend:
 
   - task: "Subscription Pricing Page"
     implemented: true
-    working: "NA"
+    working: false
     file: "/app/frontend/src/components/subscription/PricingPage.jsx"
-    stuck_count: 1
+    stuck_count: 2
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "testing"
@@ -185,6 +185,9 @@ frontend:
       - working: true
         agent: "testing"
         comment: "✅ BACKEND TESTING COMPLETE: Premium buttons fix working perfectly. Backend API POST /api/subscription/create-checkout successfully returns valid Stripe checkout URL (https://checkout.stripe.com/c/pay/cs_test_...) and session ID. Authentication with admin credentials working correctly. Stripe integration properly configured and functional."
+      - working: false
+        agent: "testing"
+        comment: "FRONTEND TESTING FAILED: ✅ Login with admin/admin works correctly. ✅ 'Upgrade to Premium' button found in top-right corner. ✅ Pricing page loads with correct Monthly (€4) and Yearly (€36) options. ✅ 'Get Monthly Premium' button is enabled and clickable. ❌ CRITICAL: Stripe checkout redirect completely fails - clicking button does not redirect to checkout.stripe.com. Frontend redirect logic is broken despite backend API working correctly. Need to investigate JavaScript redirect implementation."
 
   - task: "Logout & Re-login Flow"
     implemented: true
