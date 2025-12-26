@@ -339,6 +339,9 @@ function MainApp() {
     
     return (
       <div className="space-y-8">
+        {/* Quote of the Day */}
+        <QuoteOfDay />
+
         {/* Header */}
         <div className="mb-8 flex items-center justify-between">
           <div>
