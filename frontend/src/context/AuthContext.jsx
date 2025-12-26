@@ -28,6 +28,11 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   const fetchUserProfile = async () => {
+    if (!token) {
+      setLoading(false);
+      return;
+    }
+    
     try {
       const response = await axios.get(`${API}/users/me`, {
         headers: { Authorization: `Bearer ${token}` }
@@ -35,7 +40,11 @@ export const AuthProvider = ({ children }) => {
       setUser(response.data);
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
-      logout();
+      // Only logout if it's a 401 error (unauthorized)
+      // This prevents logout on network errors or other issues
+      if (error.response?.status === 401) {
+        logout();
+      }
     } finally {
       setLoading(false);
     }
