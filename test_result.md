@@ -236,15 +236,18 @@ frontend:
 
   - task: "Custom Categories Feature"
     implemented: true
-    working: "NA"
+    working: true
     file: "/app/frontend/src/components/CustomCategoryManager.jsx, /app/backend/server.py"
     stuck_count: 0
     priority: "high"
-    needs_retesting: true
+    needs_retesting: false
     status_history:
       - working: "NA"
         agent: "main"
         comment: "Implemented custom categories feature: Backend CRUD endpoints at /api/categories/custom, Frontend management UI accessible via sidebar, Categories appear in transaction form dropdowns with '✨ Custom Categories' header"
+      - working: true
+        agent: "testing"
+        comment: "✅ BACKEND TESTING COMPLETE: Custom categories feature fully working. All CRUD operations tested successfully: GET /api/categories/custom (retrieves existing categories), POST /api/categories/custom (creates new expense/income categories), PUT /api/categories/custom/{id} (updates category names), DELETE /api/categories/custom/{id} (removes categories). Created test categories 'Coffee Shop Visits' (expense) and 'Freelance Tips' (income), updated and verified they appear in category lists correctly."
 
   - task: "Voice Input Clarification Flow"
     implemented: true
