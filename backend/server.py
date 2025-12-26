@@ -888,35 +888,6 @@ async def parse_voice_transaction(
             parsed_type=transaction_type,
             parsed_description=description[:100]
         )
-            seen = set()
-            suggested = [x for x in suggested if not (x in seen or seen.add(x))]
-            
-            return VoiceTransactionResponse(
-                success=False,
-                needs_clarification=True,
-                message=f"What category is this {transaction_type}?",
-                suggested_categories=suggested[:8],  # Limit to 8 options
-                parsed_amount=amount,
-                parsed_type=transaction_type,
-                parsed_description=description[:100]
-            )
-        
-        # Use today's date
-        today = date_module.today().isoformat()
-        
-        transaction_data = TransactionCreate(
-            type=transaction_type,
-            amount=amount,
-            description=description[:100],
-            category=mapped_category,
-            date=today
-        )
-        
-        return VoiceTransactionResponse(
-            success=True,
-            data=transaction_data,
-            message=f"Created {transaction_type} of ${amount}"
-        )
         
     except Exception as e:
         logging.error(f"Error parsing voice transaction: {e}")
