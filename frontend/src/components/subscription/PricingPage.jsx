@@ -22,12 +22,10 @@ export const PricingPage = ({ onGoBack }) => {
     }
 
     setLoadingPackage(packageId);
-    console.log('Loading package set to:', packageId);
     
     try {
       const originUrl = window.location.origin;
       console.log('Making API request to:', `${API}/subscription/create-checkout`);
-      console.log('Package ID:', packageId, 'Origin URL:', originUrl);
       
       const response = await axios.post(
         `${API}/subscription/create-checkout`,
@@ -44,17 +42,24 @@ export const PricingPage = ({ onGoBack }) => {
       
       // Redirect to Stripe checkout
       const checkoutUrl = response.data.checkout_url;
-      console.log('Redirecting to:', checkoutUrl);
       
       if (checkoutUrl) {
         toast.success('Redirecting to Stripe checkout...');
-        window.location.href = checkoutUrl;
+        // Use setTimeout to ensure toast shows before redirect
+        setTimeout(() => {
+          // Use window.open as fallback if location.href doesn't work
+          try {
+            window.location.assign(checkoutUrl);
+          } catch (redirectError) {
+            console.error('Redirect error, trying window.open:', redirectError);
+            window.open(checkoutUrl, '_self');
+          }
+        }, 500);
       } else {
         throw new Error('No checkout URL received');
       }
     } catch (error) {
       console.error('Checkout error:', error);
-      console.error('Error response:', error.response);
       const errorMessage = error.response?.data?.detail || error.message || 'Failed to create checkout session';
       toast.error(errorMessage);
       setLoadingPackage(null);
