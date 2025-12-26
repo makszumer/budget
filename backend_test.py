@@ -12,7 +12,7 @@ from typing import Dict, Any
 # Configuration
 BASE_URL = "https://fintrack-522.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {
-    "username": "admin",
+    "email": "admin",
     "password": "admin"
 }
 
