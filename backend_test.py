@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 """
 Backend API Testing Script for Financial Tracker
-Tests the newly implemented features: Daily Quote Feature and Voice Input Improvements
+Tests analytics endpoints for custom date range filtering functionality
 """
 
 import requests
 import json
 import sys
 from typing import Dict, Any
+from datetime import datetime, date
 
 # Configuration
 BASE_URL = "https://fintrack-522.preview.emergentagent.com/api"
