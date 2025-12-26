@@ -231,6 +231,30 @@ frontend:
         agent: "testing"
         comment: "✅ WORKING: Financial tracking features work correctly. Successfully tested adding expense ($50, 'Groceries') - transaction appears in transaction list immediately. Dashboard shows financial summary cards (Total Income, Total Expenses, Balance, Total Investments) with real data. Both expense and income forms are functional for free users."
 
+  - task: "Custom Categories Feature"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/CustomCategoryManager.jsx, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented custom categories feature: Backend CRUD endpoints at /api/categories/custom, Frontend management UI accessible via sidebar, Categories appear in transaction form dropdowns with '✨ Custom Categories' header"
+
+  - task: "Voice Input Clarification Flow"
+    implemented: true
+    working: "NA"
+    file: "/app/frontend/src/components/VoiceInput.jsx, /app/backend/server.py"
+    stuck_count: 0
+    priority: "high"
+    needs_retesting: true
+    status_history:
+      - working: "NA"
+        agent: "main"
+        comment: "Implemented clarification flow: Backend returns needs_clarification=true when category is uncertain (no keyword match), Frontend shows dialog with suggested categories for user to confirm before creating transaction"
+
 backend:
   - task: "User Registration API"
     implemented: true
