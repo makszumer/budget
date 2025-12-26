@@ -175,8 +175,24 @@ export const CustomCategoryManager = () => {
     );
   }
 
+  if (!token) {
+    return (
+      <Card>
+        <CardContent className="flex items-center justify-center py-8">
+          <p className="text-slate-500">Please log in to manage custom categories</p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <div className="space-y-6">
+      {/* Page Header */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-slate-900 mb-2">Custom Categories</h1>
+        <p className="text-slate-600">Create and manage your personal expense and income categories</p>
+      </div>
+      
       {/* Add New Category Form */}
       <Card>
         <CardHeader>
