@@ -161,11 +161,11 @@ frontend:
 
   - task: "Subscription Pricing Page"
     implemented: true
-    working: false
+    working: "NA"
     file: "/app/frontend/src/components/subscription/PricingPage.jsx"
     stuck_count: 1
     priority: "high"
-    needs_retesting: false
+    needs_retesting: true
     status_history:
       - working: "NA"
         agent: "testing"
@@ -179,6 +179,9 @@ frontend:
       - working: false
         agent: "testing"
         comment: "COMPREHENSIVE TEST COMPLETED: ✅ Pricing page UI improvements working perfectly - back button visible, clickable, and successfully returns to dashboard. ✅ Monthly/Yearly pricing options display correctly (€4/€36). ✅ 'Get Monthly Premium' button is enabled and clickable. ❌ CRITICAL ISSUE: Stripe checkout redirect fails - clicking subscription buttons does not redirect to Stripe checkout, stays on same page. Authentication working (logged in as admin successfully). UI navigation and back button functionality working as expected, but core payment flow broken."
+      - working: "NA"
+        agent: "main"
+        comment: "Fixed redirect handling: Added setTimeout before redirect, changed window.location.href to window.location.assign with window.open fallback. Backend confirmed working via curl test - returns valid Stripe checkout URL."
 
   - task: "Logout & Re-login Flow"
     implemented: true
