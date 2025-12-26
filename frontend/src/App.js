@@ -12,6 +12,7 @@ import { Sidebar } from "@/components/Sidebar";
 import { LoadingScreen } from "@/components/LoadingScreen";
 import { DateFilter } from "@/components/DateFilter";
 import { VoiceInput } from "@/components/VoiceInput";
+import { QuoteOfDay } from "@/components/QuoteOfDay";
 import { Eye, EyeOff, LogOut, Crown } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
