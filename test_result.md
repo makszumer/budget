@@ -347,7 +347,10 @@ test_plan:
     - "Premium Button Fix"
     - "Custom Categories Feature"
     - "Voice Input Clarification"
-  stuck_tasks: []
+  stuck_tasks:
+    - "Subscription Pricing Page"
+    - "Custom Categories Feature"
+    - "Voice Input Clarification Flow"
   test_all: false
   test_priority: "high_first"
 
