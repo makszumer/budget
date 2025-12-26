@@ -382,17 +382,15 @@ class BackendTester:
         if not self.login_admin():
             return {
                 "login": False,
-                "premium_buttons": False,
-                "custom_categories": False,
-                "voice_input": False
+                "daily_quote": False,
+                "voice_input_improvements": False
             }
         
         # Run tests
         results = {
             "login": True,
-            "premium_buttons": self.test_premium_buttons_fix(),
-            "custom_categories": self.test_custom_categories_feature(),
-            "voice_input": self.test_voice_input_clarification()
+            "daily_quote": self.test_daily_quote_feature(),
+            "voice_input_improvements": self.test_voice_input_improvements()
         }
         
         # Summary
