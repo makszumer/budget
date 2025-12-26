@@ -1,11 +1,13 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
-import { Eye, EyeOff, Calendar } from "lucide-react";
+import { Eye, EyeOff, Calendar, Loader2, AlertCircle, X } from "lucide-react";
 import { CategoryTrends } from "@/components/CategoryTrends";
+import { toast } from "sonner";
 
 const COLORS = {
   expenses: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6'],
@@ -15,10 +17,15 @@ const COLORS = {
 export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, transactions = [] }) => {
   const [showExpenseLegend, setShowExpenseLegend] = useState(false);
   const [showIncomeLegend, setShowIncomeLegend] = useState(false);
-  const [pieChartFilter, setPieChartFilter] = useState("all"); // all, daily, weekly, monthly, custom
+  const [pieChartFilter, setPieChartFilter] = useState("all");
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [isFiltering, setIsFiltering] = useState(false);
+  const [filterError, setFilterError] = useState("");
+  
+  // Store the active custom range for display
+  const [activeCustomRange, setActiveCustomRange] = useState(null);
 
   const formatAmount = (amount) => {
     if (privacyMode) {
@@ -30,6 +37,42 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(amount);
+  };
+
+  // Format date for display
+  const formatDateDisplay = (dateStr) => {
+    return new Date(dateStr).toLocaleDateString('en-US', { 
+      month: 'short', 
+      day: 'numeric', 
+      year: 'numeric' 
+    });
+  };
+
+  // Get current filter label for display
+  const getFilterLabel = () => {
+    switch (pieChartFilter) {
+      case "daily":
+        return `Today (${new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+      case "weekly":
+        const now = new Date();
+        const currentDay = now.getDay();
+        const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
+        const monday = new Date(now);
+        monday.setDate(now.getDate() + mondayOffset);
+        const sunday = new Date(monday);
+        sunday.setDate(monday.getDate() + 6);
+        return `This Week (${monday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${sunday.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })})`;
+      case "monthly":
+        return `This Month (${new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' })})`;
+      case "yearly":
+        return `Year ${selectedYear}`;
+      case "custom":
+        return activeCustomRange 
+          ? `${formatDateDisplay(activeCustomRange.start)} – ${formatDateDisplay(activeCustomRange.end)}`
+          : "Custom Range";
+      default:
+        return "All Time";
+    }
   };
 
   // Filter transactions based on pie chart filter
@@ -47,7 +90,6 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
         tomorrow.setDate(tomorrow.getDate() + 1);
         return transactionDate >= today && transactionDate < tomorrow;
       } else if (pieChartFilter === "weekly") {
-        // Current week (Monday to Sunday)
         const currentDay = now.getDay();
         const mondayOffset = currentDay === 0 ? -6 : 1 - currentDay;
         const monday = new Date(now);
@@ -59,23 +101,44 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
         
         return transactionDate >= monday && transactionDate < sunday;
       } else if (pieChartFilter === "monthly") {
-        // Current month (1st to last day)
         const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
         const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
         return transactionDate >= firstDay && transactionDate <= lastDay;
       } else if (pieChartFilter === "yearly") {
-        // Selected year
         return transactionDate.getFullYear() === selectedYear;
-      } else if (pieChartFilter === "custom" && startDate && endDate) {
-        const start = new Date(startDate);
+      } else if (pieChartFilter === "custom" && activeCustomRange) {
+        const start = new Date(activeCustomRange.start);
         start.setHours(0, 0, 0, 0);
-        const end = new Date(endDate);
+        const end = new Date(activeCustomRange.end);
         end.setHours(23, 59, 59, 999);
         return transactionDate >= start && transactionDate <= end;
       }
       return true;
     });
-  }, [transactions, pieChartFilter, startDate, endDate, selectedYear]);
+  }, [transactions, pieChartFilter, selectedYear, activeCustomRange]);
+
+  // Calculate totals from filtered transactions
+  const filteredTotals = useMemo(() => {
+    const totals = {
+      income: 0,
+      expenses: 0,
+      investments: 0,
+      balance: 0
+    };
+    
+    filteredTransactions.forEach(t => {
+      if (t.type === 'income') {
+        totals.income += t.amount;
+      } else if (t.type === 'expense') {
+        totals.expenses += t.amount;
+      } else if (t.type === 'investment') {
+        totals.investments += t.amount;
+      }
+    });
+    
+    totals.balance = totals.income - totals.expenses - totals.investments;
+    return totals;
+  }, [filteredTransactions]);
 
   // Calculate breakdown from filtered transactions
   const calculateBreakdown = (type) => {
@@ -89,28 +152,101 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
     
     const total = Object.values(categoryTotals).reduce((sum, val) => sum + val, 0);
     
-    return Object.entries(categoryTotals).map(([category, amount]) => ({
-      name: category,
-      value: amount,
-      percentage: total > 0 ? ((amount / total) * 100).toFixed(1) : 0,
-    }));
+    return Object.entries(categoryTotals)
+      .map(([category, amount]) => ({
+        name: category,
+        value: amount,
+        percentage: total > 0 ? ((amount / total) * 100).toFixed(1) : 0,
+      }))
+      .sort((a, b) => b.value - a.value);
   };
 
-  const expenseData = pieChartFilter === "all" 
-    ? analytics.expense_breakdown.map(item => ({
-        name: item.category,
-        value: item.amount,
-        percentage: item.percentage.toFixed(1),
-      }))
-    : calculateBreakdown("expense");
+  // Calculate filtered budget growth data
+  const filteredBudgetGrowth = useMemo(() => {
+    if (pieChartFilter === "all" || !budgetGrowth) return budgetGrowth;
+    
+    // Calculate cumulative balance from filtered transactions
+    const sortedTransactions = [...filteredTransactions].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+    
+    const dataByDate = {};
+    let cumulative = 0;
+    
+    sortedTransactions.forEach(t => {
+      const dateKey = t.date;
+      const amount = t.type === 'income' ? t.amount : -t.amount;
+      cumulative += amount;
+      
+      dataByDate[dateKey] = {
+        date: new Date(dateKey).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        cumulative: cumulative
+      };
+    });
+    
+    const data = Object.values(dataByDate);
+    
+    return {
+      data,
+      total_income: filteredTotals.income,
+      total_expenses: filteredTotals.expenses,
+      net_savings: filteredTotals.balance
+    };
+  }, [filteredTransactions, filteredTotals, pieChartFilter, budgetGrowth]);
 
-  const incomeData = pieChartFilter === "all"
-    ? analytics.income_breakdown.map(item => ({
-        name: item.category,
-        value: item.amount,
-        percentage: item.percentage.toFixed(1),
-      }))
-    : calculateBreakdown("income");
+  const expenseData = useMemo(() => calculateBreakdown("expense"), [filteredTransactions]);
+  const incomeData = useMemo(() => calculateBreakdown("income"), [filteredTransactions]);
+
+  // Apply custom date range
+  const handleApplyCustomRange = useCallback(() => {
+    setFilterError("");
+    
+    // Validate dates
+    if (!startDate || !endDate) {
+      setFilterError("Please select both start and end dates");
+      toast.error("Please select both start and end dates");
+      return;
+    }
+    
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    
+    if (start > end) {
+      setFilterError("Start date must be before end date");
+      toast.error("Start date must be before end date");
+      return;
+    }
+    
+    // Show loading state
+    setIsFiltering(true);
+    
+    // Simulate brief loading for UX feedback
+    setTimeout(() => {
+      setActiveCustomRange({ start: startDate, end: endDate });
+      setPieChartFilter("custom");
+      setIsFiltering(false);
+      toast.success(`Showing data from ${formatDateDisplay(startDate)} to ${formatDateDisplay(endDate)}`);
+    }, 300);
+  }, [startDate, endDate]);
+
+  // Clear custom range
+  const handleClearCustomRange = () => {
+    setActiveCustomRange(null);
+    setStartDate("");
+    setEndDate("");
+    setPieChartFilter("all");
+    setFilterError("");
+    toast.info("Filter cleared - showing all time data");
+  };
+
+  // Handle filter change
+  const handleFilterChange = (filter) => {
+    if (filter !== "custom") {
+      setActiveCustomRange(null);
+      setFilterError("");
+    }
+    setPieChartFilter(filter);
+  };
 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
@@ -141,24 +277,20 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
     return `${entry.percentage}%`;
   };
 
-  if (expenseData.length === 0 && incomeData.length === 0) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle>Budget Analytics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-center text-muted-foreground py-8">
-            Add income and expenses to see your budget analytics
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
+  // No Data Message Component
+  const NoDataMessage = ({ type }) => (
+    <div className="flex flex-col items-center justify-center py-12 text-center">
+      <AlertCircle className="h-12 w-12 text-slate-300 mb-4" />
+      <p className="text-lg font-medium text-slate-600">No {type} data for selected range</p>
+      <p className="text-sm text-slate-500 mt-1">
+        Try selecting a different time period or add transactions
+      </p>
+    </div>
+  );
 
   return (
     <div className="space-y-6">
-      {/* Time Filter for Pie Charts */}
+      {/* Time Filter for Analytics */}
       <Card>
         <CardHeader>
           <div className="flex flex-col gap-4">
@@ -166,49 +298,67 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
               <div>
                 <CardTitle className="flex items-center gap-2">
                   <Calendar className="h-5 w-5" />
-                  Budget Analytics Time Filter
+                  Budget Analytics
                 </CardTitle>
                 <p className="text-sm text-muted-foreground mt-1">
-                  Filter pie charts by time period
+                  Filter all analytics by time period
                 </p>
               </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  variant={pieChartFilter === "daily" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPieChartFilter("daily")}
-                >
-                  Today
-                </Button>
-                <Button
-                  variant={pieChartFilter === "weekly" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPieChartFilter("weekly")}
-                >
-                  This Week
-                </Button>
-                <Button
-                  variant={pieChartFilter === "monthly" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPieChartFilter("monthly")}
-                >
-                  This Month
-                </Button>
-                <Button
-                  variant={pieChartFilter === "yearly" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPieChartFilter("yearly")}
-                >
-                  This Year
-                </Button>
-                <Button
-                  variant={pieChartFilter === "all" ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setPieChartFilter("all")}
-                >
-                  All Time
-                </Button>
-              </div>
+              
+              {/* Active Filter Display */}
+              {pieChartFilter !== "all" && (
+                <Badge variant="secondary" className="text-sm py-1.5 px-3 flex items-center gap-2">
+                  <Calendar className="h-3.5 w-3.5" />
+                  {getFilterLabel()}
+                  {pieChartFilter === "custom" && (
+                    <button 
+                      onClick={handleClearCustomRange}
+                      className="ml-1 hover:bg-slate-300 rounded-full p-0.5"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </Badge>
+              )}
+            </div>
+            
+            {/* Quick Filters */}
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                variant={pieChartFilter === "daily" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("daily")}
+              >
+                Today
+              </Button>
+              <Button
+                variant={pieChartFilter === "weekly" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("weekly")}
+              >
+                This Week
+              </Button>
+              <Button
+                variant={pieChartFilter === "monthly" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("monthly")}
+              >
+                This Month
+              </Button>
+              <Button
+                variant={pieChartFilter === "yearly" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("yearly")}
+              >
+                This Year
+              </Button>
+              <Button
+                variant={pieChartFilter === "all" ? "default" : "outline"}
+                size="sm"
+                onClick={() => handleFilterChange("all")}
+              >
+                All Time
+              </Button>
             </div>
 
             {/* Year Selector */}
@@ -230,68 +380,125 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
 
             {/* Custom Date Range */}
             <div className="border-t pt-4">
-              <div className="flex flex-col sm:flex-row gap-4 items-end">
-                <div className="flex-1">
-                  <Label htmlFor="start-date">Start Date</Label>
+              <Label className="text-sm font-medium mb-3 block">Custom Date Range</Label>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-end">
+                <div className="flex-1 w-full sm:w-auto">
+                  <Label htmlFor="start-date" className="text-xs text-slate-500">Start Date</Label>
                   <Input
                     id="start-date"
                     type="date"
                     value={startDate}
-                    onChange={(e) => setStartDate(e.target.value)}
+                    onChange={(e) => {
+                      setStartDate(e.target.value);
+                      setFilterError("");
+                    }}
+                    className={filterError && !startDate ? "border-red-500" : ""}
                   />
                 </div>
-                <div className="flex-1">
-                  <Label htmlFor="end-date">End Date</Label>
+                <div className="flex-1 w-full sm:w-auto">
+                  <Label htmlFor="end-date" className="text-xs text-slate-500">End Date</Label>
                   <Input
                     id="end-date"
                     type="date"
                     value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
+                    onChange={(e) => {
+                      setEndDate(e.target.value);
+                      setFilterError("");
+                    }}
+                    className={filterError && !endDate ? "border-red-500" : ""}
                   />
                 </div>
                 <Button
-                  onClick={() => {
-                    if (startDate && endDate) {
-                      setPieChartFilter("custom");
-                    }
-                  }}
-                  disabled={!startDate || !endDate}
+                  onClick={handleApplyCustomRange}
+                  disabled={isFiltering}
                   variant={pieChartFilter === "custom" ? "default" : "outline"}
+                  className="min-w-[150px]"
                 >
-                  Apply Custom Range
+                  {isFiltering ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Applying...
+                    </>
+                  ) : (
+                    "Apply Custom Range"
+                  )}
                 </Button>
               </div>
+              {filterError && (
+                <p className="text-sm text-red-500 mt-2 flex items-center gap-1">
+                  <AlertCircle className="h-4 w-4" />
+                  {filterError}
+                </p>
+              )}
             </div>
           </div>
         </CardHeader>
       </Card>
 
+      {/* Filtered Summary KPIs */}
+      {pieChartFilter !== "all" && (
+        <Card className="bg-gradient-to-r from-slate-50 to-slate-100">
+          <CardContent className="py-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium text-slate-600">
+                Summary for: {getFilterLabel()}
+              </p>
+              <Badge variant="outline" className="text-xs">
+                {filteredTransactions.length} transactions
+              </Badge>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 mb-1">Income</p>
+                <p className="text-lg font-bold text-green-600">{formatAmount(filteredTotals.income)}</p>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 mb-1">Expenses</p>
+                <p className="text-lg font-bold text-red-600">{formatAmount(filteredTotals.expenses)}</p>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 mb-1">Investments</p>
+                <p className="text-lg font-bold text-blue-600">{formatAmount(filteredTotals.investments)}</p>
+              </div>
+              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 mb-1">Net Balance</p>
+                <p className={`text-lg font-bold ${filteredTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatAmount(filteredTotals.balance)}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
       {/* Growth Chart */}
-      {budgetGrowth && budgetGrowth.data.length > 0 && (
+      {filteredBudgetGrowth && filteredBudgetGrowth.data && filteredBudgetGrowth.data.length > 0 ? (
         <Card>
           <CardHeader>
             <CardTitle className="text-green-700">📈 Budget Growth Over Time</CardTitle>
-            <p className="text-sm text-muted-foreground">Track how your balance grows</p>
+            <p className="text-sm text-muted-foreground">
+              Track how your balance grows {pieChartFilter !== "all" && `(${getFilterLabel()})`}
+            </p>
           </CardHeader>
           <CardContent>
             <div className="mb-4 grid grid-cols-3 gap-4 text-center">
               <div>
                 <p className="text-xs text-muted-foreground">Total Income</p>
-                <p className="text-lg font-bold text-green-600">{formatAmount(budgetGrowth.total_income)}</p>
+                <p className="text-lg font-bold text-green-600">{formatAmount(filteredBudgetGrowth.total_income)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Total Expenses</p>
-                <p className="text-lg font-bold text-red-600">{formatAmount(budgetGrowth.total_expenses)}</p>
+                <p className="text-lg font-bold text-red-600">{formatAmount(filteredBudgetGrowth.total_expenses)}</p>
               </div>
               <div>
                 <p className="text-xs text-muted-foreground">Net Savings</p>
-                <p className={`text-lg font-bold ${budgetGrowth.net_savings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                  {formatAmount(budgetGrowth.net_savings)}
+                <p className={`text-lg font-bold ${filteredBudgetGrowth.net_savings >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                  {formatAmount(filteredBudgetGrowth.net_savings)}
                 </p>
               </div>
             </div>
             <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={budgetGrowth.data}>
+              <LineChart data={filteredBudgetGrowth.data}>
                 <CartesianGrid strokeDasharray="3 3" />
                 <XAxis 
                   dataKey="date" 
@@ -317,18 +524,29 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
             </ResponsiveContainer>
           </CardContent>
         </Card>
+      ) : pieChartFilter !== "all" && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="text-green-700">📈 Budget Growth Over Time</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <NoDataMessage type="growth" />
+          </CardContent>
+        </Card>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Expense Breakdown */}
-        {expenseData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-red-700">💸 Expense Breakdown</CardTitle>
-                  <p className="text-sm text-muted-foreground">What you spend the most on</p>
-                </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-red-700">💸 Expense Breakdown</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  What you spend the most on {pieChartFilter !== "all" && `(${getFilterLabel()})`}
+                </p>
+              </div>
+              {expenseData.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -337,61 +555,69 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                   {showExpenseLegend ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
                   {showExpenseLegend ? "Hide" : "Show"} Details
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={expenseData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={renderLabel}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {expenseData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS.expenses[index % COLORS.expenses.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              
-              {/* Scrollable Legend */}
-              {showExpenseLegend && (
-                <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {expenseData.map((entry, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <div 
-                          className="w-4 h-4 rounded-sm flex-shrink-0" 
-                          style={{ backgroundColor: COLORS.expenses[index % COLORS.expenses.length] }}
-                        />
-                        <span className="truncate">{entry.name}</span>
-                        <span className="text-muted-foreground ml-auto">
-                          ({formatAmount(entry.value)})
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {expenseData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={expenseData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderLabel}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {expenseData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS.expenses[index % COLORS.expenses.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Scrollable Legend */}
+                {showExpenseLegend && (
+                  <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {expenseData.map((entry, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <div 
+                            className="w-4 h-4 rounded-sm flex-shrink-0" 
+                            style={{ backgroundColor: COLORS.expenses[index % COLORS.expenses.length] }}
+                          />
+                          <span className="truncate">{entry.name}</span>
+                          <span className="text-muted-foreground ml-auto">
+                            ({formatAmount(entry.value)})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <NoDataMessage type="expense" />
+            )}
+          </CardContent>
+        </Card>
 
         {/* Income Sources */}
-        {incomeData.length > 0 && (
-          <Card>
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-green-700">💰 Income Sources</CardTitle>
-                  <p className="text-sm text-muted-foreground">Your biggest sources of income</p>
-                </div>
+        <Card>
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <div>
+                <CardTitle className="text-green-700">💰 Income Sources</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Your biggest sources of income {pieChartFilter !== "all" && `(${getFilterLabel()})`}
+                </p>
+              </div>
+              {incomeData.length > 0 && (
                 <Button
                   variant="outline"
                   size="sm"
@@ -400,55 +626,61 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                   {showIncomeLegend ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
                   {showIncomeLegend ? "Hide" : "Show"} Details
                 </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <PieChart>
-                  <Pie
-                    data={incomeData}
-                    cx="50%"
-                    cy="50%"
-                    labelLine={false}
-                    label={renderLabel}
-                    outerRadius={100}
-                    fill="#8884d8"
-                    dataKey="value"
-                  >
-                    {incomeData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={COLORS.income[index % COLORS.income.length]} />
-                    ))}
-                  </Pie>
-                  <Tooltip content={<CustomTooltip />} />
-                </PieChart>
-              </ResponsiveContainer>
-              
-              {/* Scrollable Legend */}
-              {showIncomeLegend && (
-                <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    {incomeData.map((entry, index) => (
-                      <div key={index} className="flex items-center gap-2 text-sm">
-                        <div 
-                          className="w-4 h-4 rounded-sm flex-shrink-0" 
-                          style={{ backgroundColor: COLORS.income[index % COLORS.income.length] }}
-                        />
-                        <span className="truncate">{entry.name}</span>
-                        <span className="text-muted-foreground ml-auto">
-                          ({formatAmount(entry.value)})
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               )}
-            </CardContent>
-          </Card>
-        )}
+            </div>
+          </CardHeader>
+          <CardContent>
+            {incomeData.length > 0 ? (
+              <>
+                <ResponsiveContainer width="100%" height={300}>
+                  <PieChart>
+                    <Pie
+                      data={incomeData}
+                      cx="50%"
+                      cy="50%"
+                      labelLine={false}
+                      label={renderLabel}
+                      outerRadius={100}
+                      fill="#8884d8"
+                      dataKey="value"
+                    >
+                      {incomeData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS.income[index % COLORS.income.length]} />
+                      ))}
+                    </Pie>
+                    <Tooltip content={<CustomTooltip />} />
+                  </PieChart>
+                </ResponsiveContainer>
+                
+                {/* Scrollable Legend */}
+                {showIncomeLegend && (
+                  <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                      {incomeData.map((entry, index) => (
+                        <div key={index} className="flex items-center gap-2 text-sm">
+                          <div 
+                            className="w-4 h-4 rounded-sm flex-shrink-0" 
+                            style={{ backgroundColor: COLORS.income[index % COLORS.income.length] }}
+                          />
+                          <span className="truncate">{entry.name}</span>
+                          <span className="text-muted-foreground ml-auto">
+                            ({formatAmount(entry.value)})
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <NoDataMessage type="income" />
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Category Trends */}
-      <CategoryTrends transactions={transactions} />
+      {/* Category Trends - Pass filtered transactions */}
+      <CategoryTrends transactions={filteredTransactions} />
     </div>
   );
 };
