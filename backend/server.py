@@ -1368,6 +1368,130 @@ Answer the question in ENGLISH using the exact numbers above."""
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
 
+# Daily Quote of the Day
+class QuoteOfDay(BaseModel):
+    quote: str
+    author: str = "Financial Wisdom"
+    date: str
+    category: str = "finance"
+
+@api_router.get("/quote-of-day")
+async def get_quote_of_day():
+    """Get the quote of the day - generates a new one daily using AI"""
+    from datetime import date as date_obj
+    
+    today = date_obj.today().isoformat()
+    
+    # Check if we already have a quote for today
+    existing_quote = await db.daily_quotes.find_one({"date": today}, {"_id": 0})
+    
+    if existing_quote:
+        return existing_quote
+    
+    # Generate a new quote using AI
+    try:
+        from emergentintegrations.llm.chat import LlmChat, UserMessage
+        
+        llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
+        
+        if not llm_key:
+            # Return a fallback quote if AI is not available
+            return await get_fallback_quote(today)
+        
+        # Get recent quotes to avoid repetition
+        recent_quotes = await db.daily_quotes.find(
+            {}, 
+            {"_id": 0, "quote": 1}
+        ).sort("date", -1).limit(30).to_list(30)
+        
+        recent_quote_texts = [q.get("quote", "") for q in recent_quotes]
+        avoid_text = "\n".join(recent_quote_texts[:10]) if recent_quote_texts else ""
+        
+        client = LlmChat(
+            api_key=llm_key,
+            session_id="daily_quote_generator",
+            system_message="You are a wise financial advisor who creates inspiring, actionable quotes about personal finance, saving, investing, financial freedom, discipline, and building wealth. Keep quotes SHORT (1-2 sentences max). Be original and avoid clichés."
+        ).with_model("openai", "gpt-4o-mini")
+        
+        prompt = f"""Generate ONE unique, inspiring quote about personal finance or financial wisdom.
+
+REQUIREMENTS:
+- Must be about: saving, investing, financial freedom, discipline, money management, or building wealth
+- Keep it SHORT: 1-2 sentences maximum
+- Be original and practical
+- Should motivate users to manage their money better
+- Do NOT include quotation marks
+
+{"AVOID repeating these recent quotes:" + chr(10) + avoid_text if avoid_text else ""}
+
+Respond with ONLY the quote text, nothing else."""
+
+        user_msg = UserMessage(text=prompt)
+        quote_text = await client.send_message(user_msg)
+        
+        # Clean up the quote
+        quote_text = quote_text.strip().strip('"').strip("'")
+        
+        # Pick a random category
+        import random
+        categories = ["finance", "motivation", "discipline", "investing", "saving", "mindset"]
+        category = random.choice(categories)
+        
+        # Store the new quote
+        new_quote = {
+            "quote": quote_text,
+            "author": "Daily Financial Wisdom",
+            "date": today,
+            "category": category,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.daily_quotes.insert_one(new_quote)
+        
+        return {
+            "quote": new_quote["quote"],
+            "author": new_quote["author"],
+            "date": new_quote["date"],
+            "category": new_quote["category"]
+        }
+        
+    except Exception as e:
+        logging.error(f"Error generating quote: {e}")
+        return await get_fallback_quote(today)
+
+async def get_fallback_quote(today: str):
+    """Return a fallback quote if AI generation fails"""
+    import random
+    
+    fallback_quotes = [
+        ("The best time to start saving was yesterday. The second best time is today.", "finance"),
+        ("Financial freedom is not about being rich, it's about having choices.", "motivation"),
+        ("Small daily improvements lead to stunning results over time.", "discipline"),
+        ("Every dollar you save is a step toward financial independence.", "saving"),
+        ("Invest in yourself first, then invest in the market.", "investing"),
+        ("Don't work for money, make money work for you.", "mindset"),
+        ("A budget is telling your money where to go instead of wondering where it went.", "finance"),
+        ("The secret to wealth is simple: spend less than you earn and invest the difference.", "saving"),
+        ("Discipline is choosing between what you want now and what you want most.", "discipline"),
+        ("Your financial future depends on the decisions you make today.", "motivation"),
+    ]
+    
+    # Try to get the last successful quote
+    last_quote = await db.daily_quotes.find_one({}, {"_id": 0}, sort=[("date", -1)])
+    
+    if last_quote:
+        return last_quote
+    
+    # Use a random fallback
+    quote_text, category = random.choice(fallback_quotes)
+    
+    return {
+        "quote": quote_text,
+        "author": "Financial Wisdom",
+        "date": today,
+        "category": category
+    }
+
 # Include all routers
 api_router.include_router(users_router)
 api_router.include_router(subscription_router)
