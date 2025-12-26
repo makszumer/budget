@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -14,6 +14,11 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
+import { useAuth } from "@/context/AuthContext";
+import axios from "axios";
+
+const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
+const API = `${BACKEND_URL}/api`;
 
 const categoryOptions = {
   expense: {
@@ -37,12 +42,33 @@ const categoryOptions = {
 };
 
 export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }) => {
+  const { token } = useAuth();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
   const [currency, setCurrency] = useState("USD");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState({});
+  const [customCategories, setCustomCategories] = useState([]);
+
+  // Fetch custom categories on mount
+  useEffect(() => {
+    const fetchCustomCategories = async () => {
+      if (!token) return;
+      try {
+        const response = await axios.get(`${API}/categories/custom`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setCustomCategories(response.data);
+      } catch (error) {
+        console.error('Error fetching custom categories:', error);
+      }
+    };
+    fetchCustomCategories();
+  }, [token]);
+
+  // Filter custom categories by type
+  const userCustomCategories = customCategories.filter(cat => cat.type === type);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -176,6 +202,19 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
+                {/* Custom Categories Section */}
+                {userCustomCategories.length > 0 && (
+                  <SelectGroup>
+                    <SelectLabel className="text-purple-600 font-semibold">✨ Custom Categories</SelectLabel>
+                    {userCustomCategories.map((cat) => (
+                      <SelectItem key={`custom-${cat.id}`} value={cat.name}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectGroup>
+                )}
+                
+                {/* Default Categories */}
                 {(type === "expense" || type === "income") ? (
                   Object.entries(categoryOptions[type]).map(([group, items]) => (
                     <SelectGroup key={group}>
