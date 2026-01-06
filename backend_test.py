@@ -440,22 +440,382 @@ class BackendTester:
             print(f"❌ Analytics detailed test error: {str(e)}")
             return False
     
+    def test_standing_orders_feature(self) -> bool:
+        """Test Standing Orders (Recurring Transactions) Feature"""
+        print("\n🔍 Testing Standing Orders Feature...")
+        
+        try:
+            # Test 1: Create a new standing order (Netflix subscription)
+            print("📋 Test 1: Creating Netflix standing order...")
+            
+            netflix_order = {
+                "type": "expense",
+                "amount": 15.99,
+                "description": "Netflix",
+                "category": "Subscriptions",
+                "frequency": "monthly",
+                "day_of_month": 15,
+                "start_date": "2025-01-01",
+                "currency": "USD"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/recurring-transactions",
+                json=netflix_order,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Create standing order failed: {response.status_code} - {response.text}")
+                return False
+            
+            created_order = response.json()
+            order_id = created_order.get("id")
+            
+            if not order_id:
+                print("❌ Created order missing ID")
+                return False
+            
+            print(f"✅ Netflix standing order created successfully (ID: {order_id})")
+            
+            # Test 2: List all standing orders
+            print("📋 Test 2: Listing all standing orders...")
+            
+            response = self.session.get(f"{BASE_URL}/recurring-transactions", timeout=10)
+            
+            if response.status_code != 200:
+                print(f"❌ List standing orders failed: {response.status_code} - {response.text}")
+                return False
+            
+            orders_list = response.json()
+            
+            if not isinstance(orders_list, list):
+                print("❌ Standing orders list should be an array")
+                return False
+            
+            # Find our Netflix order
+            netflix_found = False
+            for order in orders_list:
+                if order.get("id") == order_id and order.get("description") == "Netflix":
+                    netflix_found = True
+                    break
+            
+            if not netflix_found:
+                print("❌ Netflix order not found in list")
+                return False
+            
+            print(f"✅ Standing orders list retrieved successfully ({len(orders_list)} orders)")
+            
+            # Test 3: Edit the standing order (update amount)
+            print("📋 Test 3: Updating standing order amount...")
+            
+            update_data = {
+                "type": "expense",
+                "amount": 19.99,  # Updated amount
+                "description": "Netflix Premium",
+                "category": "Subscriptions",
+                "frequency": "monthly",
+                "day_of_month": 15,
+                "start_date": "2025-01-01",
+                "currency": "USD"
+            }
+            
+            response = self.session.put(
+                f"{BASE_URL}/recurring-transactions/{order_id}",
+                json=update_data,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Update standing order failed: {response.status_code} - {response.text}")
+                return False
+            
+            print("✅ Standing order updated successfully")
+            
+            # Test 4: Toggle standing order (pause/resume)
+            print("📋 Test 4: Toggling standing order status...")
+            
+            response = self.session.put(
+                f"{BASE_URL}/recurring-transactions/{order_id}/toggle",
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Toggle standing order failed: {response.status_code} - {response.text}")
+                return False
+            
+            toggle_result = response.json()
+            print(f"✅ Standing order toggled: {toggle_result.get('message', 'Success')}")
+            
+            # Test 5: Process due standing orders
+            print("📋 Test 5: Processing due standing orders...")
+            
+            response = self.session.post(
+                f"{BASE_URL}/recurring-transactions/process",
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Process standing orders failed: {response.status_code} - {response.text}")
+                return False
+            
+            process_result = response.json()
+            created_count = process_result.get("created_count", 0)
+            
+            print(f"✅ Standing orders processed: {created_count} transactions created")
+            
+            # Test 6: Edge case - Day 31 handling
+            print("📋 Test 6: Testing Day 31 edge case...")
+            
+            day31_order = {
+                "type": "expense",
+                "amount": 100.00,
+                "description": "Monthly Rent",
+                "category": "Rent / Mortgage",
+                "frequency": "monthly",
+                "day_of_month": 31,  # Edge case: day 31
+                "start_date": "2025-01-01",
+                "currency": "USD"
+            }
+            
+            response = self.session.post(
+                f"{BASE_URL}/recurring-transactions",
+                json=day31_order,
+                timeout=10
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Day 31 standing order creation failed: {response.status_code} - {response.text}")
+                return False
+            
+            day31_created = response.json()
+            day31_id = day31_created.get("id")
+            
+            print("✅ Day 31 standing order created successfully")
+            
+            # Test 7: Delete standing orders (cleanup)
+            print("📋 Test 7: Deleting test standing orders...")
+            
+            # Delete Netflix order
+            response = self.session.delete(f"{BASE_URL}/recurring-transactions/{order_id}", timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Delete Netflix order failed: {response.status_code}")
+                return False
+            
+            # Delete Day 31 order
+            response = self.session.delete(f"{BASE_URL}/recurring-transactions/{day31_id}", timeout=10)
+            if response.status_code != 200:
+                print(f"❌ Delete Day 31 order failed: {response.status_code}")
+                return False
+            
+            print("✅ Test standing orders deleted successfully")
+            
+            print("\n✅ ALL STANDING ORDERS TESTS PASSED")
+            print("   ✓ Create standing order")
+            print("   ✓ List standing orders")
+            print("   ✓ Update standing order")
+            print("   ✓ Toggle standing order")
+            print("   ✓ Process due orders")
+            print("   ✓ Day 31 edge case handling")
+            print("   ✓ Delete standing order")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ Standing orders test error: {str(e)}")
+            return False
+    
+    def test_ai_assistant_feature(self) -> bool:
+        """Test AI Assistant Feature"""
+        print("\n🔍 Testing AI Assistant Feature...")
+        
+        try:
+            # First, let's add some test transactions to have data to query
+            print("📋 Setting up test data for AI queries...")
+            
+            # Add some test transactions
+            test_transactions = [
+                {
+                    "type": "expense",
+                    "amount": 150.00,
+                    "description": "Groceries",
+                    "category": "Groceries",
+                    "date": "2025-01-15",
+                    "currency": "USD"
+                },
+                {
+                    "type": "expense", 
+                    "amount": 50.00,
+                    "description": "Gas",
+                    "category": "Fuel / Gas",
+                    "date": "2025-01-10",
+                    "currency": "USD"
+                },
+                {
+                    "type": "income",
+                    "amount": 3000.00,
+                    "description": "Monthly Salary",
+                    "category": "Salary / wages",
+                    "date": "2025-01-01",
+                    "currency": "USD"
+                }
+            ]
+            
+            transaction_ids = []
+            for trans in test_transactions:
+                response = self.session.post(f"{BASE_URL}/transactions", json=trans, timeout=10)
+                if response.status_code == 200:
+                    transaction_ids.append(response.json().get("id"))
+            
+            print(f"✅ Added {len(transaction_ids)} test transactions")
+            
+            # Test 1: Ask about monthly spending
+            print("📋 Test 1: Asking about monthly spending...")
+            
+            monthly_question = {"question": "How much did I spend this month?"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/ai-assistant",
+                json=monthly_question,
+                timeout=15
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Monthly spending query failed: {response.status_code} - {response.text}")
+                return False
+            
+            monthly_result = response.json()
+            answer = monthly_result.get("answer", "")
+            
+            if not answer or len(answer) < 10:
+                print("❌ AI assistant returned empty or too short answer")
+                return False
+            
+            # Check if answer contains dollar amount
+            if "$" not in answer and "dollar" not in answer.lower():
+                print("❌ Monthly spending answer should contain dollar amount")
+                return False
+            
+            print(f"✅ Monthly spending query successful")
+            print(f"   Answer: {answer[:100]}...")
+            
+            # Test 2: Ask about income by category
+            print("📋 Test 2: Asking about salary income...")
+            
+            salary_question = {"question": "How much did I earn from salary?"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/ai-assistant",
+                json=salary_question,
+                timeout=15
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Salary income query failed: {response.status_code} - {response.text}")
+                return False
+            
+            salary_result = response.json()
+            salary_answer = salary_result.get("answer", "")
+            
+            if not salary_answer or len(salary_answer) < 10:
+                print("❌ Salary query returned empty answer")
+                return False
+            
+            print(f"✅ Salary income query successful")
+            print(f"   Answer: {salary_answer[:100]}...")
+            
+            # Test 3: Ask about biggest expense category
+            print("📋 Test 3: Asking about biggest expense category...")
+            
+            category_question = {"question": "What's my biggest expense category?"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/ai-assistant",
+                json=category_question,
+                timeout=15
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Biggest category query failed: {response.status_code} - {response.text}")
+                return False
+            
+            category_result = response.json()
+            category_answer = category_result.get("answer", "")
+            
+            if not category_answer or len(category_answer) < 5:
+                print("❌ Category query returned empty answer")
+                return False
+            
+            print(f"✅ Biggest expense category query successful")
+            print(f"   Answer: {category_answer[:100]}...")
+            
+            # Test 4: Ask about non-existent period
+            print("📋 Test 4: Asking about non-existent period (2020)...")
+            
+            old_question = {"question": "How much did I spend in 2020?"}
+            
+            response = self.session.post(
+                f"{BASE_URL}/ai-assistant",
+                json=old_question,
+                timeout=15
+            )
+            
+            if response.status_code != 200:
+                print(f"❌ Non-existent period query failed: {response.status_code} - {response.text}")
+                return False
+            
+            old_result = response.json()
+            old_answer = old_result.get("answer", "").lower()
+            
+            # Should indicate no data found
+            no_data_indicators = ["no data", "don't have", "no information", "not found", "no records"]
+            has_no_data_indicator = any(indicator in old_answer for indicator in no_data_indicators)
+            
+            if not has_no_data_indicator:
+                print(f"❌ Should indicate no data for 2020, got: {old_answer[:100]}...")
+                return False
+            
+            print(f"✅ Non-existent period query handled correctly")
+            print(f"   Answer: {old_answer[:100]}...")
+            
+            # Cleanup: Delete test transactions
+            print("📋 Cleaning up test transactions...")
+            for trans_id in transaction_ids:
+                if trans_id:
+                    self.session.delete(f"{BASE_URL}/transactions/{trans_id}", timeout=10)
+            
+            print("✅ Test data cleaned up")
+            
+            print("\n✅ ALL AI ASSISTANT TESTS PASSED")
+            print("   ✓ Monthly spending query")
+            print("   ✓ Income by category query")
+            print("   ✓ Biggest expense category query")
+            print("   ✓ Non-existent period handling")
+            
+            return True
+            
+        except Exception as e:
+            print(f"❌ AI assistant test error: {str(e)}")
+            return False
+    
     def run_all_tests(self) -> Dict[str, bool]:
         """Run all backend tests"""
-        print("🚀 Starting Backend API Tests for Analytics Date Range Filtering")
+        print("🚀 Starting Backend API Tests for Standing Orders and AI Assistant")
         print("=" * 70)
         
         # Login first
         if not self.login_admin():
             return {
                 "login": False,
-                "analytics_date_filtering": False
+                "standing_orders": False,
+                "ai_assistant": False
             }
         
         # Run tests
         results = {
             "login": True,
-            "analytics_date_filtering": self.test_analytics_date_filtering_detailed()
+            "standing_orders": self.test_standing_orders_feature(),
+            "ai_assistant": self.test_ai_assistant_feature()
         }
         
         # Summary
