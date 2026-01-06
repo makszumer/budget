@@ -1339,125 +1339,190 @@ async def delete_envelope_transaction(envelope_id: str, transaction_id: str):
     
     return {"message": "Transaction deleted successfully"}
 
-# AI Assistant Endpoint
+# AI Assistant Endpoint - Upgraded for accuracy and reliability
 @api_router.post("/ai-assistant")
 async def ai_assistant(request: dict):
-    """Natural language query about finances using AI"""
+    """Natural language query about finances using AI - Data-Driven and Accurate"""
     question = request.get("question", "")
     
     if not question:
         raise HTTPException(status_code=400, detail="Question is required")
     
-    # Get all transactions
-    all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
-    
-    # Pre-calculate summaries for better accuracy
     from collections import defaultdict
-    from datetime import datetime as dt
+    from datetime import datetime as dt, date as date_module
+    import calendar
     
-    # Calculate totals by type
-    total_income = sum(t.get("amount", 0) for t in all_transactions if t.get("type") == "income")
-    total_expense = sum(t.get("amount", 0) for t in all_transactions if t.get("type") == "expense")
+    # Get today's date for reference
+    today = date_module.today()
+    current_month = today.month
+    current_year = today.year
     
-    # Calculate by category
-    income_by_category = defaultdict(float)
-    expense_by_category = defaultdict(float)
+    # Get all transactions and standing orders
+    all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
+    standing_orders = await db.recurring_transactions.find({"active": True}, {"_id": 0}).to_list(1000)
     
+    # Helper function to parse dates
+    def parse_date(date_str):
+        if not date_str:
+            return None
+        try:
+            return dt.fromisoformat(date_str.split('T')[0]).date()
+        except:
+            return None
+    
+    # Organize transactions by various dimensions
+    all_data = {
+        "total_income": 0,
+        "total_expenses": 0,
+        "income_by_category": defaultdict(float),
+        "expense_by_category": defaultdict(float),
+        "income_by_month": defaultdict(float),
+        "expense_by_month": defaultdict(float),
+        "transactions_by_month": defaultdict(list),
+        "all_categories": set(),
+        "date_range": {"earliest": None, "latest": None}
+    }
+    
+    # Process all transactions
     for t in all_transactions:
         amount = t.get("amount", 0)
+        trans_type = t.get("type", "")
         category = t.get("category", "Other")
-        if t.get("type") == "income":
-            income_by_category[category] += amount
-        elif t.get("type") == "expense":
-            expense_by_category[category] += amount
+        date = parse_date(t.get("date"))
+        description = t.get("description", "")
+        is_standing = t.get("is_standing_order", False) or "[Standing Order]" in description
+        
+        if not date:
+            continue
+        
+        # Track date range
+        if all_data["date_range"]["earliest"] is None or date < all_data["date_range"]["earliest"]:
+            all_data["date_range"]["earliest"] = date
+        if all_data["date_range"]["latest"] is None or date > all_data["date_range"]["latest"]:
+            all_data["date_range"]["latest"] = date
+        
+        month_key = f"{date.year}-{date.month:02d}"
+        month_name = f"{calendar.month_name[date.month]} {date.year}"
+        
+        all_data["all_categories"].add(category)
+        
+        trans_info = {
+            "date": date.isoformat(),
+            "month": month_name,
+            "type": trans_type,
+            "amount": amount,
+            "category": category,
+            "description": description,
+            "is_standing_order": is_standing
+        }
+        
+        all_data["transactions_by_month"][month_key].append(trans_info)
+        
+        if trans_type == "income":
+            all_data["total_income"] += amount
+            all_data["income_by_category"][category] += amount
+            all_data["income_by_month"][month_name] += amount
+        elif trans_type == "expense":
+            all_data["total_expenses"] += amount
+            all_data["expense_by_category"][category] += amount
+            all_data["expense_by_month"][month_name] += amount
     
-    # Calculate by month
-    transactions_by_month = defaultdict(lambda: {"income": 0, "expense": 0})
-    
-    for t in all_transactions:
-        try:
-            date_str = t.get("date", "")
-            if date_str:
-                # Parse date
-                date_obj = dt.fromisoformat(date_str.split('T')[0])
-                month_key = date_obj.strftime("%B %Y")  # e.g., "November 2024"
-                
-                amount = t.get("amount", 0)
-                if t.get("type") == "income":
-                    transactions_by_month[month_key]["income"] += amount
-                elif t.get("type") == "expense":
-                    transactions_by_month[month_key]["expense"] += amount
-        except:
-            pass
-    
-    # Get recent transactions (last 20 for context)
-    recent_transactions = []
-    for t in all_transactions[-20:]:
-        recent_transactions.append({
-            "date": t.get("date"),
-            "type": t.get("type"),
-            "amount": t.get("amount"),
-            "category": t.get("category"),
-            "description": t.get("description", ""),
+    # Count standing orders
+    standing_order_count = len(standing_orders)
+    standing_orders_summary = []
+    for so in standing_orders:
+        standing_orders_summary.append({
+            "description": so.get("description"),
+            "amount": so.get("amount"),
+            "category": so.get("category"),
+            "frequency": so.get("frequency"),
+            "type": so.get("type")
         })
     
-    # Create structured summary
+    # Build comprehensive data summary
     data_summary = f"""
-FINANCIAL SUMMARY:
+===== YOUR FINANCIAL DATA (EXACT VALUES - DO NOT MODIFY) =====
 
-TOTAL INCOME: ${total_income:.2f}
-TOTAL EXPENSES: ${total_expense:.2f}
-NET BALANCE: ${(total_income - total_expense):.2f}
+TODAY'S DATE: {today.isoformat()}
+CURRENT MONTH: {calendar.month_name[current_month]} {current_year}
 
-INCOME BY CATEGORY:
-{chr(10).join([f'  - {cat}: ${amt:.2f}' for cat, amt in sorted(income_by_category.items(), key=lambda x: -x[1])])}
+DATA RANGE: {all_data["date_range"]["earliest"]} to {all_data["date_range"]["latest"]}
+TOTAL TRANSACTIONS: {len(all_transactions)}
 
-EXPENSES BY CATEGORY:
-{chr(10).join([f'  - {cat}: ${amt:.2f}' for cat, amt in sorted(expense_by_category.items(), key=lambda x: -x[1])])}
+--- LIFETIME TOTALS ---
+TOTAL INCOME (all time): ${all_data["total_income"]:.2f}
+TOTAL EXPENSES (all time): ${all_data["total_expenses"]:.2f}
+NET BALANCE (all time): ${(all_data["total_income"] - all_data["total_expenses"]):.2f}
 
-MONTHLY BREAKDOWN:
-{chr(10).join([f'  {month}: Income ${data["income"]:.2f}, Expenses ${data["expense"]:.2f}' for month, data in sorted(transactions_by_month.items())])}
+--- ACTIVE STANDING ORDERS ({standing_order_count} total) ---
+{chr(10).join([f"  • {so['description']}: ${so['amount']:.2f} ({so['frequency']}, {so['type']})" for so in standing_orders_summary]) if standing_orders_summary else "  None"}
 
-RECENT TRANSACTIONS (Last 20):
-{chr(10).join([f'  {t["date"]}: {t["type"].upper()} ${t["amount"]:.2f} - {t["category"]} ({t["description"]})' for t in recent_transactions])}
+--- INCOME BY CATEGORY (all time) ---
+{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["income_by_category"].items(), key=lambda x: -x[1])]) if all_data["income_by_category"] else "  No income recorded"}
+
+--- EXPENSES BY CATEGORY (all time) ---
+{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["expense_by_category"].items(), key=lambda x: -x[1])]) if all_data["expense_by_category"] else "  No expenses recorded"}
+
+--- INCOME BY MONTH ---
+{chr(10).join([f"  • {month}: ${amt:.2f}" for month, amt in sorted(all_data["income_by_month"].items())]) if all_data["income_by_month"] else "  No income recorded"}
+
+--- EXPENSES BY MONTH ---
+{chr(10).join([f"  • {month}: ${amt:.2f}" for month, amt in sorted(all_data["expense_by_month"].items())]) if all_data["expense_by_month"] else "  No expenses recorded"}
+
+--- ALL CATEGORIES USED ---
+{', '.join(sorted(all_data["all_categories"])) if all_data["all_categories"] else "None"}
+
+===== END OF DATA =====
 """
-    
+
     # Use emergentintegrations to call OpenAI
     from emergentintegrations.llm.chat import LlmChat, UserMessage
     
-    # Get Emergent LLM key
     llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
     
     if not llm_key:
         raise HTTPException(status_code=500, detail="AI service not configured")
     
-    # Create prompt
+    system_prompt = """You are an ACCURATE financial assistant that ONLY uses the exact data provided. You MUST follow these rules:
+
+CRITICAL RULES:
+1. ONLY use numbers from the data provided. NEVER estimate, guess, or calculate values yourself.
+2. If asked about a time period not in the data, say "No data found for [period]"
+3. If a question is ambiguous (e.g., "this month" vs "last month"), ask for clarification BEFORE answering
+4. ALWAYS respond in ENGLISH
+5. Include how many transactions/standing orders are included when relevant
+6. Your answers MUST match what the user would see on their dashboard
+
+WHEN ANSWERING:
+- For "how much did I spend/earn in [month]", look at the EXPENSES/INCOME BY MONTH section
+- For category questions, use the BY CATEGORY sections
+- For "this month", use the current month from TODAY'S DATE
+- For "last month", calculate one month before TODAY'S DATE
+- Mention if standing orders are included: "This includes X standing orders"
+
+IF NO DATA EXISTS:
+- Say clearly: "I don't have any [income/expense] data for [time period]"
+- DO NOT make up numbers
+
+FORMAT:
+- Be concise but complete
+- Show the exact dollar amount
+- Briefly explain what's included"""
+
     prompt = f"""User Question: {question}
 
 {data_summary}
 
-CRITICAL INSTRUCTIONS:
-1. ALWAYS answer in ENGLISH only, regardless of the question language
-2. Use ONLY the exact numbers from "FINANCIAL SUMMARY" section above
-3. Do NOT perform any calculations - the numbers are already correct
-4. Copy the dollar amounts EXACTLY as shown (including cents)
-5. If asked about a specific category, find it in the category lists
-6. If asked about a month, use the "MONTHLY BREAKDOWN" section
-7. Be direct and concise - just state the numbers
-
-Answer the question in ENGLISH using the exact numbers above."""
+Answer the user's question accurately using ONLY the data above. If the question is ambiguous or data doesn't exist, say so clearly."""
     
     try:
         client = LlmChat(
             api_key=llm_key,
-            session_id="financial_assistant",
-            system_message="You are a financial assistant. ALWAYS respond in ENGLISH. Use ONLY the pre-calculated numbers provided - do NOT recalculate anything. Copy dollar amounts exactly as given."
+            session_id="financial_assistant_v2",
+            system_message=system_prompt
         ).with_model("openai", "gpt-4o-mini")
         
-        # Create user message
         user_msg = UserMessage(text=prompt)
-        
-        # Send message
         answer = await client.send_message(user_msg)
         
         return {"answer": answer, "question": question}
