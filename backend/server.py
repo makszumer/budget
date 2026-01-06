@@ -1661,6 +1661,49 @@ api_router.include_router(users_router)
 api_router.include_router(subscription_router)
 api_router.include_router(admin_router)
 
+# Add edit endpoint for recurring transactions
+class RecurringTransactionUpdate(BaseModel):
+    amount: Optional[float] = None
+    description: Optional[str] = None
+    category: Optional[str] = None
+    frequency: Optional[Literal["daily", "weekly", "monthly", "yearly"]] = None
+    day_of_month: Optional[int] = None
+    day_of_week: Optional[int] = None
+    end_date: Optional[str] = None
+
+@api_router.put("/recurring-transactions/{recurring_id}")
+async def update_recurring_transaction(recurring_id: str, update_data: RecurringTransactionUpdate):
+    """Update a recurring transaction / standing order"""
+    # Check if exists
+    existing = await db.recurring_transactions.find_one({"id": recurring_id})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Standing order not found")
+    
+    # Build update dict
+    update_dict = {}
+    if update_data.amount is not None:
+        update_dict["amount"] = update_data.amount
+    if update_data.description is not None:
+        update_dict["description"] = update_data.description
+    if update_data.category is not None:
+        update_dict["category"] = update_data.category
+    if update_data.frequency is not None:
+        update_dict["frequency"] = update_data.frequency
+    if update_data.day_of_month is not None:
+        update_dict["day_of_month"] = update_data.day_of_month
+    if update_data.day_of_week is not None:
+        update_dict["day_of_week"] = update_data.day_of_week
+    if update_data.end_date is not None:
+        update_dict["end_date"] = update_data.end_date
+    
+    if update_dict:
+        await db.recurring_transactions.update_one(
+            {"id": recurring_id},
+            {"$set": update_dict}
+        )
+    
+    return {"message": "Standing order updated successfully"}
+
 # Include the router in the main app
 app.include_router(api_router)
 
@@ -1678,6 +1721,19 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 logger = logging.getLogger(__name__)
+
+@app.on_event("startup")
+async def startup_event():
+    """Process any due recurring transactions on startup"""
+    import asyncio
+    
+    logger.info("Processing recurring transactions on startup...")
+    try:
+        # Run the recurring transaction processor
+        result = await process_recurring_transactions()
+        logger.info(f"Startup processing complete: {result}")
+    except Exception as e:
+        logger.error(f"Error processing recurring transactions on startup: {e}")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
