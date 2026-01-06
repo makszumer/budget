@@ -944,8 +944,9 @@ async def toggle_recurring_transaction(recurring_id: str):
 
 @api_router.post("/recurring-transactions/process")
 async def process_recurring_transactions():
-    """Check and create due recurring transactions"""
+    """Check and create due recurring transactions with proper edge case handling"""
     from datetime import date as date_module, timedelta
+    import calendar
     
     recurring_list = await db.recurring_transactions.find({"active": True}, {"_id": 0}).to_list(1000)
     created_count = 0
@@ -979,8 +980,14 @@ async def process_recurring_transactions():
                     transaction_date = today
                     
         elif rec['frequency'] == 'monthly':
-            day_of_month = rec.get('day_of_month', 1)
-            if today.day == day_of_month:
+            target_day = rec.get('day_of_month', 1)
+            # Get the last day of current month
+            last_day_of_month = calendar.monthrange(today.year, today.month)[1]
+            
+            # If target day doesn't exist in this month, use last day
+            effective_day = min(target_day, last_day_of_month)
+            
+            if today.day == effective_day:
                 if not last_created or last_created.month != today.month or last_created.year != today.year:
                     should_create = True
                     transaction_date = today
@@ -993,11 +1000,11 @@ async def process_recurring_transactions():
                     transaction_date = today
         
         if should_create and transaction_date:
-            # Create the transaction
+            # Create the transaction with Standing Order marker
             trans_create = TransactionCreate(
                 type=rec['type'],
                 amount=rec['amount'],
-                description=rec['description'] + " (Auto)",
+                description=rec['description'] + " [Standing Order]",
                 category=rec['category'],
                 date=transaction_date.isoformat(),
                 currency=rec.get('currency', 'USD')
@@ -1008,6 +1015,8 @@ async def process_recurring_transactions():
             
             doc = trans_obj.model_dump()
             doc['createdAt'] = doc['createdAt'].isoformat()
+            doc['is_standing_order'] = True  # Mark as standing order
+            doc['standing_order_id'] = rec['id']  # Link to standing order
             
             await db.transactions.insert_one(doc)
             
@@ -1019,7 +1028,7 @@ async def process_recurring_transactions():
             
             created_count += 1
     
-    return {"message": f"Created {created_count} recurring transactions"}
+    return {"message": f"Created {created_count} recurring transactions", "created_count": created_count}
 
 # Get exchange rates
 @api_router.get("/currencies")
