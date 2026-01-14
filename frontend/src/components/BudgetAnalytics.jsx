@@ -251,10 +251,10 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-semibold">{payload[0].name}</p>
-          <p className="text-sm text-blue-600">{formatAmount(payload[0].value)}</p>
-          <p className="text-sm text-gray-600">{payload[0].payload.percentage}%</p>
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-900 dark:text-white">{payload[0].name}</p>
+          <p className="text-sm text-blue-600 dark:text-blue-400">{formatAmount(payload[0].value)}</p>
+          <p className="text-sm text-gray-600 dark:text-gray-400">{payload[0].payload.percentage}%</p>
         </div>
       );
     }
@@ -264,9 +264,9 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
   const GrowthTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white p-3 border rounded-lg shadow-lg">
-          <p className="font-semibold">{payload[0].payload.date}</p>
-          <p className="text-sm text-green-600">Balance: {formatAmount(payload[0].value)}</p>
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+          <p className="font-semibold text-gray-900 dark:text-white">{payload[0].payload.date}</p>
+          <p className="text-sm text-green-600 dark:text-green-400">Balance: {formatAmount(payload[0].value)}</p>
         </div>
       );
     }
