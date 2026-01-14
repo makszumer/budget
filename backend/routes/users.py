@@ -162,18 +162,26 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
     expires_at = user.get('subscription_expires_at')
     is_premium = False
     
-    if user['subscription_level'] == 'premium' and expires_at:
-        if isinstance(expires_at, str):
-            expires_at = datetime.fromisoformat(expires_at)
-        if expires_at > datetime.now(timezone.utc):
-            is_premium = True
+    # Admin users are always premium (no expiration check needed)
+    if user.get('email') == ADMIN_EMAIL:
+        is_premium = True
+    elif user['subscription_level'] == 'premium':
+        # For non-admin premium users, check expiration
+        if expires_at:
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at)
+            if expires_at > datetime.now(timezone.utc):
+                is_premium = True
+            else:
+                # Downgrade if expired
+                await db.users.update_one(
+                    {"id": current_user_id},
+                    {"$set": {"subscription_level": "free"}}
+                )
+                user['subscription_level'] = 'free'
         else:
-            # Downgrade if expired
-            await db.users.update_one(
-                {"id": current_user_id},
-                {"$set": {"subscription_level": "free"}}
-            )
-            user['subscription_level'] = 'free'
+            # Premium with no expiration (e.g., lifetime or admin grant)
+            is_premium = True
     
     return UserResponse(
         user_id=user['id'],
