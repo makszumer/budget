@@ -484,7 +484,7 @@ function MainApp() {
 
             {/* Add Investment Tab */}
             <TabsContent value="add" className="mt-6">
-              <div className="max-w-4xl mx-auto border-2 border-blue-200 rounded-xl p-1 bg-blue-50/50">
+              <div className="max-w-4xl mx-auto border-2 border-blue-200 dark:border-blue-800 rounded-xl p-1 bg-blue-50/50 dark:bg-blue-950/30">
                 <InvestmentForm onAddInvestment={handleAddTransaction} />
               </div>
             </TabsContent>
