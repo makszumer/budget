@@ -99,7 +99,7 @@ export const FinancialAssistant = () => {
                 <button
                   key={i}
                   onClick={() => setQuestion(q)}
-                  className="text-xs px-3 py-1.5 bg-blue-50 text-blue-700 rounded-full hover:bg-blue-100 transition-colors"
+                  className="text-xs px-3 py-1.5 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                   disabled={loading}
                 >
                   {q}
