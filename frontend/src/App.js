@@ -371,14 +371,14 @@ function MainApp() {
 
       {/* Main Section Switcher */}
       <div className="mb-8 flex justify-center">
-        <div className="inline-flex rounded-xl border-2 border-slate-300 bg-white p-1.5 shadow-lg">
+        <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
           <button
             onClick={() => setActiveSection("budget")}
             data-testid="budget-section-btn"
             className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
               activeSection === "budget"
                 ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
             }`}
           >
             💼 Budget Manager
@@ -389,7 +389,7 @@ function MainApp() {
             className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
               activeSection === "investments"
                 ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
             }`}
           >
             📈 Investment Portfolio
