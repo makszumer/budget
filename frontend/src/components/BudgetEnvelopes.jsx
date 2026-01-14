@@ -276,8 +276,12 @@ export const BudgetEnvelopes = ({ currencies }) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleDelete(envelope.id)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDelete(envelope.id);
+                      }}
                       className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      data-testid={`delete-envelope-${envelope.id}`}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
