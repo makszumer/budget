@@ -6,6 +6,7 @@ import { useTheme } from "@/context/ThemeContext";
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
   const { user } = useAuth();
+  const { theme, isDark, toggleTheme, setThemeMode } = useTheme();
 
   const MenuItem = ({ icon: Icon, label, page, active }) => (
     <button
