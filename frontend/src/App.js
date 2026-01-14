@@ -419,14 +419,14 @@ function MainApp() {
             <TabsContent value="transactions" className="space-y-8 mt-6">
               {/* Expense and Income Forms Side by Side */}
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="border-2 border-red-200 rounded-xl p-1 bg-red-50/50">
+                <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
                   <TransactionForm
                     type="expense"
                     onAddTransaction={handleAddTransaction}
                     currencies={currencies}
                   />
                 </div>
-                <div className="border-2 border-green-200 rounded-xl p-1 bg-green-50/50">
+                <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
                   <TransactionForm
                     type="income"
                     onAddTransaction={handleAddTransaction}
