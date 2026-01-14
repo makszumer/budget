@@ -1,4 +1,4 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
 import axios from 'axios';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -19,15 +19,7 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('access_token'));
 
-  useEffect(() => {
-    if (token) {
-      fetchUserProfile();
-    } else {
-      setLoading(false);
-    }
-  }, [token]);
-
-  const fetchUserProfile = async () => {
+  const fetchUserProfile = useCallback(async () => {
     if (!token) {
       setLoading(false);
       return;
@@ -41,14 +33,21 @@ export const AuthProvider = ({ children }) => {
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       // Only logout if it's a 401 error (unauthorized)
-      // This prevents logout on network errors or other issues
       if (error.response?.status === 401) {
         logout();
       }
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
+
+  useEffect(() => {
+    if (token) {
+      fetchUserProfile();
+    } else {
+      setLoading(false);
+    }
+  }, [token, fetchUserProfile]);
 
   const login = async (email, password) => {
     const response = await axios.post(`${API}/users/login`, { email, password });
@@ -93,6 +92,23 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  const updatePrimaryCurrency = async (currency) => {
+    if (!token) return;
+    
+    try {
+      await axios.put(`${API}/users/preferences`, 
+        { primary_currency: currency },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      // Update local user state
+      setUser(prev => ({ ...prev, primary_currency: currency }));
+      return true;
+    } catch (error) {
+      console.error('Failed to update primary currency:', error);
+      throw error;
+    }
+  };
+
   const value = {
     user,
     token,
@@ -101,8 +117,10 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshUserProfile,
+    updatePrimaryCurrency,
     isAuthenticated: !!user,
-    isPremium: user?.is_premium || false
+    isPremium: user?.is_premium || false,
+    primaryCurrency: user?.primary_currency || 'USD'
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
