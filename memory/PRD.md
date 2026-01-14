@@ -50,13 +50,13 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - Persists user preference
 - All components support dark mode styling
 
-### 10. Analytics
-- Budget analytics with charts
-- Investment analytics
-- Date filtering (day/week/month/year/custom)
-- **Interactive pie charts with highlighting**
-- **Category details show amount + percentage**
-- **Bidirectional linking between list and chart**
+### 11. Primary Currency Setting
+- User can select primary currency from 20+ options
+- Applied automatically to all new transactions
+- Currency selector on dashboard header
+- Voice input uses primary currency
+- AI assistant uses primary currency in responses
+- Existing transactions retain their original currency
 
 ### 11. Subscription (Stripe Integration)
 - Premium subscriptions via Stripe
