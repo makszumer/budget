@@ -54,6 +54,9 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - Budget analytics with charts
 - Investment analytics
 - Date filtering (day/week/month/year/custom)
+- **Interactive pie charts with highlighting**
+- **Category details show amount + percentage**
+- **Bidirectional linking between list and chart**
 
 ### 11. Subscription (Stripe Integration)
 - Premium subscriptions via Stripe
