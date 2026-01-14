@@ -1532,17 +1532,76 @@ Answer the user's question accurately using ONLY the data above. If the question
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"AI service error: {str(e)}")
 
-# Daily Quote of the Day
+# Daily Quote of the Day - Enhanced with Famous Investor Quotes
 class QuoteOfDay(BaseModel):
     quote: str
     author: str = "Financial Wisdom"
     date: str
     category: str = "finance"
 
+# Famous investor and entrepreneur quotes organized by category
+FAMOUS_QUOTES = {
+    "investor_wisdom": [
+        ("The stock market is a device for transferring money from the impatient to the patient.", "Warren Buffett"),
+        ("Risk comes from not knowing what you're doing.", "Warren Buffett"),
+        ("Someone's sitting in the shade today because someone planted a tree a long time ago.", "Warren Buffett"),
+        ("Price is what you pay. Value is what you get.", "Warren Buffett"),
+        ("The best investment you can make is in yourself.", "Warren Buffett"),
+        ("It's far better to buy a wonderful company at a fair price than a fair company at a wonderful price.", "Warren Buffett"),
+        ("Spend each day trying to be a little wiser than you were when you woke up.", "Charlie Munger"),
+        ("The big money is not in the buying and selling, but in the waiting.", "Charlie Munger"),
+        ("Knowing what you don't know is more useful than being brilliant.", "Charlie Munger"),
+        ("Know what you own, and know why you own it.", "Peter Lynch"),
+        ("In the short run, the market is a voting machine. In the long run, it's a weighing machine.", "Benjamin Graham"),
+        ("The four most dangerous words in investing are: 'This time it's different.'", "Sir John Templeton"),
+    ],
+    "financial_freedom": [
+        ("Wealth is the ability to fully experience life.", "Henry David Thoreau"),
+        ("Financial freedom is available to those who learn about it and work for it.", "Robert Kiyosaki"),
+        ("Money is a terrible master but an excellent servant.", "P.T. Barnum"),
+        ("Don't let making a living prevent you from making a life.", "John Wooden"),
+        ("Time is more valuable than money. You can get more money, but you cannot get more time.", "Jim Rohn"),
+        ("The goal isn't more money. The goal is living life on your own terms.", "Chris Brogan"),
+        ("Retirement is not the end of the road. It is the beginning of the open highway.", "Unknown"),
+        ("The secret to wealth is simple: Find a way to do more for others than anyone else.", "Tony Robbins"),
+    ],
+    "discipline": [
+        ("Do not save what is left after spending; instead spend what is left after saving.", "Warren Buffett"),
+        ("A budget is telling your money where to go instead of wondering where it went.", "Dave Ramsey"),
+        ("Beware of little expenses. A small leak will sink a great ship.", "Benjamin Franklin"),
+        ("It's not your salary that makes you rich, it's your spending habits.", "Charles A. Jaffe"),
+        ("Every time you borrow money, you're robbing your future self.", "Nathan W. Morris"),
+        ("Compound interest is the eighth wonder of the world. He who understands it, earns it.", "Albert Einstein"),
+        ("The habit of saving is itself an education.", "George S. Clason"),
+        ("Rich people stay rich by living like they're broke. Broke people stay broke by living like they're rich.", "Unknown"),
+    ],
+    "motivation": [
+        ("Formal education will make you a living; self-education will make you a fortune.", "Jim Rohn"),
+        ("The only way to do great work is to love what you do.", "Steve Jobs"),
+        ("Success is not final, failure is not fatal: it is the courage to continue that counts.", "Winston Churchill"),
+        ("The question isn't who is going to let me; it's who is going to stop me.", "Ayn Rand"),
+        ("Seek wealth, not money or status. Wealth is having assets that earn while you sleep.", "Naval Ravikant"),
+        ("Play long-term games with long-term people.", "Naval Ravikant"),
+        ("Learn to sell. Learn to build. If you can do both, you will be unstoppable.", "Naval Ravikant"),
+        ("Specific knowledge is knowledge that you cannot be trained for.", "Naval Ravikant"),
+    ],
+    "mindset": [
+        ("An investment in knowledge pays the best interest.", "Benjamin Franklin"),
+        ("Empty pockets never held anyone back. Only empty heads and empty hearts can do that.", "Norman Vincent Peale"),
+        ("Wealth is not about having a lot of money; it's about having a lot of options.", "Chris Rock"),
+        ("Money grows on the tree of persistence.", "Japanese Proverb"),
+        ("The more you learn, the more you earn.", "Warren Buffett"),
+        ("Never depend on a single income. Make investment to create a second source.", "Warren Buffett"),
+        ("If you don't find a way to make money while you sleep, you will work until you die.", "Warren Buffett"),
+        ("Financial peace isn't the acquisition of stuff. It's learning to live on less than you make.", "Dave Ramsey"),
+    ],
+}
+
 @api_router.get("/quote-of-day")
 async def get_quote_of_day():
-    """Get the quote of the day - generates a new one daily using AI"""
+    """Get the quote of the day - generates a new one daily using AI or famous quotes"""
     from datetime import date as date_obj
+    import random
     
     today = date_obj.today().isoformat()
     
@@ -1552,56 +1611,105 @@ async def get_quote_of_day():
     if existing_quote:
         return existing_quote
     
-    # Generate a new quote using AI
+    # Get recent quotes to avoid repetition
+    recent_quotes = await db.daily_quotes.find(
+        {}, 
+        {"_id": 0, "quote": 1}
+    ).sort("date", -1).limit(30).to_list(30)
+    
+    recent_quote_texts = set(q.get("quote", "")[:50] for q in recent_quotes)
+    
+    # 50% chance to use a famous quote, 50% to generate with AI
+    use_famous_quote = random.random() < 0.5
+    
+    if use_famous_quote:
+        # Select a random category
+        category = random.choice(list(FAMOUS_QUOTES.keys()))
+        quotes_list = FAMOUS_QUOTES[category]
+        
+        # Try to find a non-repeated quote
+        available_quotes = [q for q in quotes_list if q[0][:50] not in recent_quote_texts]
+        
+        if not available_quotes:
+            # All quotes used recently, pick from any category
+            all_quotes = [(q, cat) for cat, quotes in FAMOUS_QUOTES.items() for q in quotes]
+            available_quotes = [q for q, cat in all_quotes if q[0][:50] not in recent_quote_texts]
+            
+            if available_quotes:
+                quote_tuple = random.choice(available_quotes)
+            else:
+                quote_tuple = random.choice(quotes_list)
+        else:
+            quote_tuple = random.choice(available_quotes)
+        
+        quote_text, author = quote_tuple
+        
+        new_quote = {
+            "quote": quote_text,
+            "author": author,
+            "date": today,
+            "category": category,
+            "created_at": datetime.now(timezone.utc).isoformat()
+        }
+        
+        await db.daily_quotes.insert_one(new_quote)
+        
+        return {
+            "quote": new_quote["quote"],
+            "author": new_quote["author"],
+            "date": new_quote["date"],
+            "category": new_quote["category"]
+        }
+    
+    # Try to generate with AI
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
         llm_key = os.environ.get("EMERGENT_LLM_KEY", "")
         
         if not llm_key:
-            # Return a fallback quote if AI is not available
             return await get_fallback_quote(today)
         
-        # Get recent quotes to avoid repetition
-        recent_quotes = await db.daily_quotes.find(
-            {}, 
-            {"_id": 0, "quote": 1}
-        ).sort("date", -1).limit(30).to_list(30)
+        # Pick a random theme for variety
+        themes = [
+            "long-term investing and patience",
+            "financial discipline and saving habits",
+            "wealth building and compound growth",
+            "financial freedom and independence",
+            "smart money management",
+            "overcoming financial obstacles",
+        ]
+        theme = random.choice(themes)
         
-        recent_quote_texts = [q.get("quote", "") for q in recent_quotes]
-        avoid_text = "\n".join(recent_quote_texts[:10]) if recent_quote_texts else ""
+        avoid_text = "\n".join(list(recent_quote_texts)[:10]) if recent_quote_texts else ""
         
         client = LlmChat(
             api_key=llm_key,
             session_id="daily_quote_generator",
-            system_message="You are a wise financial advisor who creates inspiring, actionable quotes about personal finance, saving, investing, financial freedom, discipline, and building wealth. Keep quotes SHORT (1-2 sentences max). Be original and avoid clichés."
+            system_message="You are a wise financial mentor who creates inspiring, practical quotes about money and wealth. Your quotes should feel authentic and timeless, like something Warren Buffett, Charlie Munger, or Naval Ravikant might say."
         ).with_model("openai", "gpt-4o-mini")
         
-        prompt = f"""Generate ONE unique, inspiring quote about personal finance or financial wisdom.
+        prompt = f"""Generate ONE unique, inspiring quote about {theme}.
 
 REQUIREMENTS:
-- Must be about: saving, investing, financial freedom, discipline, money management, or building wealth
 - Keep it SHORT: 1-2 sentences maximum
-- Be original and practical
-- Should motivate users to manage their money better
+- Be practical and actionable
+- Sound wise and timeless
 - Do NOT include quotation marks
+- Do NOT attribute it to anyone
 
-{"AVOID repeating these recent quotes:" + chr(10) + avoid_text if avoid_text else ""}
+{"AVOID similar themes to these recent quotes:" + chr(10) + avoid_text if avoid_text else ""}
 
 Respond with ONLY the quote text, nothing else."""
 
         user_msg = UserMessage(text=prompt)
         quote_text = await client.send_message(user_msg)
         
-        # Clean up the quote
         quote_text = quote_text.strip().strip('"').strip("'")
         
-        # Pick a random category
-        import random
-        categories = ["finance", "motivation", "discipline", "investing", "saving", "mindset"]
+        categories = ["investor_wisdom", "financial_freedom", "discipline", "motivation", "mindset"]
         category = random.choice(categories)
         
-        # Store the new quote
         new_quote = {
             "quote": quote_text,
             "author": "Daily Financial Wisdom",
@@ -1627,18 +1735,11 @@ async def get_fallback_quote(today: str):
     """Return a fallback quote if AI generation fails"""
     import random
     
-    fallback_quotes = [
-        ("The best time to start saving was yesterday. The second best time is today.", "finance"),
-        ("Financial freedom is not about being rich, it's about having choices.", "motivation"),
-        ("Small daily improvements lead to stunning results over time.", "discipline"),
-        ("Every dollar you save is a step toward financial independence.", "saving"),
-        ("Invest in yourself first, then invest in the market.", "investing"),
-        ("Don't work for money, make money work for you.", "mindset"),
-        ("A budget is telling your money where to go instead of wondering where it went.", "finance"),
-        ("The secret to wealth is simple: spend less than you earn and invest the difference.", "saving"),
-        ("Discipline is choosing between what you want now and what you want most.", "discipline"),
-        ("Your financial future depends on the decisions you make today.", "motivation"),
-    ]
+    # Use famous quotes as fallback
+    all_quotes = []
+    for category, quotes in FAMOUS_QUOTES.items():
+        for quote, author in quotes:
+            all_quotes.append((quote, author, category))
     
     # Try to get the last successful quote
     last_quote = await db.daily_quotes.find_one({}, {"_id": 0}, sort=[("date", -1)])
@@ -1646,12 +1747,12 @@ async def get_fallback_quote(today: str):
     if last_quote:
         return last_quote
     
-    # Use a random fallback
-    quote_text, category = random.choice(fallback_quotes)
+    # Use a random famous quote
+    quote_text, author, category = random.choice(all_quotes)
     
     return {
         "quote": quote_text,
-        "author": "Financial Wisdom",
+        "author": author,
         "date": today,
         "category": category
     }
