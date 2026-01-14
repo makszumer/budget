@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
-import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid } from "recharts";
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, LineChart, Line, XAxis, YAxis, CartesianGrid, Sector } from "recharts";
 import { Eye, EyeOff, Calendar, Loader2, AlertCircle, X } from "lucide-react";
 import { CategoryTrends } from "@/components/CategoryTrends";
 import { toast } from "sonner";
@@ -12,6 +12,36 @@ import { toast } from "sonner";
 const COLORS = {
   expenses: ['#ef4444', '#f97316', '#f59e0b', '#eab308', '#84cc16', '#22c55e', '#10b981', '#14b8a6'],
   income: ['#3b82f6', '#6366f1', '#8b5cf6', '#a855f7', '#d946ef', '#ec4899'],
+};
+
+// Custom active shape for highlighted pie slice
+const renderActiveShape = (props, colorPalette) => {
+  const { cx, cy, innerRadius, outerRadius, startAngle, endAngle, fill, payload, percent, value } = props;
+  
+  return (
+    <g>
+      <Sector
+        cx={cx}
+        cy={cy}
+        innerRadius={innerRadius}
+        outerRadius={outerRadius + 10}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        fill={fill}
+        className="transition-all duration-300 ease-out"
+      />
+      <Sector
+        cx={cx}
+        cy={cy}
+        startAngle={startAngle}
+        endAngle={endAngle}
+        innerRadius={outerRadius + 12}
+        outerRadius={outerRadius + 16}
+        fill={fill}
+        className="transition-all duration-300 ease-out"
+      />
+    </g>
+  );
 };
 
 export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, transactions = [] }) => {
@@ -26,6 +56,10 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
   
   // Store the active custom range for display
   const [activeCustomRange, setActiveCustomRange] = useState(null);
+  
+  // State for interactive highlighting
+  const [activeExpenseIndex, setActiveExpenseIndex] = useState(null);
+  const [activeIncomeIndex, setActiveIncomeIndex] = useState(null);
 
   const formatAmount = (amount) => {
     if (privacyMode) {
