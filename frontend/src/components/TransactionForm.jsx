@@ -15,6 +15,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
+import { getCurrencySymbol } from "@/components/CurrencyPreferences";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -41,12 +42,11 @@ const categoryOptions = {
   investment: ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other"],
 };
 
-export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }) => {
-  const { token } = useAuth();
+export const TransactionForm = ({ type, onAddTransaction }) => {
+  const { token, primaryCurrency } = useAuth();
   const [amount, setAmount] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("");
-  const [currency, setCurrency] = useState("USD");
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState({});
   const [customCategories, setCustomCategories] = useState([]);
@@ -96,14 +96,13 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
       description,
       category,
       date,
-      currency,
+      currency: primaryCurrency, // Always use primary currency
     });
 
     // Reset form
     setAmount("");
     setDescription("");
     setCategory("");
-    setCurrency("USD");
     setDate(new Date().toISOString().split("T")[0]);
     setErrors({});
 
@@ -116,18 +115,28 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
     investment: "Add Investment",
   };
 
+  const currencySymbol = getCurrencySymbol(primaryCurrency);
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">{typeLabels[type]}</CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg">{typeLabels[type]}</CardTitle>
+          <span className="text-sm text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
+            {currencySymbol} {primaryCurrency}
+          </span>
+        </div>
       </CardHeader>
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor={`amount-${type}`}>
-                Amount <span className="text-destructive">*</span>
-              </Label>
+          <div className="space-y-2">
+            <Label htmlFor={`amount-${type}`}>
+              Amount ({currencySymbol}) <span className="text-destructive">*</span>
+            </Label>
+            <div className="relative">
+              <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
+                {currencySymbol}
+              </span>
               <Input
                 id={`amount-${type}`}
                 data-testid={`amount-input-${type}`}
@@ -139,28 +148,12 @@ export const TransactionForm = ({ type, onAddTransaction, currencies = ["USD"] }
                   setAmount(e.target.value);
                   setErrors(prev => ({ ...prev, amount: "" }));
                 }}
-                className={errors.amount ? "border-destructive" : ""}
+                className={`pl-8 ${errors.amount ? "border-destructive" : ""}`}
               />
-              {errors.amount && (
-                <p className="text-sm text-destructive">{errors.amount}</p>
-              )}
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor={`currency-${type}`}>
-                Currency <span className="text-destructive">*</span>
-              </Label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger id={`currency-${type}`}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {currencies.map(curr => (
-                    <SelectItem key={curr} value={curr}>{curr}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {errors.amount && (
+              <p className="text-sm text-destructive">{errors.amount}</p>
+            )}
           </div>
 
           <div className="space-y-2">
