@@ -425,14 +425,12 @@ function MainApp() {
                   <TransactionForm
                     type="expense"
                     onAddTransaction={handleAddTransaction}
-                    currencies={currencies}
                   />
                 </div>
                 <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
                   <TransactionForm
                     type="income"
                     onAddTransaction={handleAddTransaction}
-                    currencies={currencies}
                   />
                 </div>
               </div>
