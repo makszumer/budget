@@ -189,5 +189,39 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
         username=user['username'],
         subscription_level=user['subscription_level'],
         subscription_expires_at=expires_at.isoformat() if isinstance(expires_at, datetime) else expires_at,
-        is_premium=is_premium
+        is_premium=is_premium,
+        primary_currency=user.get('primary_currency', 'USD')
     )
+
+@router.put("/preferences")
+async def update_user_preferences(
+    preferences: UserPreferencesUpdate,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Update user preferences like primary currency"""
+    db = get_db()
+    
+    update_data = {}
+    
+    if preferences.primary_currency:
+        if preferences.primary_currency not in SUPPORTED_CURRENCIES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Unsupported currency. Supported currencies: {', '.join(SUPPORTED_CURRENCIES)}"
+            )
+        update_data['primary_currency'] = preferences.primary_currency
+    
+    if not update_data:
+        raise HTTPException(status_code=400, detail="No preferences to update")
+    
+    await db.users.update_one(
+        {"id": current_user_id},
+        {"$set": update_data}
+    )
+    
+    return {"message": "Preferences updated successfully", "primary_currency": preferences.primary_currency}
+
+@router.get("/supported-currencies")
+async def get_supported_currencies():
+    """Get list of supported currencies"""
+    return {"currencies": SUPPORTED_CURRENCIES}
