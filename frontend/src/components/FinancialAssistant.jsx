@@ -120,12 +120,12 @@ export const FinancialAssistant = () => {
                   {/* Question */}
                   <div className="flex gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
-                        <span className="text-blue-600 font-semibold text-sm">Q</span>
+                      <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/50 flex items-center justify-center">
+                        <span className="text-blue-600 dark:text-blue-400 font-semibold text-sm">Q</span>
                       </div>
                     </div>
                     <div className="flex-1">
-                      <p className="font-medium text-slate-900">{entry.question}</p>
+                      <p className="font-medium text-slate-900 dark:text-slate-100">{entry.question}</p>
                       <p className="text-xs text-muted-foreground mt-1">{entry.timestamp}</p>
                     </div>
                   </div>
@@ -133,13 +133,13 @@ export const FinancialAssistant = () => {
                   {/* Answer */}
                   <div className="flex gap-3">
                     <div className="flex-shrink-0">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
-                        <TrendingUp className="h-4 w-4 text-green-600" />
+                      <div className="w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/50 flex items-center justify-center">
+                        <TrendingUp className="h-4 w-4 text-green-600 dark:text-green-400" />
                       </div>
                     </div>
                     <div className="flex-1">
-                      <div className="bg-slate-50 rounded-lg p-4">
-                        <p className="text-slate-900 whitespace-pre-wrap">{entry.answer}</p>
+                      <div className="bg-slate-50 dark:bg-slate-800 rounded-lg p-4">
+                        <p className="text-slate-900 dark:text-slate-100 whitespace-pre-wrap">{entry.answer}</p>
                       </div>
                     </div>
                   </div>
