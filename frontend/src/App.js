@@ -645,24 +645,24 @@ function MainApp() {
         {/* Privacy Toggle Button */}
         <button
           onClick={() => setPrivacyMode(!privacyMode)}
-          className="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200"
+          className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
           data-testid="privacy-toggle"
           title={privacyMode ? "Show amounts" : "Hide amounts"}
       >
         {privacyMode ? (
-          <EyeOff className="w-5 h-5 text-gray-700" />
+          <EyeOff className="w-5 h-5 text-gray-700 dark:text-gray-200" />
         ) : (
-          <Eye className="w-5 h-5 text-gray-700" />
+          <Eye className="w-5 h-5 text-gray-700 dark:text-gray-200" />
         )}
       </button>
 
         {/* Logout Button */}
         <button
           onClick={logout}
-          className="p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 hover:bg-red-50"
+          className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
           title="Logout"
         >
-          <LogOut className="w-5 h-5 text-gray-700" />
+          <LogOut className="w-5 h-5 text-gray-700 dark:text-gray-200" />
         </button>
       </div>
 
