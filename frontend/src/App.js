@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import "@/App.css";
 import axios from "axios";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
+import { ThemeProvider } from "@/context/ThemeContext";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { RegisterPage } from "@/components/auth/RegisterPage";
 import { PricingPage } from "@/components/subscription/PricingPage";
@@ -703,12 +704,14 @@ function MainApp() {
   );
 }
 
-// Wrap MainApp with AuthProvider
+// Wrap MainApp with AuthProvider and ThemeProvider
 function App() {
   return (
-    <AuthProvider>
-      <MainApp />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <MainApp />
+      </AuthProvider>
+    </ThemeProvider>
   );
 }
 
