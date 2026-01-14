@@ -328,11 +328,13 @@ export const BudgetEnvelopes = ({ currencies }) => {
                   <Button
                     className="w-full"
                     variant={progress >= 100 ? "outline" : "default"}
-                    onClick={() => {
+                    onClick={(e) => {
+                      e.stopPropagation();
                       setSelectedEnvelope(envelope);
                       setAllocateDialogOpen(true);
                     }}
                     disabled={progress >= 100}
+                    data-testid={`allocate-envelope-${envelope.id}`}
                   >
                     <DollarSign className="h-4 w-4 mr-2" />
                     {progress >= 100 ? "Goal Reached! 🎉" : "Allocate Money"}
