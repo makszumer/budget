@@ -355,6 +355,7 @@ function MainApp() {
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
+            <CurrencyPreferences compact />
             <AppearanceToggle />
             <VoiceInput onTransactionCreated={handleAddTransaction} />
           </div>
