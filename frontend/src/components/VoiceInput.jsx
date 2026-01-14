@@ -371,11 +371,11 @@ export const VoiceInput = ({ onTransactionCreated }) => {
         description: pendingTransaction.description || `${pendingTransaction.type} via voice`,
         category: selectedCategory,
         date: today,
-        currency: "USD"
+        currency: primaryCurrency // Use primary currency from user settings
       };
       
       await onTransactionCreated(transactionData);
-      toast.success(`${transactionData.type.charAt(0).toUpperCase() + transactionData.type.slice(1)} of $${transactionData.amount} added!`);
+      toast.success(`${transactionData.type.charAt(0).toUpperCase() + transactionData.type.slice(1)} of ${primaryCurrency} ${transactionData.amount} added!`);
       setClarificationOpen(false);
       setPendingTransaction(null);
       setSelectedCategory("");
