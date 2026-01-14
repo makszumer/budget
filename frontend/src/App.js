@@ -668,9 +668,9 @@ function MainApp() {
 
       {/* Server Status Indicator */}
       {serverAwake && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 border border-green-200 rounded-lg shadow-md">
+        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg shadow-md">
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-green-700 font-medium">Server Active</span>
+          <span className="text-sm text-green-700 dark:text-green-400 font-medium">Server Active</span>
         </div>
       )}
 
