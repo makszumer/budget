@@ -599,11 +599,11 @@ function MainApp() {
       {/* Menu Button (Three Dots) */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-6 left-6 z-50 p-3 bg-white rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200"
+        className="fixed top-6 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
         data-testid="menu-toggle"
       >
         <svg
-          className="w-6 h-6 text-gray-700"
+          className="w-6 h-6 text-gray-700 dark:text-gray-200"
           fill="none"
           stroke="currentColor"
           viewBox="0 0 24 24"
