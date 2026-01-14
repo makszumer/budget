@@ -627,7 +627,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-red-700">💸 Expense Breakdown</CardTitle>
+                <CardTitle className="text-red-700 dark:text-red-400">💸 Expense Breakdown</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   What you spend the most on {pieChartFilter !== "all" && `(${getFilterLabel()})`}
                 </p>
@@ -636,7 +636,10 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowExpenseLegend(!showExpenseLegend)}
+                  onClick={() => {
+                    setShowExpenseLegend(!showExpenseLegend);
+                    if (showExpenseLegend) setActiveExpenseIndex(null);
+                  }}
                 >
                   {showExpenseLegend ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
                   {showExpenseLegend ? "Hide" : "Show"} Details
@@ -647,6 +650,14 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardContent>
             {expenseData.length > 0 ? (
               <>
+                {/* Total Display */}
+                <div className="text-center mb-4 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
+                  <p className="text-xs text-red-600 dark:text-red-400 font-medium">Total Expenses</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">
+                    {formatAmount(filteredTotals.expenses)}
+                  </p>
+                </div>
+                
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -658,31 +669,84 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
+                      activeIndex={activeExpenseIndex}
+                      activeShape={(props) => renderActiveShape(props, COLORS.expenses)}
+                      onMouseEnter={handleExpensePieEnter}
+                      onMouseLeave={() => setActiveExpenseIndex(null)}
+                      onClick={handleExpensePieClick}
+                      className="cursor-pointer"
                     >
                       {expenseData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS.expenses[index % COLORS.expenses.length]} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS.expenses[index % COLORS.expenses.length]}
+                          opacity={activeExpenseIndex === null || activeExpenseIndex === index ? 1 : 0.3}
+                          className="transition-opacity duration-200 ease-out"
+                        />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
                 
-                {/* Scrollable Legend */}
+                {/* Interactive Details List with Amount & Percentage */}
                 {showExpenseLegend && (
-                  <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Category Details</p>
+                      <p className="text-xs text-muted-foreground">Click to highlight</p>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto space-y-2">
                       {expenseData.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
+                        <button
+                          key={index}
+                          onClick={() => handleExpenseLegendClick(index)}
+                          onMouseEnter={() => setActiveExpenseIndex(index)}
+                          onMouseLeave={() => setActiveExpenseIndex(null)}
+                          data-testid={`expense-category-${entry.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ease-out ${
+                            activeExpenseIndex === index 
+                              ? 'bg-red-100 dark:bg-red-900/40 ring-2 ring-red-400 dark:ring-red-600 scale-[1.02]' 
+                              : activeExpenseIndex !== null 
+                                ? 'bg-gray-50 dark:bg-gray-800/50 opacity-50' 
+                                : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-red-50 dark:hover:bg-red-900/20'
+                          }`}
+                        >
                           <div 
-                            className="w-4 h-4 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: COLORS.expenses[index % COLORS.expenses.length] }}
+                            className="w-4 h-4 rounded-sm flex-shrink-0 transition-transform duration-200"
+                            style={{ 
+                              backgroundColor: COLORS.expenses[index % COLORS.expenses.length],
+                              transform: activeExpenseIndex === index ? 'scale(1.2)' : 'scale(1)'
+                            }}
                           />
-                          <span className="truncate">{entry.name}</span>
-                          <span className="text-muted-foreground ml-auto">
-                            ({formatAmount(entry.value)})
+                          <span className="flex-1 font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {entry.name}
                           </span>
-                        </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="font-bold text-red-600 dark:text-red-400">
+                              {formatAmount(entry.value)}
+                            </span>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs min-w-[50px] justify-center transition-colors duration-200 ${
+                                activeExpenseIndex === index 
+                                  ? 'bg-red-200 dark:bg-red-800 text-red-800 dark:text-red-200' 
+                                  : ''
+                              }`}
+                            >
+                              {entry.percentage}%
+                            </Badge>
+                          </div>
+                        </button>
                       ))}
+                    </div>
+                    {/* Verification Total */}
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-red-700 dark:text-red-300">{formatAmount(filteredTotals.expenses)}</span>
+                        <Badge variant="outline" className="text-xs">100%</Badge>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -698,7 +762,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-green-700">💰 Income Sources</CardTitle>
+                <CardTitle className="text-green-700 dark:text-green-400">💰 Income Sources</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Your biggest sources of income {pieChartFilter !== "all" && `(${getFilterLabel()})`}
                 </p>
@@ -707,7 +771,10 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                 <Button
                   variant="outline"
                   size="sm"
-                  onClick={() => setShowIncomeLegend(!showIncomeLegend)}
+                  onClick={() => {
+                    setShowIncomeLegend(!showIncomeLegend);
+                    if (showIncomeLegend) setActiveIncomeIndex(null);
+                  }}
                 >
                   {showIncomeLegend ? <EyeOff className="h-4 w-4 mr-2" /> : <Eye className="h-4 w-4 mr-2" />}
                   {showIncomeLegend ? "Hide" : "Show"} Details
@@ -718,6 +785,14 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardContent>
             {incomeData.length > 0 ? (
               <>
+                {/* Total Display */}
+                <div className="text-center mb-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                  <p className="text-xs text-green-600 dark:text-green-400 font-medium">Total Income</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                    {formatAmount(filteredTotals.income)}
+                  </p>
+                </div>
+                
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
@@ -729,31 +804,84 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
                       outerRadius={100}
                       fill="#8884d8"
                       dataKey="value"
+                      activeIndex={activeIncomeIndex}
+                      activeShape={(props) => renderActiveShape(props, COLORS.income)}
+                      onMouseEnter={handleIncomePieEnter}
+                      onMouseLeave={() => setActiveIncomeIndex(null)}
+                      onClick={handleIncomePieClick}
+                      className="cursor-pointer"
                     >
                       {incomeData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={COLORS.income[index % COLORS.income.length]} />
+                        <Cell 
+                          key={`cell-${index}`} 
+                          fill={COLORS.income[index % COLORS.income.length]}
+                          opacity={activeIncomeIndex === null || activeIncomeIndex === index ? 1 : 0.3}
+                          className="transition-opacity duration-200 ease-out"
+                        />
                       ))}
                     </Pie>
                     <Tooltip content={<CustomTooltip />} />
                   </PieChart>
                 </ResponsiveContainer>
                 
-                {/* Scrollable Legend */}
+                {/* Interactive Details List with Amount & Percentage */}
                 {showIncomeLegend && (
-                  <div className="mt-4 max-h-48 overflow-y-auto border-t pt-4">
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="mt-4 border-t border-gray-200 dark:border-gray-700 pt-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Source Details</p>
+                      <p className="text-xs text-muted-foreground">Click to highlight</p>
+                    </div>
+                    <div className="max-h-64 overflow-y-auto space-y-2">
                       {incomeData.map((entry, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm">
+                        <button
+                          key={index}
+                          onClick={() => handleIncomeLegendClick(index)}
+                          onMouseEnter={() => setActiveIncomeIndex(index)}
+                          onMouseLeave={() => setActiveIncomeIndex(null)}
+                          data-testid={`income-category-${entry.name.toLowerCase().replace(/\s+/g, '-')}`}
+                          className={`w-full flex items-center gap-3 p-3 rounded-lg text-left transition-all duration-200 ease-out ${
+                            activeIncomeIndex === index 
+                              ? 'bg-green-100 dark:bg-green-900/40 ring-2 ring-green-400 dark:ring-green-600 scale-[1.02]' 
+                              : activeIncomeIndex !== null 
+                                ? 'bg-gray-50 dark:bg-gray-800/50 opacity-50' 
+                                : 'bg-gray-50 dark:bg-gray-800/50 hover:bg-green-50 dark:hover:bg-green-900/20'
+                          }`}
+                        >
                           <div 
-                            className="w-4 h-4 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: COLORS.income[index % COLORS.income.length] }}
+                            className="w-4 h-4 rounded-sm flex-shrink-0 transition-transform duration-200"
+                            style={{ 
+                              backgroundColor: COLORS.income[index % COLORS.income.length],
+                              transform: activeIncomeIndex === index ? 'scale(1.2)' : 'scale(1)'
+                            }}
                           />
-                          <span className="truncate">{entry.name}</span>
-                          <span className="text-muted-foreground ml-auto">
-                            ({formatAmount(entry.value)})
+                          <span className="flex-1 font-medium text-gray-900 dark:text-gray-100 truncate">
+                            {entry.name}
                           </span>
-                        </div>
+                          <div className="flex items-center gap-2 flex-shrink-0">
+                            <span className="font-bold text-green-600 dark:text-green-400">
+                              {formatAmount(entry.value)}
+                            </span>
+                            <Badge 
+                              variant="secondary" 
+                              className={`text-xs min-w-[50px] justify-center transition-colors duration-200 ${
+                                activeIncomeIndex === index 
+                                  ? 'bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200' 
+                                  : ''
+                              }`}
+                            >
+                              {entry.percentage}%
+                            </Badge>
+                          </div>
+                        </button>
                       ))}
+                    </div>
+                    {/* Verification Total */}
+                    <div className="mt-3 pt-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Total</span>
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-green-700 dark:text-green-300">{formatAmount(filteredTotals.income)}</span>
+                        <Badge variant="outline" className="text-xs">100%</Badge>
+                      </div>
                     </div>
                   </div>
                 )}
