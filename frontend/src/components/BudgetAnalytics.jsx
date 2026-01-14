@@ -437,10 +437,10 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
 
       {/* Filtered Summary KPIs */}
       {pieChartFilter !== "all" && (
-        <Card className="bg-gradient-to-r from-slate-50 to-slate-100">
+        <Card className="bg-gradient-to-r from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
           <CardContent className="py-4">
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm font-medium text-slate-600">
+              <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
                 Summary for: {getFilterLabel()}
               </p>
               <Badge variant="outline" className="text-xs">
@@ -448,21 +448,21 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
               </Badge>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-xs text-slate-500 mb-1">Income</p>
-                <p className="text-lg font-bold text-green-600">{formatAmount(filteredTotals.income)}</p>
+              <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Income</p>
+                <p className="text-lg font-bold text-green-600 dark:text-green-400">{formatAmount(filteredTotals.income)}</p>
               </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-xs text-slate-500 mb-1">Expenses</p>
-                <p className="text-lg font-bold text-red-600">{formatAmount(filteredTotals.expenses)}</p>
+              <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Expenses</p>
+                <p className="text-lg font-bold text-red-600 dark:text-red-400">{formatAmount(filteredTotals.expenses)}</p>
               </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-xs text-slate-500 mb-1">Investments</p>
-                <p className="text-lg font-bold text-blue-600">{formatAmount(filteredTotals.investments)}</p>
+              <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Investments</p>
+                <p className="text-lg font-bold text-blue-600 dark:text-blue-400">{formatAmount(filteredTotals.investments)}</p>
               </div>
-              <div className="text-center p-3 bg-white rounded-lg shadow-sm">
-                <p className="text-xs text-slate-500 mb-1">Net Balance</p>
-                <p className={`text-lg font-bold ${filteredTotals.balance >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+              <div className="text-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
+                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Net Balance</p>
+                <p className={`text-lg font-bold ${filteredTotals.balance >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                   {formatAmount(filteredTotals.balance)}
                 </p>
               </div>
