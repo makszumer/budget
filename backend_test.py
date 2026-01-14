@@ -11,7 +11,7 @@ from typing import Dict, Any
 from datetime import datetime, date
 
 # Configuration
-BASE_URL = "https://fintrack-522.preview.emergentagent.com/api"
+BASE_URL = "https://financepal-139.preview.emergentagent.com/api"
 ADMIN_CREDENTIALS = {
     "email": "admin",
     "password": "admin"
