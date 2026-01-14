@@ -77,15 +77,16 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - [x] AI Financial Assistant
 - [x] Voice Input with clarification flow
 - [x] Daily Quote feature
-- [x] Dark Mode toggle
+- [x] Dark Mode toggle with system preference
+- [x] Dashboard Appearance toggle
 - [x] Analytics with date filtering
 - [x] Stripe subscription integration
 - [x] Premium status display (fixed)
 - [x] Budget envelope transaction deletion bug (fixed)
+- [x] Ad banner removed for cleaner UI
 
 ### Known Mocked/Placeholder Features
 - Currency exchange rates (hardcoded dictionary)
-- Google AdMob (UI placeholder only)
 
 ## Upcoming/Future Tasks
 
