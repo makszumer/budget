@@ -45,8 +45,10 @@ FinanceHub is a comprehensive full-stack financial management application built 
 
 ### 9. Dark Mode
 - Full dark/light theme toggle
+- **System preference detection (new)**
+- **Appearance toggle on dashboard (new)**
 - Persists user preference
-- System preference detection
+- All components support dark mode styling
 
 ### 10. Analytics
 - Budget analytics with charts
