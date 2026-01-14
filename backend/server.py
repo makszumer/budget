@@ -1378,8 +1378,12 @@ async def ai_assistant(request: dict):
         "expense_by_category": defaultdict(float),
         "income_by_month": defaultdict(float),
         "expense_by_month": defaultdict(float),
+        "income_by_category_and_month": defaultdict(lambda: defaultdict(float)),  # NEW: Track income source by month
+        "expense_by_category_and_month": defaultdict(lambda: defaultdict(float)),  # NEW: Track expense category by month
         "transactions_by_month": defaultdict(list),
         "all_categories": set(),
+        "income_categories": set(),  # NEW: Track income categories specifically
+        "expense_categories": set(),  # NEW: Track expense categories specifically
         "date_range": {"earliest": None, "latest": None}
     }
     
@@ -1422,10 +1426,14 @@ async def ai_assistant(request: dict):
             all_data["total_income"] += amount
             all_data["income_by_category"][category] += amount
             all_data["income_by_month"][month_name] += amount
+            all_data["income_by_category_and_month"][category][month_name] += amount  # NEW
+            all_data["income_categories"].add(category)  # NEW
         elif trans_type == "expense":
             all_data["total_expenses"] += amount
             all_data["expense_by_category"][category] += amount
             all_data["expense_by_month"][month_name] += amount
+            all_data["expense_by_category_and_month"][category][month_name] += amount  # NEW
+            all_data["expense_categories"].add(category)  # NEW
     
     # Count standing orders
     standing_order_count = len(standing_orders)
@@ -1439,12 +1447,33 @@ async def ai_assistant(request: dict):
             "type": so.get("type")
         })
     
+    # Build detailed income source breakdown by month
+    income_source_details = []
+    for category in sorted(all_data["income_categories"]):
+        cat_total = all_data["income_by_category"][category]
+        monthly_breakdown = all_data["income_by_category_and_month"][category]
+        months_str = ", ".join([f"{m}: ${amt:.2f}" for m, amt in sorted(monthly_breakdown.items())])
+        income_source_details.append(f"  • {category}: ${cat_total:.2f} total")
+        if months_str:
+            income_source_details.append(f"    Monthly: {months_str}")
+    
+    # Build detailed expense category breakdown by month
+    expense_category_details = []
+    for category in sorted(all_data["expense_categories"]):
+        cat_total = all_data["expense_by_category"][category]
+        monthly_breakdown = all_data["expense_by_category_and_month"][category]
+        months_str = ", ".join([f"{m}: ${amt:.2f}" for m, amt in sorted(monthly_breakdown.items())])
+        expense_category_details.append(f"  • {category}: ${cat_total:.2f} total")
+        if months_str:
+            expense_category_details.append(f"    Monthly: {months_str}")
+    
     # Build comprehensive data summary
     data_summary = f"""
 ===== YOUR FINANCIAL DATA (EXACT VALUES - DO NOT MODIFY) =====
 
 TODAY'S DATE: {today.isoformat()}
 CURRENT MONTH: {calendar.month_name[current_month]} {current_year}
+PREVIOUS MONTH: {calendar.month_name[current_month - 1 if current_month > 1 else 12]} {current_year if current_month > 1 else current_year - 1}
 
 DATA RANGE: {all_data["date_range"]["earliest"]} to {all_data["date_range"]["latest"]}
 TOTAL TRANSACTIONS: {len(all_transactions)}
@@ -1455,22 +1484,21 @@ TOTAL EXPENSES (all time): ${all_data["total_expenses"]:.2f}
 NET BALANCE (all time): ${(all_data["total_income"] - all_data["total_expenses"]):.2f}
 
 --- ACTIVE STANDING ORDERS ({standing_order_count} total) ---
-{chr(10).join([f"  • {so['description']}: ${so['amount']:.2f} ({so['frequency']}, {so['type']})" for so in standing_orders_summary]) if standing_orders_summary else "  None"}
+{chr(10).join([f"  • {so['description']}: ${so['amount']:.2f} ({so['frequency']}, {so['type']}, category: {so['category']})" for so in standing_orders_summary]) if standing_orders_summary else "  None"}
 
---- INCOME BY CATEGORY (all time) ---
-{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["income_by_category"].items(), key=lambda x: -x[1])]) if all_data["income_by_category"] else "  No income recorded"}
+--- INCOME BY SOURCE/CATEGORY (DETAILED) ---
+Income Sources: {', '.join(sorted(all_data["income_categories"])) if all_data["income_categories"] else "None recorded"}
+{chr(10).join(income_source_details) if income_source_details else "  No income recorded"}
 
---- EXPENSES BY CATEGORY (all time) ---
-{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["expense_by_category"].items(), key=lambda x: -x[1])]) if all_data["expense_by_category"] else "  No expenses recorded"}
+--- EXPENSES BY CATEGORY (DETAILED) ---
+Expense Categories: {', '.join(sorted(all_data["expense_categories"])) if all_data["expense_categories"] else "None recorded"}
+{chr(10).join(expense_category_details) if expense_category_details else "  No expenses recorded"}
 
---- INCOME BY MONTH ---
+--- INCOME BY MONTH (TOTALS) ---
 {chr(10).join([f"  • {month}: ${amt:.2f}" for month, amt in sorted(all_data["income_by_month"].items())]) if all_data["income_by_month"] else "  No income recorded"}
 
---- EXPENSES BY MONTH ---
+--- EXPENSES BY MONTH (TOTALS) ---
 {chr(10).join([f"  • {month}: ${amt:.2f}" for month, amt in sorted(all_data["expense_by_month"].items())]) if all_data["expense_by_month"] else "  No expenses recorded"}
-
---- ALL CATEGORIES USED ---
-{', '.join(sorted(all_data["all_categories"])) if all_data["all_categories"] else "None"}
 
 ===== END OF DATA =====
 """
@@ -1488,32 +1516,42 @@ NET BALANCE (all time): ${(all_data["total_income"] - all_data["total_expenses"]
 CRITICAL RULES:
 1. ONLY use numbers from the data provided. NEVER estimate, guess, or calculate values yourself.
 2. If asked about a time period not in the data, say "No data found for [period]"
-3. If a question is ambiguous (e.g., "this month" vs "last month"), ask for clarification BEFORE answering
+3. If a question is ambiguous, ask for clarification BEFORE answering. Examples:
+   - "this month" vs "last month" - ask which they mean
+   - Unclear income source - list available sources and ask which one
 4. ALWAYS respond in ENGLISH
-5. Include how many transactions/standing orders are included when relevant
-6. Your answers MUST match what the user would see on their dashboard
+5. Your answers MUST match what the user would see on their dashboard
 
-WHEN ANSWERING:
-- For "how much did I spend/earn in [month]", look at the EXPENSES/INCOME BY MONTH section
-- For category questions, use the BY CATEGORY sections
-- For "this month", use the current month from TODAY'S DATE
-- For "last month", calculate one month before TODAY'S DATE
-- Mention if standing orders are included: "This includes X standing orders"
+INCOME SOURCE QUERIES (CRITICAL):
+- When asked about income sources like "tips", "salary", "freelance", "bonus":
+  - Look in the "INCOME BY SOURCE/CATEGORY (DETAILED)" section
+  - Common income categories: "Salary / wages", "Commissions / tips", "Freelance income", "Overtime / bonuses"
+  - If the exact source isn't found, say "No income recorded for [source]. Available income sources are: [list]"
+  - For "tips" → look for "Commissions / tips" or similar
+  - For "salary" → look for "Salary / wages"
+  - For "freelance" → look for "Freelance income"
+
+TIME PERIOD HANDLING:
+- "this month" = use CURRENT MONTH from TODAY'S DATE
+- "last month" = use PREVIOUS MONTH
+- For specific month queries, find the month in the DETAILED section showing per-month amounts
 
 IF NO DATA EXISTS:
-- Say clearly: "I don't have any [income/expense] data for [time period]"
+- Say clearly: "I don't have any [category] income/expense data for [time period]"
+- List what IS available: "However, I do have data for: [list sources/months]"
 - DO NOT make up numbers
 
-FORMAT:
-- Be concise but complete
-- Show the exact dollar amount
-- Briefly explain what's included"""
+CONSISTENCY CHECK:
+- Your numbers must match the analytics charts and dashboard totals
+- Always cite the exact category name as shown in the data"""
 
     prompt = f"""User Question: {question}
 
 {data_summary}
 
-Answer the user's question accurately using ONLY the data above. If the question is ambiguous or data doesn't exist, say so clearly."""
+Answer the user's question accurately using ONLY the data above. 
+- For income source questions (tips, salary, etc.), check the DETAILED income breakdown.
+- If the question is ambiguous or data doesn't exist, say so clearly and list what IS available."""
     
     try:
         client = LlmChat(
