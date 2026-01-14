@@ -74,14 +74,14 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
             <div
               key={transaction.id}
               data-testid={`transaction-item-${transaction.id}`}
-              className="flex items-center justify-between p-4 border rounded-lg hover:bg-accent transition-colors"
+              className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-accent transition-colors"
             >
               <div className="flex-1">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className={getTypeColor(transaction.type)}>
                     {transaction.type}
                   </Badge>
-                  <span className="font-medium">{transaction.description}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{transaction.description}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
                   <span>{transaction.category}</span>
@@ -92,8 +92,8 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
               <div className="flex items-center gap-3">
                 <span className={`text-lg font-bold ${
                   transaction.type === 'income' 
-                    ? 'text-green-600' 
-                    : 'text-red-600'
+                    ? 'text-green-600 dark:text-green-400' 
+                    : 'text-red-600 dark:text-red-400'
                 }`}>
                   {transaction.type === 'income' ? '+' : '-'}
                   {formatAmount(transaction.amount, transaction.currency || 'USD')}
@@ -103,7 +103,7 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
                   size="icon"
                   data-testid={`edit-btn-${transaction.id}`}
                   onClick={() => handleEditClick(transaction)}
-                  className="text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
