@@ -157,7 +157,38 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
         />
 
         {/* Divider */}
-        <div className="my-4 border-t border-gray-200"></div>
+        <div className="my-4 border-t border-gray-200 dark:border-gray-700"></div>
+
+        {/* Theme Toggle */}
+        <div className="px-4 py-3">
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-3">Appearance</p>
+          <div className="flex items-center justify-between gap-1 bg-gray-100 dark:bg-gray-800 p-1 rounded-lg">
+            <button
+              onClick={() => setThemeMode('light')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-xs font-medium transition-all ${
+                theme === 'light' && !isDark
+                  ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              data-testid="theme-light-btn"
+            >
+              <Sun className="h-3.5 w-3.5" />
+              Light
+            </button>
+            <button
+              onClick={() => setThemeMode('dark')}
+              className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-2 rounded-md text-xs font-medium transition-all ${
+                isDark
+                  ? 'bg-white dark:bg-gray-700 shadow text-gray-900 dark:text-white'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
+              }`}
+              data-testid="theme-dark-btn"
+            >
+              <Moon className="h-3.5 w-3.5" />
+              Dark
+            </button>
+          </div>
+        </div>
 
         {/* Upgrade to Premium */}
         <button
