@@ -82,7 +82,9 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - [x] Daily Quote feature
 - [x] Dark Mode toggle with system preference
 - [x] Dashboard Appearance toggle
+- [x] Primary Currency setting
 - [x] Analytics with date filtering
+- [x] Interactive analytics (pie chart linking)
 - [x] Stripe subscription integration
 - [x] Premium status display (fixed)
 - [x] Budget envelope transaction deletion bug (fixed)
