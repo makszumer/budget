@@ -280,9 +280,9 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
   // No Data Message Component
   const NoDataMessage = ({ type }) => (
     <div className="flex flex-col items-center justify-center py-12 text-center">
-      <AlertCircle className="h-12 w-12 text-slate-300 mb-4" />
-      <p className="text-lg font-medium text-slate-600">No {type} data for selected range</p>
-      <p className="text-sm text-slate-500 mt-1">
+      <AlertCircle className="h-12 w-12 text-slate-300 dark:text-slate-600 mb-4" />
+      <p className="text-lg font-medium text-slate-600 dark:text-slate-300">No {type} data for selected range</p>
+      <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
         Try selecting a different time period or add transactions
       </p>
     </div>
