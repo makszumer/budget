@@ -285,7 +285,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
   const CustomTooltip = ({ active, payload }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <div className="bg-white dark:bg-gray-800 p-3 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50">
           <p className="font-semibold text-gray-900 dark:text-white">{payload[0].name}</p>
           <p className="text-sm text-blue-600 dark:text-blue-400">{formatAmount(payload[0].value)}</p>
           <p className="text-sm text-gray-600 dark:text-gray-400">{payload[0].payload.percentage}%</p>
@@ -307,8 +307,60 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
     return null;
   };
 
-  const renderLabel = (entry) => {
-    return `${entry.percentage}%`;
+  const renderLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent, index, name }) => {
+    const RADIAN = Math.PI / 180;
+    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    
+    // Only show label if percentage is significant enough
+    if (percent < 0.05) return null;
+    
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill="white" 
+        textAnchor="middle" 
+        dominantBaseline="central"
+        className="text-xs font-medium pointer-events-none"
+      >
+        {`${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
+  // Handle pie slice click
+  const handleExpensePieClick = (data, index) => {
+    setActiveExpenseIndex(activeExpenseIndex === index ? null : index);
+    if (!showExpenseLegend) {
+      setShowExpenseLegend(true);
+    }
+  };
+
+  const handleIncomePieClick = (data, index) => {
+    setActiveIncomeIndex(activeIncomeIndex === index ? null : index);
+    if (!showIncomeLegend) {
+      setShowIncomeLegend(true);
+    }
+  };
+
+  // Handle legend item click
+  const handleExpenseLegendClick = (index) => {
+    setActiveExpenseIndex(activeExpenseIndex === index ? null : index);
+  };
+
+  const handleIncomeLegendClick = (index) => {
+    setActiveIncomeIndex(activeIncomeIndex === index ? null : index);
+  };
+
+  // Handle pie slice hover
+  const handleExpensePieEnter = (_, index) => {
+    setActiveExpenseIndex(index);
+  };
+
+  const handleIncomePieEnter = (_, index) => {
+    setActiveIncomeIndex(index);
   };
 
   // No Data Message Component
