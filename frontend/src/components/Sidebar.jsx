@@ -1,6 +1,7 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag, Moon, Sun, Monitor } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
+import { useTheme } from "@/context/ThemeContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
