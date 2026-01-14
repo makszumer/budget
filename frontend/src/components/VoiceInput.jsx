@@ -205,7 +205,7 @@ const CategorySelector = ({
 };
 
 export const VoiceInput = ({ onTransactionCreated }) => {
-  const { token, user } = useAuth();
+  const { token, user, primaryCurrency } = useAuth();
   const [isListening, setIsListening] = useState(false);
   const [processing, setProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
