@@ -74,9 +74,9 @@ export const QuoteOfDay = () => {
 
   if (loading) {
     return (
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 mb-6">
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-100 dark:border-blue-800 mb-6">
         <CardContent className="py-4 flex items-center justify-center">
-          <div className="animate-pulse h-6 w-3/4 bg-blue-200 rounded"></div>
+          <div className="animate-pulse h-6 w-3/4 bg-blue-200 dark:bg-blue-700 rounded"></div>
         </CardContent>
       </Card>
     );
@@ -85,20 +85,20 @@ export const QuoteOfDay = () => {
   if (!quote) return null;
 
   return (
-    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-100 mb-6 overflow-hidden">
+    <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-100 dark:border-blue-800 mb-6 overflow-hidden">
       <CardContent className="py-5 px-6">
         <div className="flex items-start gap-4">
           <div className="flex-shrink-0 mt-1">
-            <Sparkles className="h-5 w-5 text-blue-500" />
+            <Sparkles className="h-5 w-5 text-blue-500 dark:text-blue-400" />
           </div>
           <div className="flex-grow">
-            <p className="text-xs text-blue-600 font-medium uppercase tracking-wide mb-2">
+            <p className="text-xs text-blue-600 dark:text-blue-400 font-medium uppercase tracking-wide mb-2">
               Quote of the Day
             </p>
-            <p className="text-slate-700 text-base leading-relaxed italic">
+            <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed italic">
               "{quote.quote}"
             </p>
-            <p className="text-xs text-slate-500 mt-2">
+            <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               — {quote.author}
             </p>
           </div>
@@ -106,7 +106,7 @@ export const QuoteOfDay = () => {
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-8 w-8 text-blue-500 hover:text-blue-700 hover:bg-blue-100"
+              className="flex-shrink-0 h-8 w-8 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
               onClick={handleRefresh}
               title="Get a new quote (once per day)"
             >
