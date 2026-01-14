@@ -343,8 +343,8 @@ function MainApp() {
         {/* Quote of the Day */}
         <QuoteOfDay />
 
-        {/* Header */}
-        <div className="mb-8 flex items-center justify-between">
+        {/* Header with Appearance Toggle */}
+        <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               Dashboard
@@ -353,7 +353,10 @@ function MainApp() {
               Your financial overview and management
             </p>
           </div>
-          <VoiceInput onTransactionCreated={handleAddTransaction} />
+          <div className="flex items-center gap-3 flex-wrap">
+            <AppearanceToggle />
+            <VoiceInput onTransactionCreated={handleAddTransaction} />
+          </div>
         </div>
 
         {/* Date Filter */}
