@@ -99,7 +99,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
         <div className="space-y-1">
           <button
             onClick={() => setInvestingOpen(!investingOpen)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 hover:bg-gray-100 transition-all"
+            className="w-full flex items-center justify-between px-4 py-3 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
           >
             <div className="flex items-center gap-3">
               <BookOpen className="h-5 w-5" />
