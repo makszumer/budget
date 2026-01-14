@@ -14,6 +14,7 @@ import { DateFilter } from "@/components/DateFilter";
 import { VoiceInput } from "@/components/VoiceInput";
 import { QuoteOfDay } from "@/components/QuoteOfDay";
 import { AppearanceToggle } from "@/components/AppearanceToggle";
+import { CurrencyPreferences } from "@/components/CurrencyPreferences";
 import { Eye, EyeOff, LogOut, Crown } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
@@ -43,7 +44,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function MainApp() {
-  const { user, loading: authLoading, logout, isPremium, isAuthenticated } = useAuth();
+  const { user, loading: authLoading, logout, isPremium, isAuthenticated, primaryCurrency } = useAuth();
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({
     totalIncome: 0,
