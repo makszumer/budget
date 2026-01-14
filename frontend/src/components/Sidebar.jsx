@@ -14,7 +14,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
         active
           ? "bg-blue-600 text-white shadow-md"
-          : "text-gray-700 hover:bg-gray-100"
+          : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
       data-testid={`menu-${page}`}
     >
@@ -28,8 +28,8 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
       onClick={() => onNavigate(page)}
       className={`w-full flex items-center gap-3 pl-12 pr-4 py-2 rounded-lg text-sm transition-all ${
         active
-          ? "bg-blue-50 text-blue-700 font-medium"
-          : "text-gray-600 hover:bg-gray-50"
+          ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium"
+          : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
       }`}
       data-testid={`menu-${page}`}
     >
