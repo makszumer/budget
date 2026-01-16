@@ -101,7 +101,7 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - [x] Ad banner removed for cleaner UI
 
 ### Known Mocked/Placeholder Features
-- Currency exchange rates (hardcoded dictionary)
+- None - all features are now fully functional with live data
 
 ## Upcoming/Future Tasks
 
