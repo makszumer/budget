@@ -12,10 +12,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { Plus, ArrowRightLeft, Loader2, ChevronDown, ChevronUp } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/context/AuthContext";
-import { getCurrencySymbol } from "@/components/CurrencyPreferences";
+import { getCurrencySymbol, CURRENCIES } from "@/components/CurrencyPreferences";
+import { Badge } from "@/components/ui/badge";
 import axios from "axios";
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
@@ -50,6 +51,12 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
   const [date, setDate] = useState(new Date().toISOString().split("T")[0]);
   const [errors, setErrors] = useState({});
   const [customCategories, setCustomCategories] = useState([]);
+  
+  // Multi-currency state
+  const [showCurrencyConversion, setShowCurrencyConversion] = useState(false);
+  const [foreignCurrency, setForeignCurrency] = useState("");
+  const [isConverting, setIsConverting] = useState(false);
+  const [conversionPreview, setConversionPreview] = useState(null);
 
   // Fetch custom categories on mount
   useEffect(() => {
