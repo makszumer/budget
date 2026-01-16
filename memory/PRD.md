@@ -58,6 +58,15 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - AI assistant uses primary currency in responses
 - Existing transactions retain their original currency
 
+### 12. Multi-Currency Conversion
+- Optional secondary currency per transaction
+- Live exchange rate API (exchangerate-api.com)
+- Real-time conversion preview while entering amount
+- Stores: original amount, original currency, converted amount, exchange rate, conversion date
+- Fallback to cached/estimated rates if API unavailable
+- Transaction list shows original currency info
+- Analytics use only converted values (primary currency)
+
 ### 11. Subscription (Stripe Integration)
 - Premium subscriptions via Stripe
 - Ad-free experience for premium users
