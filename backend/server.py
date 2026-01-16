@@ -118,6 +118,16 @@ EXCHANGE_RATES = {
     "CNY": 7.24,     # Chinese Yuan
     "INR": 83.12,    # Indian Rupee
     "BRL": 4.97,     # Brazilian Real
+    "MXN": 17.15,    # Mexican Peso
+    "KRW": 1320.50,  # South Korean Won
+    "SGD": 1.34,     # Singapore Dollar
+    "HKD": 7.82,     # Hong Kong Dollar
+    "NOK": 10.65,    # Norwegian Krone
+    "SEK": 10.42,    # Swedish Krona
+    "DKK": 6.87,     # Danish Krone
+    "NZD": 1.64,     # New Zealand Dollar
+    "ZAR": 18.75,    # South African Rand
+    "RUB": 92.50,    # Russian Ruble
 }
 
 class TransactionSummary(BaseModel):
@@ -150,19 +160,79 @@ async def root():
 
 # Transaction endpoints
 def convert_to_usd(amount: float, currency: str) -> float:
-    """Convert amount from given currency to USD"""
+    """Convert amount from given currency to USD (fallback method)"""
     if currency == "USD":
         return amount
     rate = EXCHANGE_RATES.get(currency, 1.0)
     return amount / rate
 
 @api_router.post("/transactions", response_model=Transaction)
-async def create_transaction(transaction: TransactionCreate):
+async def create_transaction(
+    transaction: TransactionCreate,
+    current_user_id: str = Depends(get_current_user_optional)
+):
+    """
+    Create a new transaction with optional currency conversion.
+    If convert_from_currency is provided and different from the user's primary currency,
+    the amount will be converted automatically.
+    """
     trans_dict = transaction.model_dump()
-    trans_obj = Transaction(**trans_dict)
     
-    # Convert amount to USD for calculations
-    trans_obj.amount_usd = convert_to_usd(trans_obj.amount, trans_obj.currency)
+    # Get user's primary currency if authenticated
+    primary_currency = "USD"
+    if current_user_id:
+        user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
+        if user:
+            primary_currency = user.get("primary_currency", "USD")
+    
+    # Check if conversion is needed
+    source_currency = transaction.convert_from_currency or transaction.currency
+    needs_conversion = source_currency and source_currency.upper() != primary_currency.upper()
+    
+    if needs_conversion and source_currency:
+        # Perform currency conversion
+        try:
+            conversion = await exchange_service.convert(
+                amount=transaction.amount,
+                from_currency=source_currency,
+                to_currency=primary_currency
+            )
+            
+            # Store both original and converted amounts
+            trans_dict['original_amount'] = transaction.amount
+            trans_dict['original_currency'] = source_currency.upper()
+            trans_dict['amount'] = conversion['converted_amount']
+            trans_dict['currency'] = primary_currency
+            trans_dict['exchange_rate'] = conversion['exchange_rate']
+            trans_dict['conversion_date'] = conversion['conversion_date']
+            trans_dict['is_estimated_rate'] = conversion['is_estimated']
+            
+        except Exception as e:
+            logger.error(f"Currency conversion failed: {e}")
+            # Fallback to simple conversion
+            rate = EXCHANGE_RATES.get(source_currency.upper(), 1.0) / EXCHANGE_RATES.get(primary_currency, 1.0)
+            converted_amount = round(transaction.amount / rate, 2) if rate != 0 else transaction.amount
+            
+            trans_dict['original_amount'] = transaction.amount
+            trans_dict['original_currency'] = source_currency.upper()
+            trans_dict['amount'] = converted_amount
+            trans_dict['currency'] = primary_currency
+            trans_dict['exchange_rate'] = round(1/rate if rate != 0 else 1.0, 6)
+            trans_dict['conversion_date'] = datetime.now(timezone.utc).isoformat()
+            trans_dict['is_estimated_rate'] = True
+    else:
+        # No conversion needed
+        trans_dict['currency'] = primary_currency
+        trans_dict['original_amount'] = None
+        trans_dict['original_currency'] = None
+        trans_dict['exchange_rate'] = None
+        trans_dict['conversion_date'] = None
+        trans_dict['is_estimated_rate'] = False
+    
+    # Remove the convert_from_currency field as it's not stored
+    trans_dict.pop('convert_from_currency', None)
+    
+    trans_obj = Transaction(**trans_dict)
     
     # Convert to dict and serialize datetime to ISO string for MongoDB
     doc = trans_obj.model_dump()
