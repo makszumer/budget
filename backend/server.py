@@ -41,7 +41,7 @@ class Transaction(BaseModel):
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
     type: Literal["expense", "income", "investment"]
-    amount: float
+    amount: float  # Amount in primary currency (converted if needed)
     description: Optional[str] = ""
     category: str
     date: str
@@ -49,8 +49,13 @@ class Transaction(BaseModel):
     asset: Optional[str] = None  # Stock ticker, crypto symbol, etc.
     quantity: Optional[float] = None  # Number of shares/coins
     purchase_price: Optional[float] = None  # Price per unit at purchase
-    currency: str = "USD"
-    amount_usd: Optional[float] = None  # Converted amount in USD
+    currency: str = "USD"  # Primary currency (what amount is stored in)
+    # Multi-currency support
+    original_amount: Optional[float] = None  # Original amount if different currency
+    original_currency: Optional[str] = None  # Original currency code
+    exchange_rate: Optional[float] = None  # Rate used for conversion
+    conversion_date: Optional[str] = None  # When conversion was done
+    is_estimated_rate: Optional[bool] = False  # True if fallback rate was used
     createdAt: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
 
 class TransactionCreate(BaseModel):
@@ -62,7 +67,9 @@ class TransactionCreate(BaseModel):
     asset: Optional[str] = None
     quantity: Optional[float] = None
     purchase_price: Optional[float] = None
-    currency: Optional[str] = "USD"
+    currency: Optional[str] = None  # Optional: if provided and different from primary, will convert
+    # For explicit conversion
+    convert_from_currency: Optional[str] = None  # Currency of the entered amount
 
 # Recurring transactions (standing orders)
 class RecurringTransaction(BaseModel):
