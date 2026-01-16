@@ -77,6 +77,42 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
   // Filter custom categories by type
   const userCustomCategories = customCategories.filter(cat => cat.type === type);
 
+  // Preview conversion when amount or foreign currency changes
+  useEffect(() => {
+    const previewConversion = async () => {
+      if (!showCurrencyConversion || !foreignCurrency || !amount || foreignCurrency === primaryCurrency) {
+        setConversionPreview(null);
+        return;
+      }
+
+      const numAmount = parseFloat(amount);
+      if (isNaN(numAmount) || numAmount <= 0) {
+        setConversionPreview(null);
+        return;
+      }
+
+      setIsConverting(true);
+      try {
+        const response = await axios.post(`${API}/convert-currency`, null, {
+          params: {
+            amount: numAmount,
+            from_currency: foreignCurrency,
+            to_currency: primaryCurrency
+          }
+        });
+        setConversionPreview(response.data);
+      } catch (error) {
+        console.error('Conversion preview failed:', error);
+        setConversionPreview(null);
+      } finally {
+        setIsConverting(false);
+      }
+    };
+
+    const debounceTimer = setTimeout(previewConversion, 500);
+    return () => clearTimeout(debounceTimer);
+  }, [amount, foreignCurrency, primaryCurrency, showCurrencyConversion]);
+
   const handleSubmit = (e) => {
     e.preventDefault();
     
@@ -97,14 +133,22 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
       return;
     }
 
-    onAddTransaction({
+    // Build transaction data
+    const transactionData = {
       type,
       amount: numAmount,
       description,
       category,
       date,
-      currency: primaryCurrency, // Always use primary currency
-    });
+      currency: primaryCurrency,
+    };
+
+    // Add conversion info if using foreign currency
+    if (showCurrencyConversion && foreignCurrency && foreignCurrency !== primaryCurrency) {
+      transactionData.convert_from_currency = foreignCurrency;
+    }
+
+    onAddTransaction(transactionData);
 
     // Reset form
     setAmount("");
@@ -112,8 +156,15 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
     setCategory("");
     setDate(new Date().toISOString().split("T")[0]);
     setErrors({});
+    setShowCurrencyConversion(false);
+    setForeignCurrency("");
+    setConversionPreview(null);
 
-    toast.success(`${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`);
+    const successMsg = conversionPreview 
+      ? `${type.charAt(0).toUpperCase() + type.slice(1)} of ${getCurrencySymbol(foreignCurrency)}${numAmount} → ${getCurrencySymbol(primaryCurrency)}${conversionPreview.converted_amount} added!`
+      : `${type.charAt(0).toUpperCase() + type.slice(1)} added successfully`;
+    
+    toast.success(successMsg);
   };
 
   const typeLabels = {
@@ -123,6 +174,10 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
   };
 
   const currencySymbol = getCurrencySymbol(primaryCurrency);
+  const foreignSymbol = foreignCurrency ? getCurrencySymbol(foreignCurrency) : "";
+  
+  // Get other currencies (excluding primary)
+  const otherCurrencies = CURRENCIES.filter(c => c.code !== primaryCurrency);
 
   return (
     <Card>
