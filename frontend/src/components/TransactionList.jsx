@@ -87,17 +87,35 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
                   <span>{transaction.category}</span>
                   <span className="mx-2">•</span>
                   <span>{formatDate(transaction.date)}</span>
+                  {/* Show original currency if converted */}
+                  {transaction.original_currency && transaction.original_currency !== transaction.currency && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span className="text-xs text-blue-500 dark:text-blue-400">
+                        {transaction.original_currency} {transaction.original_amount?.toFixed(2)} → {transaction.currency}
+                        {transaction.is_estimated_rate && " (est.)"}
+                      </span>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex items-center gap-3">
-                <span className={`text-lg font-bold ${
-                  transaction.type === 'income' 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {transaction.type === 'income' ? '+' : '-'}
-                  {formatAmount(transaction.amount, transaction.currency || 'USD')}
-                </span>
+                <div className="text-right">
+                  <span className={`text-lg font-bold ${
+                    transaction.type === 'income' 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {transaction.type === 'income' ? '+' : '-'}
+                    {formatAmount(transaction.amount, transaction.currency || 'USD')}
+                  </span>
+                  {/* Show original amount below if converted */}
+                  {transaction.original_currency && transaction.original_currency !== transaction.currency && (
+                    <p className="text-xs text-muted-foreground">
+                      ({transaction.original_currency} {transaction.original_amount?.toFixed(2)})
+                    </p>
+                  )}
+                </div>
                 <Button
                   variant="ghost"
                   size="icon"
