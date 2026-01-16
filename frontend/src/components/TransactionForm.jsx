@@ -192,12 +192,88 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
       <CardContent>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
-            <Label htmlFor={`amount-${type}`}>
-              Amount ({currencySymbol}) <span className="text-destructive">*</span>
-            </Label>
+            <div className="flex items-center justify-between">
+              <Label htmlFor={`amount-${type}`}>
+                Amount ({showCurrencyConversion && foreignCurrency ? foreignSymbol : currencySymbol}) <span className="text-destructive">*</span>
+              </Label>
+              <button
+                type="button"
+                onClick={() => {
+                  setShowCurrencyConversion(!showCurrencyConversion);
+                  if (showCurrencyConversion) {
+                    setForeignCurrency("");
+                    setConversionPreview(null);
+                  }
+                }}
+                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                data-testid={`currency-toggle-${type}`}
+              >
+                <ArrowRightLeft className="h-3 w-3" />
+                {showCurrencyConversion ? "Cancel conversion" : "Different currency?"}
+              </button>
+            </div>
+            
+            {/* Currency Conversion Panel */}
+            {showCurrencyConversion && (
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg space-y-3 animate-in slide-in-from-top-2 duration-200">
+                <div className="flex items-center gap-2">
+                  <Label className="text-xs whitespace-nowrap">I paid in:</Label>
+                  <Select value={foreignCurrency} onValueChange={setForeignCurrency}>
+                    <SelectTrigger className="h-8 text-sm flex-1" data-testid={`foreign-currency-${type}`}>
+                      <SelectValue placeholder="Select currency" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {otherCurrencies.map((c) => (
+                        <SelectItem key={c.code} value={c.code}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-medium">{c.symbol}</span>
+                            <span>{c.code}</span>
+                            <span className="text-muted-foreground text-xs">- {c.name}</span>
+                          </span>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                {/* Conversion Preview */}
+                {foreignCurrency && amount && (
+                  <div className="flex items-center gap-2 text-sm">
+                    {isConverting ? (
+                      <div className="flex items-center gap-2 text-muted-foreground">
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                        Converting...
+                      </div>
+                    ) : conversionPreview ? (
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-medium text-gray-700 dark:text-gray-300">
+                          {foreignSymbol}{amount} {foreignCurrency}
+                        </span>
+                        <ArrowRightLeft className="h-3 w-3 text-blue-500" />
+                        <span className="font-bold text-green-600 dark:text-green-400">
+                          {currencySymbol}{conversionPreview.converted_amount} {primaryCurrency}
+                        </span>
+                        {conversionPreview.is_estimated && (
+                          <Badge variant="outline" className="text-xs text-amber-600 border-amber-400">
+                            Est. rate
+                          </Badge>
+                        )}
+                      </div>
+                    ) : null}
+                  </div>
+                )}
+                
+                {conversionPreview && (
+                  <p className="text-xs text-muted-foreground">
+                    Rate: 1 {foreignCurrency} = {conversionPreview.exchange_rate.toFixed(4)} {primaryCurrency}
+                  </p>
+                )}
+              </div>
+            )}
+            
             <div className="relative">
               <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                {currencySymbol}
+                {showCurrencyConversion && foreignCurrency ? foreignSymbol : currencySymbol}
               </span>
               <Input
                 id={`amount-${type}`}
