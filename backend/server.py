@@ -1114,10 +1114,52 @@ async def process_recurring_transactions():
 # Get exchange rates
 @api_router.get("/currencies")
 async def get_currencies():
-    return {
-        "currencies": list(EXCHANGE_RATES.keys()),
-        "rates": EXCHANGE_RATES
-    }
+    """Get supported currencies with current exchange rates"""
+    try:
+        # Try to get live rates
+        rates = await exchange_service.get_rates("USD")
+        return {
+            "currencies": list(rates.keys()),
+            "rates": rates,
+            "source": "live",
+            "base": "USD"
+        }
+    except Exception as e:
+        logger.error(f"Failed to get live rates: {e}")
+        return {
+            "currencies": list(EXCHANGE_RATES.keys()),
+            "rates": EXCHANGE_RATES,
+            "source": "fallback",
+            "base": "USD"
+        }
+
+@api_router.get("/exchange-rates/{base_currency}")
+async def get_exchange_rates(base_currency: str):
+    """Get exchange rates for a specific base currency"""
+    try:
+        rates = await exchange_service.get_rates(base_currency.upper())
+        return {
+            "base": base_currency.upper(),
+            "rates": rates,
+            "source": "live"
+        }
+    except Exception as e:
+        logger.error(f"Failed to get rates for {base_currency}: {e}")
+        raise HTTPException(status_code=500, detail="Failed to fetch exchange rates")
+
+@api_router.post("/convert-currency")
+async def convert_currency(
+    amount: float,
+    from_currency: str,
+    to_currency: str
+):
+    """Convert an amount between currencies"""
+    try:
+        result = await exchange_service.convert(amount, from_currency, to_currency)
+        return result
+    except Exception as e:
+        logger.error(f"Conversion failed: {e}")
+        raise HTTPException(status_code=500, detail="Currency conversion failed")
 
 # Budget Envelopes (Savings Goals)
 @api_router.get("/budget-envelopes")
