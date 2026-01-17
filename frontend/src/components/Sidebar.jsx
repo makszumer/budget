@@ -1,25 +1,32 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag, Moon, Sun, Monitor } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag, Moon, Sun, Monitor, Crown, Lock, MessageSquare } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
-  const { user } = useAuth();
+  const { user, isPremium, isAdmin, isGuest } = useAuth();
   const { theme, isDark, toggleTheme, setThemeMode } = useTheme();
 
-  const MenuItem = ({ icon: Icon, label, page, active }) => (
+  const MenuItem = ({ icon: Icon, label, page, active, isPremiumFeature = false }) => (
     <button
       onClick={() => onNavigate(page)}
-      className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${
+      className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all ${
         active
           ? "bg-blue-600 text-white shadow-md"
           : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
       data-testid={`menu-${page}`}
     >
-      <Icon className="h-5 w-5" />
-      <span className="font-medium">{label}</span>
+      <div className="flex items-center gap-3">
+        <Icon className="h-5 w-5" />
+        <span className="font-medium">{label}</span>
+      </div>
+      {isPremiumFeature && !isPremium && !isAdmin && (
+        <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold rounded">
+          <Crown className="h-2.5 w-2.5" />
+        </span>
+      )}
     </button>
   );
 
@@ -37,11 +44,47 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     </button>
   );
 
+  // Determine what button to show (Premium/Admin badge or Upgrade)
+  const renderPremiumSection = () => {
+    if (isAdmin) {
+      return (
+        <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+          <Shield className="h-5 w-5" />
+          <span className="font-medium">Admin Access</span>
+        </div>
+      );
+    }
+    
+    if (isPremium) {
+      return (
+        <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+          <Crown className="h-5 w-5" />
+          <span className="font-medium">Premium Member</span>
+        </div>
+      );
+    }
+    
+    return (
+      <button
+        onClick={() => onNavigate('pricing')}
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-md ${
+          currentPage === 'pricing' ? 'ring-2 ring-amber-300' : ''
+        }`}
+        data-testid="upgrade-premium-btn"
+      >
+        <Crown className="h-5 w-5" />
+        <span className="font-medium">Upgrade to Premium</span>
+      </button>
+    );
+  };
+
   return (
     <div className="w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0">
       <div className="mb-8">
         <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">💰 FinanceHub</h2>
-        <p className="text-sm text-gray-500 dark:text-gray-400">Your Financial Companion</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400">
+          {isGuest ? 'Guest Mode' : `Welcome, ${user?.username || 'User'}`}
+        </p>
       </div>
 
       <nav className="space-y-2">
@@ -54,7 +97,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
         />
 
         {/* Admin Dashboard (only for admin users) */}
-        {user?.email === 'admin@financehub.com' && (
+        {isAdmin && (
           <MenuItem
             icon={Shield}
             label="Admin Panel"
