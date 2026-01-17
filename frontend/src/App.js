@@ -354,23 +354,54 @@ function MainApp() {
     
     return (
       <div className="space-y-8">
-        {/* Quote of the Day */}
-        <QuoteOfDay />
+        {/* Quote of the Day - Premium Feature */}
+        <FeatureLock 
+          feature={FEATURES.DAILY_QUOTES} 
+          onUpgradeClick={handleNavigateToPricing}
+          showBadge={false}
+        >
+          <QuoteOfDay />
+        </FeatureLock>
 
         {/* Header with Appearance Toggle */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
               Dashboard
+              {/* User tier badge */}
+              {isAdmin && (
+                <span className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-full">
+                  <Shield className="h-3 w-3" />
+                  Admin
+                </span>
+              )}
+              {isGuest && (
+                <span className="ml-3 inline-flex items-center px-2 py-0.5 bg-gray-500 text-white text-xs font-bold rounded-full">
+                  Guest
+                </span>
+              )}
             </h1>
             <p className="text-slate-600 dark:text-slate-400">
               Your financial overview and management
             </p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            <CurrencyPreferences compact />
+            {/* Currency - Premium Feature for conversion */}
+            <FeatureLock 
+              feature={FEATURES.CURRENCY_CONVERSION} 
+              onUpgradeClick={handleNavigateToPricing}
+              showBadge={false}
+            >
+              <CurrencyPreferences compact />
+            </FeatureLock>
             <AppearanceToggle />
-            <VoiceInput onTransactionCreated={handleAddTransaction} />
+            {/* Voice Input - Premium Feature */}
+            <FeatureLock 
+              feature={FEATURES.VOICE_INPUT} 
+              onUpgradeClick={handleNavigateToPricing}
+            >
+              <VoiceInput onTransactionCreated={handleAddTransaction} />
+            </FeatureLock>
           </div>
         </div>
 
