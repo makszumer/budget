@@ -305,6 +305,10 @@ function MainApp() {
     return <LoadingScreen />;
   }
 
+  const handleNavigateToPricing = () => {
+    setCurrentPage("pricing");
+  };
+
   const renderPage = () => {
     switch (currentPage) {
       case "dashboard":
@@ -316,7 +320,11 @@ function MainApp() {
       case "custom-categories":
         return <CustomCategoryManager />;
       case "ai-assistant":
-        return <FinancialAssistant />;
+        return (
+          <FeatureLock feature={FEATURES.AI_ASSISTANT} onUpgradeClick={handleNavigateToPricing}>
+            <FinancialAssistant />
+          </FeatureLock>
+        );
       case "admin":
         return <AdminDashboard />;
       case "investing-overview":
@@ -333,6 +341,8 @@ function MainApp() {
         return <InflationGuide />;
       case "calculator":
         return <CompoundCalculator />;
+      case "pricing":
+        return <PricingPage onGoBack={() => setCurrentPage("dashboard")} />;
       default:
         return renderDashboard();
     }
