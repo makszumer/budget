@@ -234,15 +234,8 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           </div>
         </div>
 
-        {/* Upgrade to Premium */}
-        <button
-          onClick={() => onNavigate('pricing')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-600 hover:to-indigo-700 shadow-md ${
-            currentPage === 'pricing' ? 'ring-2 ring-blue-300' : ''
-          }`}
-        >
-          <span className="font-medium">⭐ Upgrade to Premium</span>
-        </button>
+        {/* Premium/Upgrade Section */}
+        {renderPremiumSection()}
       </nav>
     </div>
   );
