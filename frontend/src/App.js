@@ -3,6 +3,7 @@ import "@/App.css";
 import axios from "axios";
 import { AuthProvider, useAuth } from "@/context/AuthContext";
 import { ThemeProvider } from "@/context/ThemeContext";
+import { AccessProvider, useAccess, FEATURES } from "@/context/AccessContext";
 import { LoginPage } from "@/components/auth/LoginPage";
 import { RegisterPage } from "@/components/auth/RegisterPage";
 import { PricingPage } from "@/components/subscription/PricingPage";
@@ -15,7 +16,8 @@ import { VoiceInput } from "@/components/VoiceInput";
 import { QuoteOfDay } from "@/components/QuoteOfDay";
 import { AppearanceToggle } from "@/components/AppearanceToggle";
 import { CurrencyPreferences } from "@/components/CurrencyPreferences";
-import { Eye, EyeOff, LogOut, Crown } from "lucide-react";
+import { FeatureLock, PremiumBadge } from "@/components/FeatureLock";
+import { Eye, EyeOff, LogOut, Crown, Shield } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -44,7 +46,8 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function MainApp() {
-  const { user, loading: authLoading, logout, isPremium, isAuthenticated, primaryCurrency } = useAuth();
+  const { user, loading: authLoading, logout, isPremium, isAuthenticated, isAdmin, isGuest, primaryCurrency } = useAuth();
+  const access = useAccess();
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({
     totalIncome: 0,
