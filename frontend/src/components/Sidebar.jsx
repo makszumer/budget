@@ -130,12 +130,13 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           active={currentPage === "custom-categories"}
         />
 
-        {/* AI Financial Assistant */}
+        {/* AI Financial Assistant - Premium Feature */}
         <MenuItem
-          icon={Sparkles}
+          icon={MessageSquare}
           label="AI Assistant"
           page="ai-assistant"
           active={currentPage === "ai-assistant"}
+          isPremiumFeature={true}
         />
 
         {/* Why Investing */}
