@@ -748,12 +748,14 @@ function MainApp() {
   );
 }
 
-// Wrap MainApp with AuthProvider and ThemeProvider
+// Wrap MainApp with AuthProvider, ThemeProvider, and AccessProvider
 function App() {
   return (
     <ThemeProvider>
       <AuthProvider>
-        <MainApp />
+        <AccessProvider>
+          <MainApp />
+        </AccessProvider>
       </AuthProvider>
     </ThemeProvider>
   );
