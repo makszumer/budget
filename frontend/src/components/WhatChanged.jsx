@@ -219,19 +219,21 @@ export const WhatChanged = ({
   // Premium - Collapsed button
   if (!isExpanded) {
     return (
-      <Button
-        variant="outline"
-        onClick={() => setIsExpanded(true)}
-        className="w-full mb-4 justify-between"
-        data-testid="what-changed-btn"
-      >
-        <div className="flex items-center gap-2">
-          <RefreshCw className="h-4 w-4 text-blue-500" />
-          <span>What changed {comparison.periodLabel}?</span>
-          <HelpTooltip term="what_changed" size="sm" />
-        </div>
-        <CalendarRange className="h-4 w-4 text-muted-foreground" />
-      </Button>
+      <div className="w-full mb-4 flex items-center gap-2">
+        <Button
+          variant="outline"
+          onClick={() => setIsExpanded(true)}
+          className="flex-1 justify-between"
+          data-testid="what-changed-btn"
+        >
+          <div className="flex items-center gap-2">
+            <RefreshCw className="h-4 w-4 text-blue-500" />
+            <span>What changed {comparison.periodLabel}?</span>
+          </div>
+          <CalendarRange className="h-4 w-4 text-muted-foreground" />
+        </Button>
+        <HelpTooltip term="what_changed" size="sm" />
+      </div>
     );
   }
 
