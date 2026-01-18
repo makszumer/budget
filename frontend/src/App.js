@@ -435,13 +435,18 @@ function MainApp() {
           <button
             onClick={() => setActiveSection("investments")}
             data-testid="investments-section-btn"
-            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg relative ${
               activeSection === "investments"
                 ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
                 : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
             }`}
           >
             📈 Investment Portfolio
+            {!access.canUseInvestmentPortfolio && (
+              <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                PRO
+              </span>
+            )}
           </button>
         </div>
       </div>
