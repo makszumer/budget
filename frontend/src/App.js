@@ -236,6 +236,8 @@ function MainApp() {
             fetchBudgetGrowth(),
             fetchInvestmentGrowth(),
             fetchCurrencies(),
+            fetchRecurringTransactions(),
+            fetchBudgetEnvelopes(),
             processRecurringTransactions()
           ]);
           setServerAwake(true);
