@@ -146,11 +146,6 @@ export const FEATURE_INFO = {
     description: 'Get inspired every day with quotes from legendary investors and financial experts.',
     icon: '💡',
   },
-  [FEATURES.EXPORT_DATA]: {
-    name: 'Export Data',
-    description: 'Export your financial data to CSV or PDF for backup, tax preparation, or analysis in other tools.',
-    icon: '📤',
-  },
   [FEATURES.PRIORITY_SUPPORT]: {
     name: 'Priority Support',
     description: 'Get faster responses and dedicated support for any issues or questions.',
@@ -160,5 +155,15 @@ export const FEATURE_INFO = {
     name: 'Investment Portfolio & Analytics',
     description: 'Track your investment portfolio with advanced analytics including ROI tracking, growth charts, and allocation breakdown.',
     icon: '📈',
+  },
+  [FEATURES.SMART_ALERTS]: {
+    name: 'Smart Alerts & Reminders',
+    description: 'Get gentle notifications about budget limits, upcoming standing orders, and unusual spending patterns.',
+    icon: '🔔',
+  },
+  [FEATURES.WHAT_CHANGED]: {
+    name: 'Period Comparison',
+    description: 'Quickly see what changed compared to your previous period - biggest increases, decreases, and investment changes.',
+    icon: '📅',
   },
 };
