@@ -158,7 +158,8 @@ export const AuthProvider = ({ children }) => {
 
   // Computed values
   const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
-  const isPremium = isAdmin || user?.is_premium || false;
+  const isOnTrial = user?.is_trial || false;
+  const isPremium = isAdmin || user?.is_premium || isOnTrial || false;
   const isAuthenticated = !!user;
 
   const value = {
@@ -175,6 +176,11 @@ export const AuthProvider = ({ children }) => {
     isPremium,
     isAdmin,
     isGuest,
+    isOnTrial,
+    trialExpiresAt: user?.trial_expires_at || null,
+    trialUsed: user?.trial_used || false,
+    discountEligible: user?.discount_eligible || false,
+    discountUsed: user?.discount_used || false,
     primaryCurrency: user?.primary_currency || 'USD'
   };
 
