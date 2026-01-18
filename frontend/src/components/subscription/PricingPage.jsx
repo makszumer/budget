@@ -193,7 +193,7 @@ export const PricingPage = ({ onGoBack }) => {
         )}
 
         {/* Retention Discount Offer */}
-        {showDiscountOffer && !discountUsed && (
+        {discountEligible && !discountUsed && !isPremium && (
           <div className="mb-8 p-6 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-950/30 dark:to-purple-950/30 border-2 border-pink-300 dark:border-pink-700 rounded-xl">
             <div className="flex items-start gap-4">
               <div className="p-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-full">
@@ -204,13 +204,14 @@ export const PricingPage = ({ onGoBack }) => {
                   Special Offer: 50% Off! 🎉
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300 mb-4">
-                  We miss you! Get 50% off your first 6 months (monthly) or first year (yearly).
+                  Your trial has ended. Get 50% off your first 6 months (monthly) or first year (yearly)!
                 </p>
                 <div className="flex gap-3">
                   <Button
                     onClick={() => handleSubscribe('monthly_discount', true)}
                     disabled={loadingPackage === 'monthly_discount'}
                     className="bg-gradient-to-r from-pink-500 to-purple-500 hover:from-pink-600 hover:to-purple-600"
+                    data-testid="discount-monthly-btn"
                   >
                     {loadingPackage === 'monthly_discount' ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -224,6 +225,7 @@ export const PricingPage = ({ onGoBack }) => {
                     disabled={loadingPackage === 'yearly_discount'}
                     variant="outline"
                     className="border-purple-400 text-purple-600 dark:text-purple-400"
+                    data-testid="discount-yearly-btn"
                   >
                     {loadingPackage === 'yearly_discount' ? (
                       <Loader2 className="h-4 w-4 animate-spin mr-2" />
