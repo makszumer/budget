@@ -21,15 +21,22 @@ def get_db():
     client = AsyncIOMotorClient(mongo_url)
     return client[os.environ['DB_NAME']]
 
+# Trial duration in days
+TRIAL_DURATION_DAYS = 3
+
 # Subscription packages (FIXED PRICES - NEVER FROM FRONTEND)
 PACKAGES = {
     "monthly": {"amount": 4.00, "duration_days": 30, "name": "Monthly Premium"},
     "yearly": {"amount": 36.00, "duration_days": 365, "name": "Yearly Premium"},
+    # Discounted packages (50% off)
+    "monthly_discount": {"amount": 2.00, "duration_days": 30, "name": "Monthly Premium (50% Off)", "discount_months": 6},
+    "yearly_discount": {"amount": 18.00, "duration_days": 365, "name": "Yearly Premium (50% Off)"},
 }
 
 class CheckoutRequest(BaseModel):
-    package_id: Literal["monthly", "yearly"]
+    package_id: Literal["monthly", "yearly", "monthly_discount", "yearly_discount"]
     origin_url: str
+    apply_discount: bool = False
 
 class CheckoutResponse(BaseModel):
     checkout_url: str
