@@ -192,10 +192,10 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
     });
   }, [investmentGrowth]);
 
-  // Memoize the tooltip component with current state
-  const GrowthTooltip = useMemo(() => {
-    return (props) => <GrowthTooltipComponent {...props} showInvested={showInvested} showCurrentValue={showCurrentValue} />;
-  }, [showInvested, showCurrentValue]);
+  // Custom tooltip renderer that uses refs to access current state
+  const renderGrowthTooltip = (props) => {
+    return <GrowthTooltipComponent {...props} showInvested={showInvested} showCurrentValue={showCurrentValue} />;
+  };
 
   if (!investmentData || investmentData.length === 0) {
     return (
