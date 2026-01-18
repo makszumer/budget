@@ -106,22 +106,28 @@ export const CompoundCalculator = () => {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-4xl font-bold text-gray-900 mb-2">Compound Interest Calculator</h1>
-        <p className="text-gray-600 text-lg">See the power of compound growth</p>
+        <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-2 flex items-center gap-2">
+          Compound Interest Calculator
+          <HelpTooltip term="compound_interest" />
+        </h1>
+        <p className="text-gray-600 dark:text-gray-400 text-lg">See the power of compound growth</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Input Card */}
-        <Card>
+        <Card className="dark:bg-gray-800">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2 text-gray-900 dark:text-white">
               <Calculator className="h-5 w-5" />
               Investment Details
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="initial">Initial Investment ($)</Label>
+              <Label htmlFor="initial" className="flex items-center gap-1">
+                Initial Investment ($)
+                <HelpTooltip term="principal" size="sm" />
+              </Label>
               <Input
                 id="initial"
                 type="number"
