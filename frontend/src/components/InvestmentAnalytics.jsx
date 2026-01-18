@@ -242,7 +242,7 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
               tick={{ fill: 'currentColor' }}
               className="text-gray-600 dark:text-gray-400"
             />
-            <Tooltip content={<GrowthTooltip />} />
+            <Tooltip content={renderGrowthTooltip} />
             {showInvested && (
               <Area 
                 type="monotone" 
@@ -284,7 +284,7 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
               tick={{ fill: 'currentColor' }}
               className="text-gray-600 dark:text-gray-400"
             />
-            <Tooltip content={<GrowthTooltip />} />
+            <Tooltip content={renderGrowthTooltip} />
             {showInvested && (
               <Bar 
                 dataKey="invested" 
@@ -322,7 +322,7 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
               tick={{ fill: 'currentColor' }}
               className="text-gray-600 dark:text-gray-400"
             />
-            <Tooltip content={<GrowthTooltip />} />
+            <Tooltip content={renderGrowthTooltip} />
             {showInvested && (
               <Line 
                 type="monotone" 
