@@ -421,6 +421,35 @@ function MainApp() {
           <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
         </div>
 
+        {/* Financial Health Snapshot - FREE with Premium Enhancements */}
+        <FinancialHealthSnapshot 
+          transactions={transactions}
+          summary={filteredSummary}
+          investmentGrowth={investmentGrowth}
+          analytics={analytics}
+          privacyMode={privacyMode}
+          onUpgradeClick={handleNavigateToPricing}
+        />
+
+        {/* Smart Alerts - PREMIUM (locked preview for free users) */}
+        <SmartAlerts 
+          transactions={transactions}
+          recurringTransactions={recurringTransactions}
+          budgetEnvelopes={budgetEnvelopes}
+          analytics={analytics}
+          onUpgradeClick={handleNavigateToPricing}
+        />
+
+        {/* What Changed? Comparison - PREMIUM */}
+        <WhatChanged 
+          transactions={transactions}
+          recurringTransactions={recurringTransactions}
+          investmentGrowth={investmentGrowth}
+          analytics={analytics}
+          dateFilter={dateFilter}
+          onUpgradeClick={handleNavigateToPricing}
+        />
+
       {/* Main Section Switcher */}
       <div className="mb-8 flex justify-center">
         <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
