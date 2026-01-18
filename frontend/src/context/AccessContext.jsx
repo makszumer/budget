@@ -151,4 +151,9 @@ export const FEATURE_INFO = {
     description: 'Get faster responses and dedicated support for any issues or questions.',
     icon: '⚡',
   },
+  [FEATURES.INVESTMENT_PORTFOLIO]: {
+    name: 'Investment Portfolio & Analytics',
+    description: 'Track your investment portfolio with advanced analytics including ROI tracking, growth charts, and allocation breakdown.',
+    icon: '📈',
+  },
 };
