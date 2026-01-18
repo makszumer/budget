@@ -6,7 +6,7 @@ import { HelpTooltip } from '@/components/HelpTooltip';
 import { 
   ArrowUpRight, ArrowDownRight, Minus, RefreshCw,
   TrendingUp, TrendingDown, Lock, Crown, CalendarRange,
-  DollarSign, ShoppingCart, Briefcase
+  DollarSign, ShoppingCart, Briefcase, X
 } from 'lucide-react';
 
 // Helper to format currency
