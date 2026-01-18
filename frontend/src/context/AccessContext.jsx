@@ -12,7 +12,7 @@ export const FEATURES = {
   BUDGET_ENVELOPES: 'budget_envelopes',
   CUSTOM_CATEGORIES: 'custom_categories',
   
-  // PREMIUM features (require subscription or admin)
+  // PREMIUM features (require subscription, trial, or admin)
   AI_ASSISTANT: 'ai_assistant',
   VOICE_INPUT: 'voice_input',
   ADVANCED_ANALYTICS: 'advanced_analytics',
@@ -20,6 +20,7 @@ export const FEATURES = {
   DAILY_QUOTES: 'daily_quotes',
   EXPORT_DATA: 'export_data',
   PRIORITY_SUPPORT: 'priority_support',
+  INVESTMENT_PORTFOLIO: 'investment_portfolio',
 };
 
 // Features available in free tier
