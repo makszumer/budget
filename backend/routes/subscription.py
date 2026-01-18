@@ -65,6 +65,18 @@ async def create_checkout_session(
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
+    # Check if trying to use discount packages
+    if request.package_id in ["monthly_discount", "yearly_discount"]:
+        # Verify user is eligible for discount (trial ended but not subscribed)
+        if user.get('discount_used', False):
+            raise HTTPException(status_code=400, detail="Discount has already been used")
+        
+        # Mark discount as used when they proceed to checkout
+        await db.users.update_one(
+            {"id": current_user_id},
+            {"$set": {"discount_used": True}}
+        )
+    
     # Initialize Stripe
     stripe_api_key = os.environ.get('STRIPE_API_KEY')
     webhook_url = f"{request.origin_url}/api/webhook/stripe"
@@ -83,7 +95,8 @@ async def create_checkout_session(
             "user_id": current_user_id,
             "package_id": request.package_id,
             "email": user['email'],
-            "username": user['username']
+            "username": user['username'],
+            "is_discounted": request.package_id in ["monthly_discount", "yearly_discount"]
         }
     )
     
