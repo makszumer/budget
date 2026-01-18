@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { Calculator, TrendingUp } from "lucide-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
+import { HelpTooltip } from "@/components/HelpTooltip";
 
 export const CompoundCalculator = () => {
   const [initialInvestment, setInitialInvestment] = useState("10000");
