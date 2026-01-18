@@ -106,9 +106,8 @@ const GrowthTooltipComponent = ({ active, payload, showInvested, showCurrentValu
   return null;
 };
 
-const renderLabel = (entry) => {
-  return `${entry.percentage}%`;
-};
+// Legend formatter moved outside
+const legendFormatter = (value) => <span className="text-gray-700 dark:text-gray-300">{value}</span>;
 
 export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments = [] }) => {
   const [roiFilter, setRoiFilter] = useState('all');
