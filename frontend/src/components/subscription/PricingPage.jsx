@@ -323,11 +323,12 @@ export const PricingPage = ({ onGoBack }) => {
               {/* CTA Buttons */}
               <div className="space-y-3">
                 {/* Free Trial Button - Only show if not already premium and not used trial */}
-                {!isPremium && !isOnTrial && !user?.trial_used && (
+                {!isPremium && !isOnTrial && !trialUsed && (
                   <Button 
                     className="w-full bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white"
                     onClick={handleStartTrial}
                     disabled={loadingPackage === 'trial'}
+                    data-testid="start-trial-btn"
                   >
                     {loadingPackage === 'trial' ? (
                       <>
