@@ -16,6 +16,13 @@ class User(UserBase):
     primary_currency: str = 'USD'
     created_at: datetime
     is_active: bool = True
+    # Trial fields
+    trial_started_at: Optional[datetime] = None
+    trial_expires_at: Optional[datetime] = None
+    trial_used: bool = False
+    # Retention discount
+    discount_offered: bool = False
+    discount_used: bool = False
 
 class UserResponse(BaseModel):
     user_id: str
@@ -25,6 +32,14 @@ class UserResponse(BaseModel):
     subscription_expires_at: Optional[str] = None
     is_premium: bool
     primary_currency: str = 'USD'
+    # Trial fields
+    trial_started_at: Optional[str] = None
+    trial_expires_at: Optional[str] = None
+    trial_used: bool = False
+    is_trial: bool = False
+    # Discount fields
+    discount_eligible: bool = False
+    discount_used: bool = False
 
 class UserPreferencesUpdate(BaseModel):
     primary_currency: Optional[str] = None
