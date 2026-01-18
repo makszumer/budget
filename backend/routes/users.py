@@ -161,16 +161,42 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
     
     expires_at = user.get('subscription_expires_at')
     is_premium = False
+    is_trial = False
+    discount_eligible = False
+    
+    # Parse trial dates
+    trial_started_at = user.get('trial_started_at')
+    trial_expires_at = user.get('trial_expires_at')
+    trial_used = user.get('trial_used', False)
+    discount_used = user.get('discount_used', False)
+    
+    # Check trial status
+    if trial_expires_at:
+        if isinstance(trial_expires_at, str):
+            trial_expires_at_dt = datetime.fromisoformat(trial_expires_at.replace('Z', '+00:00'))
+        else:
+            trial_expires_at_dt = trial_expires_at
+        
+        if trial_expires_at_dt > datetime.now(timezone.utc):
+            is_trial = True
+            is_premium = True  # Trial users get premium features
+        else:
+            # Trial has ended - mark as eligible for discount if not already offered
+            if not discount_used:
+                discount_eligible = True
     
     # Admin users are always premium (no expiration check needed)
     if user.get('email') == ADMIN_EMAIL:
         is_premium = True
-    elif user['subscription_level'] == 'premium':
+        is_trial = False
+    elif user['subscription_level'] == 'premium' and not is_trial:
         # For non-admin premium users, check expiration
         if expires_at:
             if isinstance(expires_at, str):
-                expires_at = datetime.fromisoformat(expires_at)
-            if expires_at > datetime.now(timezone.utc):
+                expires_at_dt = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            else:
+                expires_at_dt = expires_at
+            if expires_at_dt > datetime.now(timezone.utc):
                 is_premium = True
             else:
                 # Downgrade if expired
@@ -183,14 +209,28 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
             # Premium with no expiration (e.g., lifetime or admin grant)
             is_premium = True
     
+    # Format dates for response
+    def format_datetime(dt):
+        if dt is None:
+            return None
+        if isinstance(dt, datetime):
+            return dt.isoformat()
+        return dt
+    
     return UserResponse(
         user_id=user['id'],
         email=user['email'],
         username=user['username'],
         subscription_level=user['subscription_level'],
-        subscription_expires_at=expires_at.isoformat() if isinstance(expires_at, datetime) else expires_at,
+        subscription_expires_at=format_datetime(expires_at),
         is_premium=is_premium,
-        primary_currency=user.get('primary_currency', 'USD')
+        primary_currency=user.get('primary_currency', 'USD'),
+        trial_started_at=format_datetime(trial_started_at),
+        trial_expires_at=format_datetime(trial_expires_at),
+        trial_used=trial_used,
+        is_trial=is_trial,
+        discount_eligible=discount_eligible,
+        discount_used=discount_used
     )
 
 @router.put("/preferences")
