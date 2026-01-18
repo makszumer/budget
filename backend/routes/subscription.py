@@ -253,3 +253,92 @@ async def stripe_webhook(request: Request):
     
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/start-trial")
+async def start_free_trial(
+    current_user_id: str = Depends(get_current_user)
+):
+    """Start a 3-day free trial for premium features"""
+    db = get_db()
+    
+    # Get user info
+    user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Check if user already used their trial
+    if user.get('trial_used', False):
+        raise HTTPException(status_code=400, detail="You have already used your free trial")
+    
+    # Check if user is already premium
+    if user.get('subscription_level') == 'premium':
+        # Check if it's not an expired subscription
+        expires_at = user.get('subscription_expires_at')
+        if expires_at:
+            if isinstance(expires_at, str):
+                expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
+            if expires_at > datetime.now(timezone.utc):
+                raise HTTPException(status_code=400, detail="You already have an active premium subscription")
+    
+    # Start the trial
+    now = datetime.now(timezone.utc)
+    trial_expires = now + timedelta(days=TRIAL_DURATION_DAYS)
+    
+    await db.users.update_one(
+        {"id": current_user_id},
+        {
+            "$set": {
+                "trial_started_at": now.isoformat(),
+                "trial_expires_at": trial_expires.isoformat(),
+                "trial_used": True,
+                "updated_at": now.isoformat()
+            }
+        }
+    )
+    
+    return {
+        "status": "success",
+        "message": f"Your {TRIAL_DURATION_DAYS}-day free trial has started!",
+        "trial_started_at": now.isoformat(),
+        "trial_expires_at": trial_expires.isoformat(),
+        "days_remaining": TRIAL_DURATION_DAYS
+    }
+
+
+@router.get("/trial-status")
+async def get_trial_status(
+    current_user_id: str = Depends(get_current_user)
+):
+    """Get the current trial status for a user"""
+    db = get_db()
+    
+    user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    trial_expires_at = user.get('trial_expires_at')
+    trial_used = user.get('trial_used', False)
+    is_trial_active = False
+    days_remaining = 0
+    
+    if trial_expires_at:
+        if isinstance(trial_expires_at, str):
+            trial_expires_at_dt = datetime.fromisoformat(trial_expires_at.replace('Z', '+00:00'))
+        else:
+            trial_expires_at_dt = trial_expires_at
+        
+        if trial_expires_at_dt > datetime.now(timezone.utc):
+            is_trial_active = True
+            time_remaining = trial_expires_at_dt - datetime.now(timezone.utc)
+            days_remaining = max(0, time_remaining.days + 1)  # Round up
+    
+    return {
+        "trial_used": trial_used,
+        "is_trial_active": is_trial_active,
+        "trial_started_at": user.get('trial_started_at'),
+        "trial_expires_at": trial_expires_at,
+        "days_remaining": days_remaining,
+        "discount_eligible": trial_used and not is_trial_active and not user.get('discount_used', False),
+        "discount_used": user.get('discount_used', False)
+    }
