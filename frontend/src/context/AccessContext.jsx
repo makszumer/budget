@@ -48,21 +48,21 @@ export const useAccess = () => {
 };
 
 export const AccessProvider = ({ children }) => {
-  const { user, isAuthenticated, isPremium } = useAuth();
+  const { user, isAuthenticated, isPremium, isOnTrial } = useAuth();
   
   const accessState = useMemo(() => {
     // Determine user role
     const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
     const isGuest = !isAuthenticated || user?.role === 'guest';
-    const hasPremiumAccess = isAdmin || isPremium;
+    const hasPremiumAccess = isAdmin || isPremium || isOnTrial;
     
     // Check if a specific feature is accessible
     const canAccess = (feature) => {
       // Admins have full access
       if (isAdmin) return true;
       
-      // Premium users have full access
-      if (isPremium) return true;
+      // Premium users and trial users have full access
+      if (isPremium || isOnTrial) return true;
       
       // Free and guest users can only access free features
       return FREE_FEATURES.has(feature);
@@ -77,6 +77,7 @@ export const AccessProvider = ({ children }) => {
     // Get user's subscription tier label
     const getTierLabel = () => {
       if (isAdmin) return 'Admin';
+      if (isOnTrial) return 'Trial';
       if (isPremium) return 'Premium';
       if (isGuest) return 'Guest';
       return 'Free';
@@ -87,6 +88,7 @@ export const AccessProvider = ({ children }) => {
       isAdmin,
       isGuest,
       isPremium,
+      isOnTrial,
       hasPremiumAccess,
       isAuthenticated,
       tier: getTierLabel(),
@@ -101,8 +103,9 @@ export const AccessProvider = ({ children }) => {
       canUseCurrencyConversion: hasPremiumAccess,
       canExportData: hasPremiumAccess,
       canSeeQuotes: hasPremiumAccess,
+      canUseInvestmentPortfolio: hasPremiumAccess,
     };
-  }, [user, isAuthenticated, isPremium]);
+  }, [user, isAuthenticated, isPremium, isOnTrial]);
   
   return (
     <AccessContext.Provider value={accessState}>
