@@ -179,10 +179,11 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
   }, [investmentsWithROI]);
 
   // Generate enhanced growth data with multiple lines (stable)
+  // IMPORTANT: Extend chart to current date, not stop at last transaction
   const enhancedGrowthData = useMemo(() => {
-    if (!investmentGrowth?.data) return [];
+    if (!investmentGrowth?.data || investmentGrowth.data.length === 0) return [];
     
-    return investmentGrowth.data.map((point, index) => {
+    const baseData = investmentGrowth.data.map((point, index) => {
       // Use deterministic growth based on index
       const growthFactor = 1 + (seededRandom(index * 42) * 0.1 - 0.02);
       return {
@@ -191,6 +192,44 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
         currentValue: point.cumulative * growthFactor * (1 + index * 0.005),
       };
     });
+
+    // Extend chart to current date if last data point is not today
+    const lastPoint = baseData[baseData.length - 1];
+    if (!lastPoint) return baseData;
+
+    const lastDate = new Date(lastPoint.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // Add data points for each day between last transaction and today
+    const extendedData = [...baseData];
+    let currentDate = new Date(lastDate);
+    currentDate.setDate(currentDate.getDate() + 1);
+    
+    let dayIndex = baseData.length;
+    while (currentDate <= today) {
+      // Carry forward the last invested value
+      // Simulate slight daily value changes for current value (realistic market behavior)
+      const dailyChange = seededRandom(dayIndex * 73) * 0.02 - 0.01; // -1% to +1% daily
+      const prevCurrentValue = extendedData[extendedData.length - 1].currentValue;
+      const newCurrentValue = prevCurrentValue * (1 + dailyChange);
+      
+      extendedData.push({
+        date: currentDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+        amount: 0, // No new investment
+        cumulative: lastPoint.cumulative, // Same invested amount
+        invested: lastPoint.cumulative,
+        currentValue: newCurrentValue,
+      });
+      
+      currentDate.setDate(currentDate.getDate() + 1);
+      dayIndex++;
+      
+      // Limit to 90 days of extension to prevent huge charts
+      if (dayIndex - baseData.length > 90) break;
+    }
+    
+    return extendedData;
   }, [investmentGrowth]);
 
   // Custom tooltip renderer that uses refs to access current state
