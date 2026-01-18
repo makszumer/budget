@@ -164,6 +164,26 @@ function MainApp() {
     }
   };
 
+  // Fetch recurring transactions (for Smart Alerts)
+  const fetchRecurringTransactions = async () => {
+    try {
+      const response = await axios.get(`${API}/recurring-transactions`);
+      setRecurringTransactions(response.data);
+    } catch (error) {
+      console.error("Error fetching recurring transactions:", error);
+    }
+  };
+
+  // Fetch budget envelopes (for Smart Alerts)
+  const fetchBudgetEnvelopes = async () => {
+    try {
+      const response = await axios.get(`${API}/budget-envelopes`);
+      setBudgetEnvelopes(response.data);
+    } catch (error) {
+      console.error("Error fetching budget envelopes:", error);
+    }
+  };
+
   // Process recurring transactions
   const processRecurringTransactions = async () => {
     try {
