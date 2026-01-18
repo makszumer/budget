@@ -46,7 +46,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 function MainApp() {
-  const { user, loading: authLoading, logout, isPremium, isAuthenticated, isAdmin, isGuest, primaryCurrency } = useAuth();
+  const { user, loading: authLoading, logout, isPremium, isAuthenticated, isAdmin, isGuest, primaryCurrency, isOnTrial } = useAuth();
   const access = useAccess();
   const [transactions, setTransactions] = useState([]);
   const [summary, setSummary] = useState({
