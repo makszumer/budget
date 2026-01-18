@@ -106,8 +106,10 @@ const GrowthTooltipComponent = ({ active, payload, showInvested, showCurrentValu
   return null;
 };
 
-// Legend formatter moved outside
-const legendFormatter = (value) => <span className="text-gray-700 dark:text-gray-300">{value}</span>;
+// Pie chart label renderer
+const renderPieLabel = (entry) => {
+  return `${entry.percentage}%`;
+};
 
 export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments = [] }) => {
   const [roiFilter, setRoiFilter] = useState('all');
