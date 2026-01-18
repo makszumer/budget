@@ -11,6 +11,8 @@ export const FEATURES = {
   BASIC_TRANSACTIONS: 'basic_transactions',
   BUDGET_ENVELOPES: 'budget_envelopes',
   CUSTOM_CATEGORIES: 'custom_categories',
+  FINANCIAL_HEALTH: 'financial_health', // FREE with Premium enhancements
+  HELP_TOOLTIPS: 'help_tooltips', // Always FREE
   
   // PREMIUM features (require subscription, trial, or admin)
   AI_ASSISTANT: 'ai_assistant',
@@ -18,9 +20,10 @@ export const FEATURES = {
   ADVANCED_ANALYTICS: 'advanced_analytics',
   CURRENCY_CONVERSION: 'currency_conversion',
   DAILY_QUOTES: 'daily_quotes',
-  EXPORT_DATA: 'export_data',
   PRIORITY_SUPPORT: 'priority_support',
   INVESTMENT_PORTFOLIO: 'investment_portfolio',
+  SMART_ALERTS: 'smart_alerts',
+  WHAT_CHANGED: 'what_changed',
 };
 
 // Features available in free tier
