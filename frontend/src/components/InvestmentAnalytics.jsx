@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -29,32 +29,105 @@ const CHART_TYPES = [
   { value: 'composed', label: 'Combined Chart', icon: PieChartIcon },
 ];
 
+// Helper to format currency
+const formatAmount = (amount, currency = 'USD') => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: currency,
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const formatPercent = (value) => {
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+};
+
+// Seeded random for deterministic ROI simulation
+const seededRandom = (seed) => {
+  const x = Math.sin(seed) * 10000;
+  return x - Math.floor(x);
+};
+
+// Custom Tooltip components moved outside
+const InvestmentTooltip = ({ active, payload }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <p className="font-semibold text-gray-900 dark:text-white">{data.name}</p>
+        <div className="space-y-1 mt-2">
+          <p className="text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Invested:</span>{' '}
+            <span className="text-blue-600 dark:text-blue-400 font-medium">{formatAmount(data.value)}</span>
+          </p>
+          <p className="text-sm">
+            <span className="text-gray-500 dark:text-gray-400">Current:</span>{' '}
+            <span className="text-purple-600 dark:text-purple-400 font-medium">{formatAmount(data.currentValue)}</span>
+          </p>
+          <p className="text-sm">
+            <span className="text-gray-500 dark:text-gray-400">ROI:</span>{' '}
+            <span className={`font-medium ${data.roi >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
+              {formatPercent(data.roi)}
+            </span>
+          </p>
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const GrowthTooltipComponent = ({ active, payload, showInvested, showCurrentValue }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
+        <p className="font-semibold text-gray-900 dark:text-white">{data.date}</p>
+        <div className="space-y-1 mt-2">
+          {showInvested && (
+            <p className="text-sm flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-blue-500"></span>
+              <span className="text-gray-500 dark:text-gray-400">Invested:</span>{' '}
+              <span className="text-blue-600 dark:text-blue-400 font-medium">{formatAmount(data.invested)}</span>
+            </p>
+          )}
+          {showCurrentValue && (
+            <p className="text-sm flex items-center gap-2">
+              <span className="w-3 h-3 rounded-full bg-purple-500"></span>
+              <span className="text-gray-500 dark:text-gray-400">Current Value:</span>{' '}
+              <span className="text-purple-600 dark:text-purple-400 font-medium">{formatAmount(data.currentValue)}</span>
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+  return null;
+};
+
+const renderLabel = (entry) => {
+  return `${entry.percentage}%`;
+};
+
 export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments = [] }) => {
   const [roiFilter, setRoiFilter] = useState('all');
   const [chartType, setChartType] = useState('line');
   const [showCurrentValue, setShowCurrentValue] = useState(true);
   const [showInvested, setShowInvested] = useState(true);
+  
+  // Use a ref to store random seeds that persist across renders
+  const seedsRef = useRef({});
 
-  const formatAmount = (amount, currency = 'USD') => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: currency,
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(amount);
-  };
-
-  const formatPercent = (value) => {
-    return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
-  };
-
-  // Calculate ROI for each investment category
+  // Calculate ROI for each investment category with stable random values
   const investmentsWithROI = useMemo(() => {
     if (!analytics?.investment_breakdown) return [];
     
-    return analytics.investment_breakdown.map(item => {
-      // Simulating ROI data - in production this would come from actual market data
-      const simulatedCurrentValue = item.amount * (1 + (Math.random() * 0.4 - 0.1)); // -10% to +30%
+    return analytics.investment_breakdown.map((item, index) => {
+      // Create a stable seed based on category name
+      const seed = item.category.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0) + index;
+      const randomFactor = seededRandom(seed) * 0.4 - 0.1; // -10% to +30%
+      const simulatedCurrentValue = item.amount * (1 + randomFactor);
       const roi = ((simulatedCurrentValue - item.amount) / item.amount) * 100;
       
       return {
@@ -104,13 +177,13 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
     return { totalInvested, totalCurrentValue, totalROI, gainLoss };
   }, [investmentsWithROI]);
 
-  // Generate enhanced growth data with multiple lines
+  // Generate enhanced growth data with multiple lines (stable)
   const enhancedGrowthData = useMemo(() => {
     if (!investmentGrowth?.data) return [];
     
     return investmentGrowth.data.map((point, index) => {
-      // Simulate current value growth (slightly different trajectory)
-      const growthFactor = 1 + (Math.random() * 0.1 - 0.02); // -2% to +8% variance
+      // Use deterministic growth based on index
+      const growthFactor = 1 + (seededRandom(index * 42) * 0.1 - 0.02);
       return {
         ...point,
         invested: point.cumulative,
@@ -119,65 +192,10 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
     });
   }, [investmentGrowth]);
 
-  const CustomTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.name}</p>
-          <div className="space-y-1 mt-2">
-            <p className="text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Invested:</span>{' '}
-              <span className="text-blue-600 dark:text-blue-400 font-medium">{formatAmount(data.value)}</span>
-            </p>
-            <p className="text-sm">
-              <span className="text-gray-500 dark:text-gray-400">Current:</span>{' '}
-              <span className="text-purple-600 dark:text-purple-400 font-medium">{formatAmount(data.currentValue)}</span>
-            </p>
-            <p className="text-sm">
-              <span className="text-gray-500 dark:text-gray-400">ROI:</span>{' '}
-              <span className={`font-medium ${data.roi >= 0 ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
-                {formatPercent(data.roi)}
-              </span>
-            </p>
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const GrowthTooltip = ({ active, payload }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="bg-white dark:bg-gray-800 p-4 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg">
-          <p className="font-semibold text-gray-900 dark:text-white">{data.date}</p>
-          <div className="space-y-1 mt-2">
-            {showInvested && (
-              <p className="text-sm flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-blue-500"></span>
-                <span className="text-gray-500 dark:text-gray-400">Invested:</span>{' '}
-                <span className="text-blue-600 dark:text-blue-400 font-medium">{formatAmount(data.invested)}</span>
-              </p>
-            )}
-            {showCurrentValue && (
-              <p className="text-sm flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-purple-500"></span>
-                <span className="text-gray-500 dark:text-gray-400">Current Value:</span>{' '}
-                <span className="text-purple-600 dark:text-purple-400 font-medium">{formatAmount(data.currentValue)}</span>
-              </p>
-            )}
-          </div>
-        </div>
-      );
-    }
-    return null;
-  };
-
-  const renderLabel = (entry) => {
-    return `${entry.percentage}%`;
-  };
+  // Memoize the tooltip component with current state
+  const GrowthTooltip = useMemo(() => {
+    return (props) => <GrowthTooltipComponent {...props} showInvested={showInvested} showCurrentValue={showCurrentValue} />;
+  }, [showInvested, showCurrentValue]);
 
   if (!investmentData || investmentData.length === 0) {
     return (
@@ -491,7 +509,7 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
                       <Cell key={`cell-${index}`} fill={COLORS.investments[index % COLORS.investments.length]} />
                     ))}
                   </Pie>
-                  <Tooltip content={<CustomTooltip />} />
+                  <Tooltip content={<InvestmentTooltip />} />
                   <Legend 
                     verticalAlign="bottom" 
                     height={36}
