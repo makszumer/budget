@@ -76,6 +76,8 @@ function MainApp() {
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currencies, setCurrencies] = useState(["USD"]);
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
+  const [recurringTransactions, setRecurringTransactions] = useState([]);
+  const [budgetEnvelopes, setBudgetEnvelopes] = useState([]);
 
   // Check URL for subscription routes
   useEffect(() => {
