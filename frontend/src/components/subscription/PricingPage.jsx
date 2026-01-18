@@ -39,22 +39,8 @@ const PREMIUM_FEATURES = [
 ];
 
 export const PricingPage = ({ onGoBack }) => {
-  const { user, token, isPremium, isAdmin, refreshUserProfile } = useAuth();
+  const { user, token, isPremium, isAdmin, refreshUserProfile, isOnTrial, trialUsed, discountEligible, discountUsed } = useAuth();
   const [loadingPackage, setLoadingPackage] = useState(null);
-  const [showDiscountOffer, setShowDiscountOffer] = useState(false);
-  const [discountUsed, setDiscountUsed] = useState(false);
-
-  // Check if user is eligible for retention discount
-  useEffect(() => {
-    // Show discount if user has ended a trial or cancelled before
-    const hasEndedTrial = localStorage.getItem('trial_ended');
-    const hasUsedDiscount = localStorage.getItem('discount_used');
-    
-    if (hasEndedTrial && !hasUsedDiscount && !isPremium) {
-      setShowDiscountOffer(true);
-    }
-    setDiscountUsed(!!hasUsedDiscount);
-  }, [isPremium]);
 
   const handleSubscribe = async (packageId, isDiscounted = false) => {
     if (!token) {
@@ -81,9 +67,6 @@ export const PricingPage = ({ onGoBack }) => {
       const checkoutUrl = response.data.checkout_url;
       
       if (checkoutUrl) {
-        if (isDiscounted) {
-          localStorage.setItem('discount_used', 'true');
-        }
         toast.success('Redirecting to checkout...');
         setTimeout(() => {
           window.location.assign(checkoutUrl);
@@ -134,7 +117,6 @@ export const PricingPage = ({ onGoBack }) => {
   };
 
   const trialDaysRemaining = getTrialDaysRemaining();
-  const isOnTrial = user?.is_trial && trialDaysRemaining > 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 py-12 px-4">
