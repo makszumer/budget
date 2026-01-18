@@ -6,8 +6,36 @@ import { HelpTooltip } from '@/components/HelpTooltip';
 import { 
   ArrowUpRight, ArrowDownRight, Minus, RefreshCw,
   TrendingUp, TrendingDown, Lock, Crown, CalendarRange,
-  DollarSign, ShoppingCart, Briefcase, Plus, X
+  DollarSign, ShoppingCart, Briefcase
 } from 'lucide-react';
+
+// Helper to format currency
+const formatCurrency = (amount) => {
+  return new Intl.NumberFormat('en-US', {
+    style: 'currency',
+    currency: 'USD',
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 0,
+  }).format(amount);
+};
+
+const formatPercent = (value) => {
+  return `${value >= 0 ? '+' : ''}${value.toFixed(1)}%`;
+};
+
+// Change Indicator component - moved outside
+const ChangeIndicator = ({ value, isExpense = false }) => {
+  // For expenses, down is good (green), up is bad (red)
+  const isPositive = isExpense ? value < 0 : value > 0;
+  const color = value === 0 ? 'text-gray-500' : isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400';
+  
+  return (
+    <span className={`flex items-center gap-1 ${color}`}>
+      {value > 0 ? <ArrowUpRight className="h-3 w-3" /> : value < 0 ? <ArrowDownRight className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+      {formatCurrency(Math.abs(value))}
+    </span>
+  );
+};
 
 /**
  * WhatChanged - Premium Feature
