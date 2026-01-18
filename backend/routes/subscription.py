@@ -96,7 +96,7 @@ async def create_checkout_session(
             "package_id": request.package_id,
             "email": user['email'],
             "username": user['username'],
-            "is_discounted": request.package_id in ["monthly_discount", "yearly_discount"]
+            "is_discounted": str(request.package_id in ["monthly_discount", "yearly_discount"])
         }
     )
     
