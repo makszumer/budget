@@ -514,7 +514,6 @@ export const InvestmentAnalytics = ({ analytics, investmentGrowth, investments =
                   <Legend 
                     verticalAlign="bottom" 
                     height={36}
-                    formatter={(value) => <span className="text-gray-700 dark:text-gray-300">{value}</span>}
                   />
                 </PieChart>
               </ResponsiveContainer>
