@@ -683,13 +683,20 @@ function MainApp() {
       <div className="fixed top-6 right-6 z-50 flex items-center gap-2">
         {/* Premium Badge / Upgrade Button */}
         {isPremium ? (
-          <div className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg shadow-lg flex items-center gap-2">
+          <button
+            onClick={() => setCurrentPage('pricing')}
+            data-testid="premium-badge-btn"
+            className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg shadow-lg flex items-center gap-2 hover:shadow-xl transition-all"
+          >
             <Crown className="h-4 w-4" />
-            <span className="font-semibold text-sm">Premium</span>
-          </div>
+            <span className="font-semibold text-sm">
+              {isOnTrial ? 'Trial' : 'Premium'}
+            </span>
+          </button>
         ) : (
           <button
             onClick={() => setCurrentPage('pricing')}
+            data-testid="upgrade-premium-btn"
             className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold text-sm"
           >
             Upgrade to Premium
