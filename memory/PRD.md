@@ -206,17 +206,20 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - **Free User:** `freeuser@example.com` / `test123`
 - **Trial User:** `trialtest@example.com` / `test123`
 
-## File Structure (New Components)
+## File Structure (Key Components)
 ```
 /app/frontend/src/components/
-├── FinancialHealthSnapshot.jsx  # NEW: Health metrics
-├── HelpTooltip.jsx              # NEW: Contextual help
-├── SmartAlerts.jsx              # NEW: Premium alerts
-├── WhatChanged.jsx              # NEW: Period comparison
-└── InvestmentAnalytics.jsx      # UPDATED: Timeline fix
+├── FinancialHealthSnapshot.jsx  # Health metrics
+├── HelpTooltip.jsx              # Contextual help
+├── WhatChanged.jsx              # Period comparison (Premium)
+├── QuoteOfDay.jsx               # Blurred for free, visible for premium
+├── FeatureLock.jsx              # Premium feature indicator
+└── InvestmentAnalytics.jsx      # Enhanced with ROI filters
 ```
 
 ## Testing Status
-- **Backend Tests:** All passed
-- **Frontend Tests:** 100% (12/12 features working)
-- **Test Report:** `/app/test_reports/iteration_3.json`
+- **Backend Tests:** All passed (10/10)
+- **Frontend Tests:** 100% (all features working)
+- **Test Report:** `/app/test_reports/iteration_4.json`
+- **Stripe Checkout:** Verified working (redirects to Stripe)
+- **Dashboard Layout:** Verified correct order
