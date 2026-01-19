@@ -101,26 +101,31 @@ FinanceHub is a comprehensive full-stack financial management application built 
 
 ## What's Implemented (January 2026)
 
-### Session 4 - Dashboard Hierarchy & Subtle Premium (Current)
-- [x] **Dashboard Section Order** (Final)
-  1. Quote of the Day - TOP (compact, non-dominant)
-  2. Add Income / Add Expense - Primary interaction area
-  3. Financial Health Snapshot - Glanceable, between forms and transactions
-  4. Transactions List - Recent transactions with tabs
-  5. Supplementary Content - Smart Alerts, What Changed (bottom)
+### Session 4 - Dashboard Hierarchy & Subtle Premium (Updated January 2026)
+- [x] **Dashboard Section Order** (Final - User Specified)
+  1. Quote of the Day - TOP (blurred for free users, visible for premium/admin)
+  2. Add Expense / Add Income - Clear action buttons, always accessible
+  3. Totals Summary - Compact (Income, Expenses, Investments, Balance)
+  4. Budget Manager & Investment Portfolio - Primary planning section with tabs
+  5. Transactions & Analytics - Hidden by default, expand with buttons
+  6. Financial Health Snapshot - Glanceable, non-dominant
+  7. What Changed? - Near bottom, Premium-only with lock for free users
 - [x] **Quote of the Day - Free vs Premium**
   - [x] FREE: Blurred text with small "Premium" label (visible but not readable)
-  - [x] PREMIUM: Fully visible with blue gradient, refresh button
+  - [x] PREMIUM: Fully visible with refresh button
   - [x] No popups or banners - subtle blur effect only
 - [x] **Subtle Premium Signaling**
   - [x] Small gray lock icons
   - [x] Muted "Premium" labels
-  - [x] Premium features below core budgeting content
+  - [x] PRO badge on Investment Portfolio for free users
   - [x] Never blocks core functionality
-- [x] **Clean Premium/Admin Layout**
-  - [x] No locks or blur
-  - [x] Same clean dashboard hierarchy
-  - [x] Full quote visibility
+- [x] **Smart Alerts Feature REMOVED**
+  - [x] Completely removed per user request
+  - [x] Removed from components, pricing page, and access context
+- [x] **Stripe Checkout Fix**
+  - [x] Fixed Clock import in PricingPage.jsx
+  - [x] Improved redirect logic using window.location.href directly
+  - [x] Added data-testid attributes for buttons
 
 ### Session 3 - New Features
 - [x] **Financial Health Snapshot** (FREE + Premium enhancements)
