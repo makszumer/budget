@@ -186,31 +186,23 @@ export const WhatChanged = ({
     };
   }, [transactions, investmentGrowth, dateFilter]);
 
-  // FREE users see locked button
+  // FREE users see SUBTLE locked button - not aggressive
   if (!hasPremiumAccess) {
     return (
       <button
         onClick={onUpgradeClick}
-        className="w-full mb-4 p-3 rounded-lg border-2 border-dashed border-amber-300 dark:border-amber-700 bg-gradient-to-r from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20 hover:shadow-md transition-shadow"
+        className="w-full mb-4 p-3 rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-800/50 opacity-60 hover:opacity-80 transition-opacity"
         data-testid="what-changed-locked"
       >
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <RefreshCw className="h-5 w-5 text-amber-500" />
-            <div className="text-left">
-              <div className="flex items-center gap-2">
-                <span className="font-medium text-gray-900 dark:text-white">What Changed?</span>
-                <Lock className="h-3 w-3 text-amber-500" />
-              </div>
-              <p className="text-xs text-gray-600 dark:text-gray-400">
-                Compare your finances to the previous period
-              </p>
-            </div>
+            <RefreshCw className="h-4 w-4 text-gray-400" />
+            <span className="text-sm text-gray-500 dark:text-gray-400">What Changed?</span>
           </div>
-          <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-semibold">
-            <Crown className="h-3 w-3" />
+          <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-medium rounded">
+            <Lock className="h-2.5 w-2.5" />
             Premium
-          </div>
+          </span>
         </div>
       </button>
     );
