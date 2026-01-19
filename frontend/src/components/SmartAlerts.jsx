@@ -5,8 +5,8 @@ import { Switch } from '@/components/ui/switch';
 import { useAccess } from '@/context/AccessContext';
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { 
-  Bell, BellOff, AlertTriangle, Clock, TrendingUp, 
-  Wallet, CalendarClock, Lock, Crown, X, Settings
+  Bell, BellOff, Clock, TrendingUp, 
+  Wallet, CalendarClock, Lock, X, Settings
 } from 'lucide-react';
 
 /**
