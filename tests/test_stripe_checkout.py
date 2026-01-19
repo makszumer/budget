@@ -70,7 +70,8 @@ class TestAdminLogin:
         assert response.status_code == 200, f"Admin login failed: {response.text}"
         data = response.json()
         assert "access_token" in data
-        assert data.get("is_admin") == True or data.get("role") == "admin"
+        # Admin login returns is_premium=True (admin has premium access)
+        assert data.get("is_premium") == True, "Admin should have premium access"
         print("✅ Admin login works with username 'admin' and password 'admin'")
 
 
