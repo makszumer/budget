@@ -32,7 +32,6 @@ const PREMIUM_FEATURES = [
   { name: 'Investment Portfolio & ROI', included: true, highlight: true, icon: TrendingUp, description: 'Track your investments' },
   { name: 'Advanced Analytics & Charts', included: true, highlight: true, icon: LineChart, description: 'Deep insights & trends' },
   { name: 'Multi-Currency Conversion', included: true, highlight: true, icon: Globe, description: 'Live exchange rates' },
-  { name: 'Smart Alerts & Reminders', included: true, highlight: true, icon: Clock, description: 'Stay on top of budgets' },
   { name: 'Daily Financial Wisdom', included: true, highlight: false, icon: Sparkles },
   { name: 'Priority Support', included: true, highlight: false, icon: Shield },
   { name: 'Future Premium Features', included: true, highlight: false },
