@@ -18,9 +18,8 @@ import { AppearanceToggle } from "@/components/AppearanceToggle";
 import { CurrencyPreferences } from "@/components/CurrencyPreferences";
 import { FeatureLock, PremiumBadge } from "@/components/FeatureLock";
 import { FinancialHealthSnapshot } from "@/components/FinancialHealthSnapshot";
-import { SmartAlerts } from "@/components/SmartAlerts";
 import { WhatChanged } from "@/components/WhatChanged";
-import { Eye, EyeOff, LogOut, Crown, Shield } from "lucide-react";
+import { Eye, EyeOff, LogOut, Crown, Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -42,6 +41,7 @@ import { BondsGuide } from "@/components/education/BondsGuide";
 import { ETFsGuide } from "@/components/education/ETFsGuide";
 import { InflationGuide } from "@/components/education/InflationGuide";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
 
