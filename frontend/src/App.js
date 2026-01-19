@@ -440,87 +440,91 @@ function MainApp() {
           setSelectedDate={setSelectedDate}
         />
 
-        {/* Dashboard */}
-        <div className="mb-8">
-          <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
+        {/* ===== NEW LAYOUT: Budget Manager First (Most Prominent) ===== */}
+        
+        {/* Main Section Switcher - Moved up */}
+        <div className="mb-6 flex justify-center">
+          <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
+            <button
+              onClick={() => setActiveSection("budget")}
+              data-testid="budget-section-btn"
+              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
+                activeSection === "budget"
+                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              💼 Budget Manager
+            </button>
+            <button
+              onClick={() => setActiveSection("investments")}
+              data-testid="investments-section-btn"
+              className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg relative ${
+                activeSection === "investments"
+                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
+                  : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
+              }`}
+            >
+              📈 Investment Portfolio
+              {!access.canUseInvestmentPortfolio && (
+                <span className="absolute -top-2 -right-2 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-medium px-1.5 py-0.5 rounded-full">
+                  PRO
+                </span>
+              )}
+            </button>
+          </div>
         </div>
 
-        {/* Financial Health Snapshot - FREE with Premium Enhancements */}
-        <FinancialHealthSnapshot 
-          transactions={transactions}
-          summary={filteredSummary}
-          investmentGrowth={investmentGrowth}
-          analytics={analytics}
-          privacyMode={privacyMode}
-          onUpgradeClick={handleNavigateToPricing}
-        />
+        {/* Budget Section - TOP (Most Prominent) */}
+        {activeSection === "budget" && (
+          <div className="space-y-6">
+            {/* Dashboard Summary - Compact */}
+            <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
 
-        {/* Smart Alerts - PREMIUM (locked preview for free users) */}
-        <SmartAlerts 
-          transactions={transactions}
-          recurringTransactions={recurringTransactions}
-          budgetEnvelopes={budgetEnvelopes}
-          analytics={analytics}
-          onUpgradeClick={handleNavigateToPricing}
-        />
+            {/* Financial Health Snapshot - Compact, below summary */}
+            <FinancialHealthSnapshot 
+              transactions={transactions}
+              summary={filteredSummary}
+              investmentGrowth={investmentGrowth}
+              analytics={analytics}
+              privacyMode={privacyMode}
+              onUpgradeClick={handleNavigateToPricing}
+            />
 
-        {/* What Changed? Comparison - PREMIUM */}
-        <WhatChanged 
-          transactions={transactions}
-          recurringTransactions={recurringTransactions}
-          investmentGrowth={investmentGrowth}
-          analytics={analytics}
-          dateFilter={dateFilter}
-          onUpgradeClick={handleNavigateToPricing}
-        />
+            {/* Premium features row - subtle */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Smart Alerts - subtle for free users */}
+              <SmartAlerts 
+                transactions={transactions}
+                recurringTransactions={recurringTransactions}
+                budgetEnvelopes={budgetEnvelopes}
+                analytics={analytics}
+                onUpgradeClick={handleNavigateToPricing}
+              />
+              
+              {/* What Changed? - subtle for free users */}
+              <div className="flex items-start">
+                <WhatChanged 
+                  transactions={transactions}
+                  recurringTransactions={recurringTransactions}
+                  investmentGrowth={investmentGrowth}
+                  analytics={analytics}
+                  dateFilter={dateFilter}
+                  onUpgradeClick={handleNavigateToPricing}
+                />
+              </div>
+            </div>
 
-      {/* Main Section Switcher */}
-      <div className="mb-8 flex justify-center">
-        <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
-          <button
-            onClick={() => setActiveSection("budget")}
-            data-testid="budget-section-btn"
-            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
-              activeSection === "budget"
-                ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
-                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            💼 Budget Manager
-          </button>
-          <button
-            onClick={() => setActiveSection("investments")}
-            data-testid="investments-section-btn"
-            className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg relative ${
-              activeSection === "investments"
-                ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
-                : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
-            }`}
-          >
-            📈 Investment Portfolio
-            {!access.canUseInvestmentPortfolio && (
-              <span className="absolute -top-2 -right-2 bg-gradient-to-r from-amber-400 to-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                PRO
-              </span>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Budget Section */}
-      {activeSection === "budget" && (
-        <div className="space-y-8">
-
-          {/* Budget Tabs */}
-          <Tabs defaultValue="transactions" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-              <TabsTrigger value="transactions" data-testid="transactions-tab">
-                Transactions
-              </TabsTrigger>
-              <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
-                Analytics
-              </TabsTrigger>
-            </TabsList>
+            {/* Budget Tabs */}
+            <Tabs defaultValue="transactions" className="w-full">
+              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+                <TabsTrigger value="transactions" data-testid="transactions-tab">
+                  Transactions
+                </TabsTrigger>
+                <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
+                  Analytics
+                </TabsTrigger>
+              </TabsList>
 
             {/* Transactions Tab */}
             <TabsContent value="transactions" className="space-y-8 mt-6">
