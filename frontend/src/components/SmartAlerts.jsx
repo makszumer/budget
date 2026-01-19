@@ -158,33 +158,30 @@ export const SmartAlerts = ({
     }
   };
 
-  // FREE users see locked preview
+  // FREE users see SUBTLE locked preview - not blocking, not aggressive
   if (!hasPremiumAccess) {
     return (
-      <Card className="mb-6 border-dashed border-2 border-amber-300 dark:border-amber-700 bg-gradient-to-br from-amber-50/50 to-orange-50/50 dark:from-amber-950/20 dark:to-orange-950/20">
-        <CardContent className="py-4">
+      <Card className="mb-6 opacity-60" data-testid="smart-alerts-locked">
+        <CardHeader className="pb-2">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg flex items-center gap-2 text-gray-500 dark:text-gray-400">
+              <Bell className="h-5 w-5" />
+              Smart Alerts
+              <span className="inline-flex items-center gap-1 px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 text-[10px] font-medium rounded">
+                <Lock className="h-2.5 w-2.5" />
+                Premium
+              </span>
+            </CardTitle>
+          </div>
+        </CardHeader>
+        <CardContent>
           <button 
             onClick={onUpgradeClick}
-            className="w-full flex items-center justify-between hover:opacity-80 transition-opacity"
+            className="w-full text-left hover:opacity-80 transition-opacity"
           >
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-amber-100 dark:bg-amber-900/50 rounded-full">
-                <Bell className="h-5 w-5 text-amber-500" />
-              </div>
-              <div className="text-left">
-                <div className="flex items-center gap-2">
-                  <span className="font-medium text-gray-900 dark:text-white">Smart Alerts</span>
-                  <Lock className="h-3 w-3 text-amber-500" />
-                </div>
-                <p className="text-xs text-gray-600 dark:text-gray-400">
-                  Get notified about budget limits, due payments & spending patterns
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-semibold">
-              <Crown className="h-3 w-3" />
-              Premium
-            </div>
+            <p className="text-xs text-gray-500 dark:text-gray-400">
+              Budget alerts, payment reminders & spending insights
+            </p>
           </button>
         </CardContent>
       </Card>
