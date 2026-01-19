@@ -359,6 +359,7 @@ export const PricingPage = ({ onGoBack }) => {
                   className="w-full bg-gradient-to-r from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 text-white font-semibold" 
                   onClick={() => handleSubscribe('monthly')}
                   disabled={loadingPackage === 'monthly'}
+                  data-testid="subscribe-monthly-btn"
                 >
                   {loadingPackage === 'monthly' ? (
                     <>
@@ -379,6 +380,7 @@ export const PricingPage = ({ onGoBack }) => {
                   className="w-full border-amber-400 dark:border-amber-500 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30" 
                   onClick={() => handleSubscribe('yearly')}
                   disabled={loadingPackage === 'yearly'}
+                  data-testid="subscribe-yearly-btn"
                 >
                   {loadingPackage === 'yearly' ? (
                     <>
