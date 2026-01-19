@@ -109,7 +109,25 @@ FinanceHub is a comprehensive full-stack financial management application built 
 
 ## What's Implemented (January 2026)
 
-### Session 3 - New Features (Current)
+### Session 4 - Dashboard Hierarchy & Subtle Premium (Current)
+- [x] **Dashboard Reorder** - Budget Manager at top, most prominent
+  - [x] Section switcher moved up
+  - [x] Dashboard summary → Financial Health → Premium features → Transactions
+- [x] **Subtle Premium Presentation**
+  - [x] Small gray lock icons instead of bright amber
+  - [x] Muted "Premium" labels
+  - [x] Soft opacity (60%) for locked features
+  - [x] No aggressive banners or popups
+  - [x] Removed "Unlock trends..." banner from Financial Health
+  - [x] Updated SmartAlerts with subtle locked preview
+  - [x] Updated WhatChanged with subtle locked button
+  - [x] "PRO" badge on Investment Portfolio is now gray/muted
+- [x] **Clean Premium/Admin Layout**
+  - [x] No lock icons for premium users
+  - [x] No Premium badges for premium users
+  - [x] Same clean layout, all features enabled
+
+### Session 3 - New Features
 - [x] **Financial Health Snapshot** (FREE + Premium enhancements)
   - [x] Savings Rate with color-coded indicator
   - [x] Net Cash Flow (30 days)
