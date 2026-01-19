@@ -104,7 +104,7 @@ export const QuoteOfDay = ({ subtle = false }) => {
             <Sparkles className="h-4 w-4 text-gray-400 dark:text-gray-500 mt-0.5 flex-shrink-0" />
             <div className="flex-grow min-w-0">
               <p className="text-gray-500 dark:text-gray-400 text-sm leading-relaxed italic truncate">
-                "{quote.quote}"
+                &ldquo;{quote.quote}&rdquo;
               </p>
               <p className="text-[10px] text-gray-400 dark:text-gray-500 mt-1">
                 — {quote.author}
