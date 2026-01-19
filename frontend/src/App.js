@@ -382,14 +382,6 @@ function MainApp() {
     return (
       <div className="space-y-8">
         {/* Quote of the Day - Premium Feature */}
-        <FeatureLock 
-          feature={FEATURES.DAILY_QUOTES} 
-          onUpgradeClick={handleNavigateToPricing}
-          showBadge={false}
-        >
-          <QuoteOfDay />
-        </FeatureLock>
-
         {/* Header with Appearance Toggle */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
