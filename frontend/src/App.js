@@ -78,6 +78,8 @@ function MainApp() {
   const [authView, setAuthView] = useState('login'); // 'login' or 'register'
   const [recurringTransactions, setRecurringTransactions] = useState([]);
   const [budgetEnvelopes, setBudgetEnvelopes] = useState([]);
+  const [showTransactions, setShowTransactions] = useState(false); // Hidden by default
+  const [showAnalytics, setShowAnalytics] = useState(false); // Hidden by default
 
   // Check URL for subscription routes
   useEffect(() => {
