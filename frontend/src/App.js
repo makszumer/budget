@@ -436,7 +436,10 @@ function MainApp() {
 
         {/* ===== DASHBOARD LAYOUT ===== */}
         
-        {/* Section Switcher */}
+        {/* 1. QUOTE OF THE DAY - TOP (compact, non-dominant) */}
+        <QuoteOfDay onUpgradeClick={handleNavigateToPricing} />
+
+        {/* 2. BUDGET MANAGER & INVESTMENT PORTFOLIO - Primary Planning Section */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
             <button
@@ -473,10 +476,53 @@ function MainApp() {
         {activeSection === "budget" && (
           <div className="space-y-6">
             
-            {/* 1. QUOTE OF THE DAY - TOP (compact, non-dominant) */}
-            <QuoteOfDay onUpgradeClick={handleNavigateToPricing} />
+            {/* 3. TRANSACTIONS & ANALYTICS - Hidden by Default */}
+            <div className="flex justify-center gap-3">
+              <Button
+                variant={showTransactions ? "default" : "outline"}
+                onClick={() => { setShowTransactions(!showTransactions); setShowAnalytics(false); }}
+                className="flex items-center gap-2"
+                data-testid="show-transactions-btn"
+              >
+                {showTransactions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                Transactions
+              </Button>
+              <Button
+                variant={showAnalytics ? "default" : "outline"}
+                onClick={() => { setShowAnalytics(!showAnalytics); setShowTransactions(false); }}
+                className="flex items-center gap-2"
+                data-testid="show-analytics-btn"
+              >
+                {showAnalytics ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+                Analytics
+              </Button>
+            </div>
+
+            {/* Transactions Panel - Only visible when clicked */}
+            {showTransactions && (
+              <div className="animate-in slide-in-from-top-2 duration-200">
+                <TransactionList
+                  transactions={filteredTransactions.filter(t => t.type !== "investment")}
+                  onDeleteTransaction={handleDeleteTransaction}
+                  onEditTransaction={handleEditTransaction}
+                  currencies={currencies}
+                />
+              </div>
+            )}
+
+            {/* Analytics Panel - Only visible when clicked */}
+            {showAnalytics && (
+              <div className="animate-in slide-in-from-top-2 duration-200">
+                <BudgetAnalytics 
+                  analytics={analytics} 
+                  budgetGrowth={budgetGrowth} 
+                  privacyMode={privacyMode}
+                  transactions={filteredTransactions.filter(t => t.type !== "investment")}
+                />
+              </div>
+            )}
             
-            {/* 2. ADD INCOME / ADD EXPENSE - Primary Interaction Area */}
+            {/* 4. ADD EXPENSE / ADD INCOME - Action Buttons */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
                 <TransactionForm
@@ -492,76 +538,29 @@ function MainApp() {
               </div>
             </div>
 
-            {/* 3. FINANCIAL HEALTH SNAPSHOT - Glanceable */}
-            <div className="pt-4">
-              <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
-              <FinancialHealthSnapshot 
+            {/* 5. TOTALS SUMMARY - Compact */}
+            <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
+
+            {/* 6. FINANCIAL HEALTH SNAPSHOT - Glanceable */}
+            <FinancialHealthSnapshot 
+              transactions={transactions}
+              summary={filteredSummary}
+              investmentGrowth={investmentGrowth}
+              analytics={analytics}
+              privacyMode={privacyMode}
+              onUpgradeClick={handleNavigateToPricing}
+            />
+
+            {/* 7. WHAT CHANGED? - Near Bottom (Premium-only) */}
+            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+              <WhatChanged 
                 transactions={transactions}
-                summary={filteredSummary}
+                recurringTransactions={recurringTransactions}
                 investmentGrowth={investmentGrowth}
                 analytics={analytics}
-                privacyMode={privacyMode}
+                dateFilter={dateFilter}
                 onUpgradeClick={handleNavigateToPricing}
               />
-            </div>
-
-            {/* 4. TRANSACTIONS LIST - Recent transactions */}
-            <div className="pt-4">
-              <Tabs defaultValue="transactions" className="w-full">
-                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-                  <TabsTrigger value="transactions" data-testid="transactions-tab">
-                    Transactions
-                  </TabsTrigger>
-                  <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
-                    Analytics
-                  </TabsTrigger>
-                </TabsList>
-
-                {/* Transactions Tab */}
-                <TabsContent value="transactions" className="mt-6">
-                  <TransactionList
-                    transactions={filteredTransactions.filter(t => t.type !== "investment")}
-                    onDeleteTransaction={handleDeleteTransaction}
-                    onEditTransaction={handleEditTransaction}
-                    currencies={currencies}
-                  />
-                </TabsContent>
-
-                {/* Analytics Tab */}
-                <TabsContent value="analytics" className="mt-6">
-                  <BudgetAnalytics 
-                    analytics={analytics} 
-                    budgetGrowth={budgetGrowth} 
-                    privacyMode={privacyMode}
-                    transactions={filteredTransactions.filter(t => t.type !== "investment")}
-                  />
-                </TabsContent>
-              </Tabs>
-            </div>
-
-            {/* 5. SUPPLEMENTARY CONTENT - Lowest Priority (Bottom) */}
-            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              {/* Premium features - subtle, at bottom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <SmartAlerts 
-                  transactions={transactions}
-                  recurringTransactions={recurringTransactions}
-                  budgetEnvelopes={budgetEnvelopes}
-                  analytics={analytics}
-                  onUpgradeClick={handleNavigateToPricing}
-                />
-                
-                <div className="flex items-start">
-                  <WhatChanged 
-                    transactions={transactions}
-                    recurringTransactions={recurringTransactions}
-                    investmentGrowth={investmentGrowth}
-                    analytics={analytics}
-                    dateFilter={dateFilter}
-                    onUpgradeClick={handleNavigateToPricing}
-                  />
-                </div>
-              </div>
             </div>
         </div>
       )}
