@@ -5,7 +5,7 @@ import { useAccess } from '@/context/AccessContext';
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { 
   ArrowUpRight, ArrowDownRight, Minus, RefreshCw,
-  TrendingUp, TrendingDown, Lock, Crown, CalendarRange,
+  TrendingUp, TrendingDown, Lock, CalendarRange,
   DollarSign, ShoppingCart, Briefcase, X
 } from 'lucide-react';
 
