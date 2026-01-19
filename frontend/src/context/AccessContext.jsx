@@ -155,11 +155,6 @@ export const FEATURE_INFO = {
     description: 'Track your investment portfolio with advanced analytics including ROI tracking, growth charts, and allocation breakdown.',
     icon: '📈',
   },
-  [FEATURES.SMART_ALERTS]: {
-    name: 'Smart Alerts & Reminders',
-    description: 'Get gentle notifications about budget limits, upcoming standing orders, and unusual spending patterns.',
-    icon: '🔔',
-  },
   [FEATURES.WHAT_CHANGED]: {
     name: 'Period Comparison',
     description: 'Quickly see what changed compared to your previous period - biggest increases, decreases, and investment changes.',
