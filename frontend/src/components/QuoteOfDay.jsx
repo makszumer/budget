@@ -129,7 +129,7 @@ export const QuoteOfDay = ({ subtle = false }) => {
               Daily Financial Wisdom
             </p>
             <p className="text-slate-700 dark:text-slate-200 text-base leading-relaxed italic">
-              "{quote.quote}"
+              &ldquo;{quote.quote}&rdquo;
             </p>
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-2">
               — {quote.author}
