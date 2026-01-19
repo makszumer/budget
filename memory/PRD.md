@@ -31,15 +31,7 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - Tooltips with plain-language explanations
 - Covers: Savings Rate, Net Cash Flow, Budget Status, ROI, Compound Interest, Standing Orders, etc.
 
-### 4. Smart Alerts (NEW - PREMIUM)
-- Opt-in, non-intrusive notifications
-- Budget threshold alerts (80% usage)
-- Standing order reminders (due tomorrow)
-- Spending pattern alerts (20%+ increase)
-- In-app only, frequency-limited
-- Free users see locked preview
-
-### 5. "What Changed?" Comparison (NEW - PREMIUM)
+### 4. "What Changed?" Comparison (PREMIUM)
 - Compare current vs previous period
 - Summary: Income change, Expense change, Investment change
 - Biggest spending increase/decrease by category
@@ -47,7 +39,7 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - Date filter aware (day/week/month/year)
 - Free users see locked button
 
-### 6. Financial Tracking
+### 5. Financial Tracking
 - Income, expense, and investment transactions
 - Multi-currency support with live exchange rates
 - Transaction categorization
