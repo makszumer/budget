@@ -66,10 +66,21 @@ export const PricingPage = ({ onGoBack }) => {
       const checkoutUrl = response.data.checkout_url;
       
       if (checkoutUrl) {
-        toast.success('Redirecting to checkout...');
-        setTimeout(() => {
-          window.location.assign(checkoutUrl);
-        }, 500);
+        toast.success('Redirecting to Stripe checkout...');
+        // Try multiple redirect methods for better compatibility
+        try {
+          // Method 1: Direct navigation
+          window.location.href = checkoutUrl;
+        } catch (e) {
+          console.error('Direct navigation failed, trying window.open:', e);
+          // Method 2: Open in new window if direct fails
+          const newWindow = window.open(checkoutUrl, '_blank');
+          if (!newWindow) {
+            // Method 3: If popup blocked, show the link
+            toast.error('Popup blocked! Click the link below to proceed.');
+            console.log('Checkout URL:', checkoutUrl);
+          }
+        }
       } else {
         throw new Error('No checkout URL received');
       }
