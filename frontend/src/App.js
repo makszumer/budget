@@ -527,6 +527,48 @@ function MainApp() {
               />
             </TabsContent>
           </Tabs>
+
+            {/* 3. FINANCIAL HEALTH SNAPSHOT - Compact, Secondary */}
+            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+              <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
+              
+              <FinancialHealthSnapshot 
+                transactions={transactions}
+                summary={filteredSummary}
+                investmentGrowth={investmentGrowth}
+                analytics={analytics}
+                privacyMode={privacyMode}
+                onUpgradeClick={handleNavigateToPricing}
+              />
+            </div>
+
+            {/* 4. SUPPLEMENTARY CONTENT - Lowest Priority (Bottom) */}
+            <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
+              {/* Quote of the Day - Subtle for free, enhanced for premium */}
+              <QuoteOfDay />
+              
+              {/* Premium features - subtle, at bottom */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                <SmartAlerts 
+                  transactions={transactions}
+                  recurringTransactions={recurringTransactions}
+                  budgetEnvelopes={budgetEnvelopes}
+                  analytics={analytics}
+                  onUpgradeClick={handleNavigateToPricing}
+                />
+                
+                <div className="flex items-start">
+                  <WhatChanged 
+                    transactions={transactions}
+                    recurringTransactions={recurringTransactions}
+                    investmentGrowth={investmentGrowth}
+                    analytics={analytics}
+                    dateFilter={dateFilter}
+                    onUpgradeClick={handleNavigateToPricing}
+                  />
+                </div>
+              </div>
+            </div>
         </div>
       )}
 
