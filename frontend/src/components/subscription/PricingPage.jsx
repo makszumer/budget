@@ -8,7 +8,7 @@ import axios from 'axios';
 import { 
   Check, X, Loader2, Crown, Zap, ArrowLeft, Sparkles, 
   MessageSquare, Mic, LineChart, Globe, TrendingUp,
-  Gift, Percent, Shield
+  Gift, Percent, Shield, Clock
 } from 'lucide-react';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
