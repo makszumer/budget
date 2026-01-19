@@ -432,9 +432,9 @@ function MainApp() {
           setSelectedDate={setSelectedDate}
         />
 
-        {/* ===== DASHBOARD LAYOUT: Budget Manager First ===== */}
+        {/* ===== DASHBOARD LAYOUT ===== */}
         
-        {/* 1. BUDGET MANAGER - Primary Focus (TOP) */}
+        {/* Section Switcher */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
             <button
@@ -471,59 +471,28 @@ function MainApp() {
         {activeSection === "budget" && (
           <div className="space-y-6">
             
-            {/* 2. TRANSACTIONS & ANALYTICS - Daily Usage Area */}
-            <Tabs defaultValue="transactions" className="w-full">
-              <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
-                <TabsTrigger value="transactions" data-testid="transactions-tab">
-                  Transactions
-                </TabsTrigger>
-                <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
-
-            {/* Transactions Tab */}
-            <TabsContent value="transactions" className="space-y-8 mt-6">
-              {/* Expense and Income Forms Side by Side */}
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
-                  <TransactionForm
-                    type="expense"
-                    onAddTransaction={handleAddTransaction}
-                  />
-                </div>
-                <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
-                  <TransactionForm
-                    type="income"
-                    onAddTransaction={handleAddTransaction}
-                  />
-                </div>
+            {/* 1. QUOTE OF THE DAY - TOP (compact, non-dominant) */}
+            <QuoteOfDay onUpgradeClick={handleNavigateToPricing} />
+            
+            {/* 2. ADD INCOME / ADD EXPENSE - Primary Interaction Area */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
+                <TransactionForm
+                  type="expense"
+                  onAddTransaction={handleAddTransaction}
+                />
               </div>
+              <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
+                <TransactionForm
+                  type="income"
+                  onAddTransaction={handleAddTransaction}
+                />
+              </div>
+            </div>
 
-              {/* Transaction List */}
-              <TransactionList
-                transactions={filteredTransactions.filter(t => t.type !== "investment")}
-                onDeleteTransaction={handleDeleteTransaction}
-                onEditTransaction={handleEditTransaction}
-                currencies={currencies}
-              />
-            </TabsContent>
-
-            {/* Analytics Tab */}
-            <TabsContent value="analytics" className="mt-6">
-              <BudgetAnalytics 
-                analytics={analytics} 
-                budgetGrowth={budgetGrowth} 
-                privacyMode={privacyMode}
-                transactions={filteredTransactions.filter(t => t.type !== "investment")}
-              />
-            </TabsContent>
-          </Tabs>
-
-            {/* 3. FINANCIAL HEALTH SNAPSHOT - Compact, Secondary */}
-            <div className="mt-8 pt-6 border-t border-gray-200 dark:border-gray-700">
+            {/* 3. FINANCIAL HEALTH SNAPSHOT - Glanceable */}
+            <div className="pt-4">
               <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
-              
               <FinancialHealthSnapshot 
                 transactions={transactions}
                 summary={filteredSummary}
@@ -534,13 +503,44 @@ function MainApp() {
               />
             </div>
 
-            {/* 4. SUPPLEMENTARY CONTENT - Lowest Priority (Bottom) */}
+            {/* 4. TRANSACTIONS LIST - Recent transactions */}
+            <div className="pt-4">
+              <Tabs defaultValue="transactions" className="w-full">
+                <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
+                  <TabsTrigger value="transactions" data-testid="transactions-tab">
+                    Transactions
+                  </TabsTrigger>
+                  <TabsTrigger value="analytics" data-testid="budget-analytics-tab">
+                    Analytics
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Transactions Tab */}
+                <TabsContent value="transactions" className="mt-6">
+                  <TransactionList
+                    transactions={filteredTransactions.filter(t => t.type !== "investment")}
+                    onDeleteTransaction={handleDeleteTransaction}
+                    onEditTransaction={handleEditTransaction}
+                    currencies={currencies}
+                  />
+                </TabsContent>
+
+                {/* Analytics Tab */}
+                <TabsContent value="analytics" className="mt-6">
+                  <BudgetAnalytics 
+                    analytics={analytics} 
+                    budgetGrowth={budgetGrowth} 
+                    privacyMode={privacyMode}
+                    transactions={filteredTransactions.filter(t => t.type !== "investment")}
+                  />
+                </TabsContent>
+              </Tabs>
+            </div>
+
+            {/* 5. SUPPLEMENTARY CONTENT - Lowest Priority (Bottom) */}
             <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-800">
-              {/* Quote of the Day - Subtle for free, enhanced for premium */}
-              <QuoteOfDay />
-              
               {/* Premium features - subtle, at bottom */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <SmartAlerts 
                   transactions={transactions}
                   recurringTransactions={recurringTransactions}
