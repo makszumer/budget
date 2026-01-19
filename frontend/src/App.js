@@ -440,9 +440,9 @@ function MainApp() {
           setSelectedDate={setSelectedDate}
         />
 
-        {/* ===== NEW LAYOUT: Budget Manager First (Most Prominent) ===== */}
+        {/* ===== DASHBOARD LAYOUT: Budget Manager First ===== */}
         
-        {/* Main Section Switcher - Moved up */}
+        {/* 1. BUDGET MANAGER - Primary Focus (TOP) */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
             <button
@@ -475,47 +475,11 @@ function MainApp() {
           </div>
         </div>
 
-        {/* Budget Section - TOP (Most Prominent) */}
+        {/* Budget Section Content */}
         {activeSection === "budget" && (
           <div className="space-y-6">
-            {/* Dashboard Summary - Compact */}
-            <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
-
-            {/* Financial Health Snapshot - Compact, below summary */}
-            <FinancialHealthSnapshot 
-              transactions={transactions}
-              summary={filteredSummary}
-              investmentGrowth={investmentGrowth}
-              analytics={analytics}
-              privacyMode={privacyMode}
-              onUpgradeClick={handleNavigateToPricing}
-            />
-
-            {/* Premium features row - subtle */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {/* Smart Alerts - subtle for free users */}
-              <SmartAlerts 
-                transactions={transactions}
-                recurringTransactions={recurringTransactions}
-                budgetEnvelopes={budgetEnvelopes}
-                analytics={analytics}
-                onUpgradeClick={handleNavigateToPricing}
-              />
-              
-              {/* What Changed? - subtle for free users */}
-              <div className="flex items-start">
-                <WhatChanged 
-                  transactions={transactions}
-                  recurringTransactions={recurringTransactions}
-                  investmentGrowth={investmentGrowth}
-                  analytics={analytics}
-                  dateFilter={dateFilter}
-                  onUpgradeClick={handleNavigateToPricing}
-                />
-              </div>
-            </div>
-
-            {/* Budget Tabs */}
+            
+            {/* 2. TRANSACTIONS & ANALYTICS - Daily Usage Area */}
             <Tabs defaultValue="transactions" className="w-full">
               <TabsList className="grid w-full grid-cols-2 max-w-md mx-auto">
                 <TabsTrigger value="transactions" data-testid="transactions-tab">
