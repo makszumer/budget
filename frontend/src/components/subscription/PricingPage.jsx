@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 import axios from 'axios';
 import { 
   Check, X, Loader2, Crown, Zap, ArrowLeft, Sparkles, 
-  MessageSquare, Mic, LineChart, Globe, TrendingUp, Clock,
+  MessageSquare, Mic, LineChart, Globe, TrendingUp,
   Gift, Percent, Shield
 } from 'lucide-react';
 
