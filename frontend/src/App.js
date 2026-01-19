@@ -382,8 +382,7 @@ function MainApp() {
     const filteredSummary = getFilteredSummary();
     
     return (
-      <div className="space-y-8">
-        {/* Quote of the Day - Premium Feature */}
+      <div className="space-y-8" data-testid="dashboard-container">
         {/* Header with Appearance Toggle */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
@@ -434,12 +433,31 @@ function MainApp() {
           setSelectedDate={setSelectedDate}
         />
 
-        {/* ===== DASHBOARD LAYOUT ===== */}
+        {/* ===== DASHBOARD LAYOUT - USER SPECIFIED ORDER ===== */}
         
-        {/* 1. QUOTE OF THE DAY - TOP (compact, non-dominant) */}
+        {/* 1. QUOTE OF THE DAY - Always at top, blurred for free users */}
         <QuoteOfDay onUpgradeClick={handleNavigateToPricing} />
 
-        {/* 2. BUDGET MANAGER & INVESTMENT PORTFOLIO - Primary Planning Section */}
+        {/* 2. ADD EXPENSE / ADD INCOME - Clear action buttons, always visible */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-testid="transaction-forms">
+          <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
+            <TransactionForm
+              type="expense"
+              onAddTransaction={handleAddTransaction}
+            />
+          </div>
+          <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
+            <TransactionForm
+              type="income"
+              onAddTransaction={handleAddTransaction}
+            />
+          </div>
+        </div>
+
+        {/* 3. TOTALS SUMMARY - Compact and readable */}
+        <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
+
+        {/* 4. BUDGET MANAGER & INVESTMENT PORTFOLIO - Primary planning section */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
             <button
@@ -475,8 +493,7 @@ function MainApp() {
         {/* Budget Section Content */}
         {activeSection === "budget" && (
           <div className="space-y-6">
-            
-            {/* 3. TRANSACTIONS & ANALYTICS - Hidden by Default */}
+            {/* 5. TRANSACTIONS & ANALYTICS - Hidden by Default, shown when button clicked */}
             <div className="flex justify-center gap-3">
               <Button
                 variant={showTransactions ? "default" : "outline"}
@@ -521,105 +538,86 @@ function MainApp() {
                 />
               </div>
             )}
-            
-            {/* 4. ADD EXPENSE / ADD INCOME - Action Buttons */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
-                <TransactionForm
-                  type="expense"
-                  onAddTransaction={handleAddTransaction}
-                />
-              </div>
-              <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
-                <TransactionForm
-                  type="income"
-                  onAddTransaction={handleAddTransaction}
-                />
-              </div>
-            </div>
-
-            {/* 5. TOTALS SUMMARY - Compact */}
-            <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
-
-            {/* 6. FINANCIAL HEALTH SNAPSHOT - Glanceable */}
-            <FinancialHealthSnapshot 
-              transactions={transactions}
-              summary={filteredSummary}
-              investmentGrowth={investmentGrowth}
-              analytics={analytics}
-              privacyMode={privacyMode}
-              onUpgradeClick={handleNavigateToPricing}
-            />
-
-            {/* 7. WHAT CHANGED? - Near Bottom (Premium-only) */}
-            <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-              <WhatChanged 
-                transactions={transactions}
-                recurringTransactions={recurringTransactions}
-                investmentGrowth={investmentGrowth}
-                analytics={analytics}
-                dateFilter={dateFilter}
-                onUpgradeClick={handleNavigateToPricing}
-              />
-            </div>
-        </div>
-      )}
-
-      {/* Investment Section - Premium Feature */}
-      {activeSection === "investments" && (
-        <FeatureLock feature={FEATURES.INVESTMENT_PORTFOLIO} onUpgradeClick={handleNavigateToPricing}>
-          <div className="space-y-8">
-            {/* Investment Tabs */}
-            <Tabs defaultValue="portfolio" className="w-full">
-              <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
-                <TabsTrigger value="portfolio" data-testid="portfolio-tab">
-                  Portfolio
-                </TabsTrigger>
-                <TabsTrigger value="add" data-testid="add-investment-tab">
-                  Add Investment
-                </TabsTrigger>
-                <TabsTrigger value="history" data-testid="investment-history-tab">
-                  History
-                </TabsTrigger>
-                <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
-                  Analytics
-                </TabsTrigger>
-              </TabsList>
-
-              {/* Portfolio Tab */}
-              <TabsContent value="portfolio" className="space-y-6 mt-6">
-                <PortfolioTracker portfolio={portfolio} />
-              </TabsContent>
-
-              {/* Add Investment Tab */}
-              <TabsContent value="add" className="mt-6">
-                <div className="max-w-4xl mx-auto border-2 border-blue-200 dark:border-blue-800 rounded-xl p-1 bg-blue-50/50 dark:bg-blue-950/30">
-                  <InvestmentForm onAddInvestment={handleAddTransaction} />
-                </div>
-              </TabsContent>
-
-              {/* History Tab */}
-              <TabsContent value="history" className="mt-6">
-                <div className="max-w-4xl mx-auto">
-                  <InvestmentTransactionList
-                    transactions={transactions.filter(t => t.type === "investment")}
-                    onDeleteTransaction={handleDeleteTransaction}
-                    onEditTransaction={handleEditTransaction}
-                  />
-                </div>
-              </TabsContent>
-
-              {/* Analytics Tab */}
-              <TabsContent value="analytics" className="mt-6">
-                <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
-              </TabsContent>
-            </Tabs>
           </div>
-        </FeatureLock>
-      )}
-    </div>
-  );
-};
+        )}
+
+        {/* Investment Section - Premium Feature */}
+        {activeSection === "investments" && (
+          <FeatureLock feature={FEATURES.INVESTMENT_PORTFOLIO} onUpgradeClick={handleNavigateToPricing}>
+            <div className="space-y-8">
+              {/* Investment Tabs */}
+              <Tabs defaultValue="portfolio" className="w-full">
+                <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
+                  <TabsTrigger value="portfolio" data-testid="portfolio-tab">
+                    Portfolio
+                  </TabsTrigger>
+                  <TabsTrigger value="add" data-testid="add-investment-tab">
+                    Add Investment
+                  </TabsTrigger>
+                  <TabsTrigger value="history" data-testid="investment-history-tab">
+                    History
+                  </TabsTrigger>
+                  <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
+                    Analytics
+                  </TabsTrigger>
+                </TabsList>
+
+                {/* Portfolio Tab */}
+                <TabsContent value="portfolio" className="space-y-6 mt-6">
+                  <PortfolioTracker portfolio={portfolio} />
+                </TabsContent>
+
+                {/* Add Investment Tab */}
+                <TabsContent value="add" className="mt-6">
+                  <div className="max-w-4xl mx-auto border-2 border-blue-200 dark:border-blue-800 rounded-xl p-1 bg-blue-50/50 dark:bg-blue-950/30">
+                    <InvestmentForm onAddInvestment={handleAddTransaction} />
+                  </div>
+                </TabsContent>
+
+                {/* History Tab */}
+                <TabsContent value="history" className="mt-6">
+                  <div className="max-w-4xl mx-auto">
+                    <InvestmentTransactionList
+                      transactions={transactions.filter(t => t.type === "investment")}
+                      onDeleteTransaction={handleDeleteTransaction}
+                      onEditTransaction={handleEditTransaction}
+                    />
+                  </div>
+                </TabsContent>
+
+                {/* Analytics Tab */}
+                <TabsContent value="analytics" className="mt-6">
+                  <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
+                </TabsContent>
+              </Tabs>
+            </div>
+          </FeatureLock>
+        )}
+
+        {/* 6. FINANCIAL HEALTH SNAPSHOT - Glanceable, non-dominant */}
+        <FinancialHealthSnapshot 
+          transactions={transactions}
+          summary={filteredSummary}
+          investmentGrowth={investmentGrowth}
+          analytics={analytics}
+          privacyMode={privacyMode}
+          onUpgradeClick={handleNavigateToPricing}
+        />
+
+        {/* 7. WHAT CHANGED? - Near bottom, Premium-only */}
+        <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
+          <WhatChanged 
+            transactions={transactions}
+            recurringTransactions={recurringTransactions}
+            investmentGrowth={investmentGrowth}
+            analytics={analytics}
+            dateFilter={dateFilter}
+            onUpgradeClick={handleNavigateToPricing}
+          />
+        </div>
+      </div>
+    );
+  };
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
