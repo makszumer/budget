@@ -110,26 +110,25 @@ FinanceHub is a comprehensive full-stack financial management application built 
 ## What's Implemented (January 2026)
 
 ### Session 4 - Dashboard Hierarchy & Subtle Premium (Current)
-- [x] **Dashboard Reorder** - Budget Manager at top, most prominent
-  - [x] Section switcher at top
-  - [x] Transactions & Analytics as "daily usage" area
-  - [x] Financial Health moved below transactions (secondary)
-  - [x] Supplementary content at bottom (Quote, Smart Alerts, What Changed)
-- [x] **Quote of the Day Adjustments**
-  - [x] FREE users: Subtle presentation (smaller font, muted colors)
-  - [x] PREMIUM users: Enhanced presentation (larger, blue gradient, refresh button)
-  - [x] Moved to bottom as supplementary content
-- [x] **Subtle Premium Presentation**
-  - [x] Small gray lock icons instead of bright amber
+- [x] **Dashboard Section Order** (Final)
+  1. Quote of the Day - TOP (compact, non-dominant)
+  2. Add Income / Add Expense - Primary interaction area
+  3. Financial Health Snapshot - Glanceable, between forms and transactions
+  4. Transactions List - Recent transactions with tabs
+  5. Supplementary Content - Smart Alerts, What Changed (bottom)
+- [x] **Quote of the Day - Free vs Premium**
+  - [x] FREE: Blurred text with small "Premium" label (visible but not readable)
+  - [x] PREMIUM: Fully visible with blue gradient, refresh button
+  - [x] No popups or banners - subtle blur effect only
+- [x] **Subtle Premium Signaling**
+  - [x] Small gray lock icons
   - [x] Muted "Premium" labels
-  - [x] Soft opacity (60%) for locked features
-  - [x] No aggressive banners or popups
   - [x] Premium features below core budgeting content
-  - [x] "PRO" badge on Investment Portfolio is subtle gray
+  - [x] Never blocks core functionality
 - [x] **Clean Premium/Admin Layout**
-  - [x] No lock icons for premium users
-  - [x] No Premium badges for premium users
-  - [x] Same clean hierarchy, full functionality
+  - [x] No locks or blur
+  - [x] Same clean dashboard hierarchy
+  - [x] Full quote visibility
 
 ### Session 3 - New Features
 - [x] **Financial Health Snapshot** (FREE + Premium enhancements)
