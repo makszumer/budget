@@ -22,7 +22,6 @@ export const FEATURES = {
   DAILY_QUOTES: 'daily_quotes',
   PRIORITY_SUPPORT: 'priority_support',
   INVESTMENT_PORTFOLIO: 'investment_portfolio',
-  SMART_ALERTS: 'smart_alerts',
   WHAT_CHANGED: 'what_changed',
 };
 
