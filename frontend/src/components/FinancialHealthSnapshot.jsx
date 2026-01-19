@@ -250,25 +250,6 @@ export const FinancialHealthSnapshot = ({
           </div>
         )}
 
-        {/* FREE users: Locked premium insights */}
-        {!hasPremiumAccess && (
-          <button 
-            onClick={onUpgradeClick}
-            className="w-full p-3 rounded-lg bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/20 dark:to-orange-950/20 border border-amber-200 dark:border-amber-800 hover:shadow-md transition-shadow cursor-pointer"
-          >
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Lock className="h-4 w-4 text-amber-500" />
-                <span className="text-sm text-amber-700 dark:text-amber-300">Unlock trends, investment insights & smart suggestions</span>
-              </div>
-              <div className="flex items-center gap-1 text-amber-600 dark:text-amber-400 text-xs font-semibold">
-                <Crown className="h-3 w-3" />
-                Premium
-              </div>
-            </div>
-          </button>
-        )}
-
         {/* PREMIUM: Smart Suggestions */}
         {hasPremiumAccess && healthMetrics.suggestions.length > 0 && (
           <div className="p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800">
