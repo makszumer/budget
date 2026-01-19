@@ -177,10 +177,9 @@ FinanceHub is a comprehensive full-stack financial management application built 
 ## Premium Features Locked for Free Users
 - AI Financial Assistant
 - Voice Input
-- Daily Financial Wisdom
+- Daily Financial Wisdom (Quote of Day)
 - Multi-Currency Conversion
 - Investment Portfolio & Analytics
-- Smart Alerts & Reminders
 - What Changed? Comparison
 - Priority Support
 
@@ -190,16 +189,15 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - None currently pending
 
 ### P1 (Medium Priority)
-- Manual user verification of Stripe checkout flow
+- Refactor App.js component (extract data fetching into custom hooks)
+- Refactor server.py into modular route files
 
 ### P2 (Lower Priority)
-- Refactor server.py into modular route files
-- Simplify App.js component
+- Export analytics to PDF/CSV
+- Budget forecasting feature
 
 ### P3 (Backlog)
-- Budget forecasting feature
 - PWA conversion for mobile experience
-- Export analytics to PDF/CSV (when implemented)
 
 ## Test Credentials
 - **Admin:** `admin` / `admin`
