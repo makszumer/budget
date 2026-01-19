@@ -4,8 +4,7 @@ import { useAccess } from '@/context/AccessContext';
 import { HelpTooltip } from '@/components/HelpTooltip';
 import { 
   TrendingUp, TrendingDown, Minus, PiggyBank, 
-  ArrowUpRight, ArrowDownRight, Activity, Lightbulb,
-  Lock, Crown
+  ArrowUpRight, ArrowDownRight, Activity, Lightbulb
 } from 'lucide-react';
 
 /**
