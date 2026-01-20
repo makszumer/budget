@@ -9,7 +9,7 @@ from auth import (
     hash_password, verify_password, create_access_token,
     get_current_user, UserRegister, UserLogin, Token
 )
-from models import UserResponse, UserPreferencesUpdate, SUPPORTED_CURRENCIES
+from user_models import UserResponse, UserPreferencesUpdate, SUPPORTED_CURRENCIES
 import uuid
 
 router = APIRouter(prefix="/users", tags=["users"])

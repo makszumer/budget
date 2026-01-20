@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append('/app/backend')
 
-from models import AdminBankInfo, AdminCredentials
+from user_models import AdminBankInfo, AdminCredentials
 from typing import Optional
 
 router = APIRouter(prefix="/admin", tags=["admin"])
