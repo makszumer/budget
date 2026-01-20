@@ -189,8 +189,9 @@ FinanceHub is a comprehensive full-stack financial management application built 
 - None currently pending
 
 ### P1 (Medium Priority)
-- Refactor App.js component (extract data fetching into custom hooks)
-- Refactor server.py into modular route files
+- COMPLETED: Refactor App.js component (frontend hooks created)
+- COMPLETED: Refactor server.py into modular route files
+- Migrate App.js to use new custom hooks (optional - hooks available)
 
 ### P2 (Lower Priority)
 - Export analytics to PDF/CSV
