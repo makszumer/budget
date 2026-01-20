@@ -281,7 +281,7 @@ async def parse_voice_transaction(
                     {"_id": 0, "name": 1}
                 ).to_list(50)
                 custom_cats = [c["name"] for c in user_cats]
-            except:
+            except Exception:
                 pass
         
         # Build category list
