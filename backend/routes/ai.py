@@ -438,7 +438,7 @@ Never make up numbers. If you can't answer from the data, say so.
     except Exception as e:
         logger.error(f"AI assistant error: {e}")
         return {
-            "answer": f"Error processing your question. Please try again.",
+            "answer": "Error processing your question. Please try again.",
             "data_provided": False
         }
 
