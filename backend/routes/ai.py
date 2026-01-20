@@ -333,8 +333,6 @@ async def ai_assistant(request: dict):
         raise HTTPException(status_code=400, detail="Question is required")
     
     today = date_module.today()
-    current_month = today.month
-    current_year = today.year
     
     all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
     standing_orders = await db.recurring_transactions.find({"active": True}, {"_id": 0}).to_list(1000)
@@ -344,7 +342,7 @@ async def ai_assistant(request: dict):
             return None
         try:
             return datetime.fromisoformat(date_str.split('T')[0]).date()
-        except:
+        except ValueError:
             return None
     
     # Build data summary
