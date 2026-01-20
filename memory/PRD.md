@@ -208,18 +208,48 @@ FinanceHub is a comprehensive full-stack financial management application built 
 
 ## File Structure (Key Components)
 ```
-/app/frontend/src/components/
-├── FinancialHealthSnapshot.jsx  # Health metrics
-├── HelpTooltip.jsx              # Contextual help
-├── WhatChanged.jsx              # Period comparison (Premium)
-├── QuoteOfDay.jsx               # Blurred for free, visible for premium
-├── FeatureLock.jsx              # Premium feature indicator
-└── InvestmentAnalytics.jsx      # Enhanced with ROI filters
+/app/backend/
+├── server.py                    # Main entry point (imports modular routes)
+├── user_models.py               # User-related Pydantic models
+├── models/                      # Modular model definitions
+│   ├── transaction.py           # Transaction, Recurring, Category models
+│   └── analytics.py             # Analytics, Portfolio models
+└── routes/                      # Modular API routes
+    ├── transactions.py          # Transaction CRUD
+    ├── analytics.py             # Analytics endpoints
+    ├── portfolio.py             # Portfolio tracking
+    ├── recurring.py             # Standing orders
+    ├── budget_envelopes.py      # Envelope budgeting
+    ├── currency.py              # Exchange rates
+    ├── categories.py            # Custom categories
+    ├── ai.py                    # AI assistant, voice, quotes
+    ├── users.py                 # Authentication
+    ├── subscription.py          # Premium subscriptions
+    └── admin.py                 # Admin functions
+
+/app/frontend/src/
+├── hooks/                       # Custom React hooks
+│   ├── useTransactions.js       # Transaction operations
+│   ├── useSummary.js            # Summary data
+│   ├── usePortfolio.js          # Portfolio data
+│   ├── useAnalytics.js          # Analytics data
+│   ├── useCurrencies.js         # Currency data
+│   ├── useRecurringTransactions.js
+│   ├── useBudgetEnvelopes.js
+│   └── useFinancialData.js      # Combined hook
+└── components/
+    ├── FinancialHealthSnapshot.jsx
+    ├── HelpTooltip.jsx
+    ├── WhatChanged.jsx
+    ├── QuoteOfDay.jsx
+    ├── FeatureLock.jsx
+    └── InvestmentAnalytics.jsx
 ```
 
 ## Testing Status
-- **Backend Tests:** All passed (10/10)
+- **Backend Tests:** All passed (42/42)
 - **Frontend Tests:** 100% (all features working)
-- **Test Report:** `/app/test_reports/iteration_4.json`
-- **Stripe Checkout:** Verified working (redirects to Stripe)
+- **Test Report:** `/app/test_reports/iteration_5.json`
+- **Stripe Checkout:** Verified working
 - **Dashboard Layout:** Verified correct order
+- **Refactoring:** Verified - no regression
