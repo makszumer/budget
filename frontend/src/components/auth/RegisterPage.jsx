@@ -52,14 +52,13 @@ export const RegisterPage = ({ onSwitchToLogin, onRegisterSuccess }) => {
         <CardHeader className="text-center">
           {/* Vaulton Logo and Branding */}
           <div className="flex flex-col items-center mb-4">
-            <img 
-              src="/vaulton-logo.png" 
-              alt="Vaulton" 
-              className="h-16 w-16 object-contain mb-3"
-            />
-            <span className="text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
-              Vaulton
-            </span>
+            <div className="p-2 rounded-xl bg-white dark:bg-gray-100 shadow-sm">
+              <img 
+                src="/vaulton-logo.png" 
+                alt="Vaulton" 
+                className="h-24 w-auto object-contain"
+              />
+            </div>
           </div>
           <CardTitle className="text-xl font-semibold">Create Account</CardTitle>
           <CardDescription className="text-center">
