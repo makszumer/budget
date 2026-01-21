@@ -34,9 +34,13 @@ export const LoadingScreen = () => {
       <div className="text-center px-4 max-w-2xl">
         {/* Animated Logo */}
         <div className="mb-8 relative">
-          <div className="text-8xl animate-bounce mb-4">💰</div>
+          <img 
+            src="/vaulton-logo.png" 
+            alt="Vaulton" 
+            className="w-24 h-24 mx-auto animate-pulse mb-4 object-contain"
+          />
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 border-4 border-blue-400 rounded-full animate-ping opacity-20"></div>
+            <div className="w-32 h-32 border-4 border-emerald-400 rounded-full animate-ping opacity-20"></div>
           </div>
         </div>
 
