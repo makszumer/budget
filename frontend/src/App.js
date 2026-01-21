@@ -387,26 +387,25 @@ function MainApp() {
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <img 
-                src="/vaulton-logo.png" 
-                alt="Vaulton" 
-                className="h-10 w-10 object-contain"
-              />
-              <h1 className="text-3xl font-bold text-slate-900 dark:text-white">
-                Vaulton
-                {/* User tier badge */}
-                {isAdmin && (
-                  <span className="ml-3 inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-full">
-                    <Shield className="h-3 w-3" />
-                    Admin
-                  </span>
-                )}
-                {isGuest && (
-                  <span className="ml-3 inline-flex items-center px-2 py-0.5 bg-gray-500 text-white text-xs font-bold rounded-full">
-                    Guest
-                  </span>
-                )}
-              </h1>
+              <div className="p-1 rounded-lg bg-white dark:bg-gray-100 shadow-sm">
+                <img 
+                  src="/vaulton-logo.png" 
+                  alt="Vaulton" 
+                  className="h-12 w-auto object-contain"
+                />
+              </div>
+              {/* User tier badge */}
+              {isAdmin && (
+                <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-full">
+                  <Shield className="h-3 w-3" />
+                  Admin
+                </span>
+              )}
+              {isGuest && (
+                <span className="inline-flex items-center px-2 py-0.5 bg-gray-500 text-white text-xs font-bold rounded-full">
+                  Guest
+                </span>
+              )}
             </div>
             <p className="text-slate-600 dark:text-slate-400">
               Your financial overview and management
