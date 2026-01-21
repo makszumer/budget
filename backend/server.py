@@ -80,7 +80,7 @@ api_router = APIRouter(prefix="/api")
 @api_router.get("/")
 async def root():
     """API health check endpoint"""
-    return {"message": "Financial Tracker API", "status": "healthy"}
+    return {"message": "Vaulton API", "status": "healthy"}
 
 
 # ========== RECURRING TRANSACTION UPDATE (additional endpoint) ==========
