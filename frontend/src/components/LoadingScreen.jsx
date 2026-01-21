@@ -30,24 +30,23 @@ export const LoadingScreen = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center">
+    <div className="min-h-screen bg-gradient-to-br from-emerald-50 via-slate-50 to-amber-50 flex items-center justify-center">
       <div className="text-center px-4 max-w-2xl">
         {/* Animated Logo */}
         <div className="mb-8 relative">
-          <img 
-            src="/vaulton-logo.png" 
-            alt="Vaulton" 
-            className="w-24 h-24 mx-auto animate-pulse mb-4 object-contain"
-          />
+          <div className="p-3 rounded-2xl bg-white shadow-lg mx-auto inline-block">
+            <img 
+              src="/vaulton-logo.png" 
+              alt="Vaulton" 
+              className="w-32 h-auto mx-auto animate-pulse object-contain"
+            />
+          </div>
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-32 h-32 border-4 border-emerald-400 rounded-full animate-ping opacity-20"></div>
+            <div className="w-40 h-40 border-4 border-emerald-400 rounded-full animate-ping opacity-20"></div>
           </div>
         </div>
 
         {/* Loading Text */}
-        <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          Vaulton
-        </h1>
         <p className="text-xl text-gray-600 mb-8">
           Waking up servers{dots}
         </p>
