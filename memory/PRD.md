@@ -1,7 +1,7 @@
-# FinanceHub - Product Requirements Document
+# Vaulton - Product Requirements Document
 
 ## Overview
-FinanceHub is a comprehensive full-stack financial management application built with React (frontend), FastAPI (backend), and MongoDB (database).
+Vaulton is a comprehensive full-stack financial management application built with React (frontend), FastAPI (backend), and MongoDB (database).
 
 ## Core Features
 
