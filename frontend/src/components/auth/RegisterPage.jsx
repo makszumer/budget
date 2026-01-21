@@ -47,10 +47,21 @@ export const RegisterPage = ({ onSwitchToLogin, onRegisterSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle className="text-2xl font-bold text-center">Create Account</CardTitle>
+        <CardHeader className="text-center">
+          {/* Vaulton Logo and Branding */}
+          <div className="flex flex-col items-center mb-4">
+            <img 
+              src="/vaulton-logo.png" 
+              alt="Vaulton" 
+              className="h-16 w-16 object-contain mb-3"
+            />
+            <span className="text-2xl font-bold tracking-tight text-emerald-700 dark:text-emerald-400">
+              Vaulton
+            </span>
+          </div>
+          <CardTitle className="text-xl font-semibold">Create Account</CardTitle>
           <CardDescription className="text-center">
             Start tracking your finances today
           </CardDescription>
