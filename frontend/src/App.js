@@ -717,10 +717,14 @@ function MainApp() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex relative">
       <Toaster />
       
-      {/* Menu Button (Three Dots) */}
+      {/* Menu Button (Three Dots) - Hide on scroll down */}
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-6 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
+        className={`fixed top-6 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
+          actionsVisible 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}
         data-testid="menu-toggle"
       >
         <svg
@@ -746,8 +750,12 @@ function MainApp() {
         </svg>
       </button>
 
-      {/* User Actions - Top Right */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-2">
+      {/* User Actions - Top Right - Hide on scroll down */}
+      <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 transition-all duration-300 ease-in-out ${
+        actionsVisible 
+          ? 'opacity-100 translate-y-0' 
+          : 'opacity-0 -translate-y-4 pointer-events-none'
+      }`}>
         {/* Premium Badge / Upgrade Button */}
         {isPremium ? (
           <button
@@ -794,9 +802,13 @@ function MainApp() {
         </button>
       </div>
 
-      {/* Server Status Indicator */}
+      {/* Server Status Indicator - Hide on scroll down */}
       {serverAwake && (
-        <div className="fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg shadow-md">
+        <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg shadow-md transition-all duration-300 ease-in-out ${
+          actionsVisible 
+            ? 'opacity-100 translate-y-0' 
+            : 'opacity-0 -translate-y-4 pointer-events-none'
+        }`}>
           <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
           <span className="text-sm text-green-700 dark:text-green-400 font-medium">Server Active</span>
         </div>
