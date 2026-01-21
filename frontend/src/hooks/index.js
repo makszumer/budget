@@ -10,3 +10,4 @@ export { useCurrencies } from './useCurrencies';
 export { useRecurringTransactions } from './useRecurringTransactions';
 export { useBudgetEnvelopes } from './useBudgetEnvelopes';
 export { useFinancialData } from './useFinancialData';
+export { useScrollDirection } from './useScrollDirection';
