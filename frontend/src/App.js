@@ -81,6 +81,9 @@ function MainApp() {
   const [budgetEnvelopes, setBudgetEnvelopes] = useState([]);
   const [showTransactions, setShowTransactions] = useState(false); // Hidden by default
   const [showAnalytics, setShowAnalytics] = useState(false); // Hidden by default
+  
+  // Scroll direction for hiding/showing action buttons
+  const { isVisible: actionsVisible } = useScrollDirection(15);
 
   // Check URL for subscription routes
   useEffect(() => {
