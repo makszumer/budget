@@ -39,7 +39,7 @@ const FREE_FEATURES = new Set([
 ]);
 
 // Admin email whitelist
-const ADMIN_EMAILS = ['admin@financehub.com'];
+const ADMIN_EMAILS = ['admin@vaulton.com'];
 
 const AccessContext = createContext(null);
 

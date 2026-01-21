@@ -5,7 +5,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
 // Admin email whitelist
-const ADMIN_EMAILS = ['admin@financehub.com'];
+const ADMIN_EMAILS = ['admin@vaulton.com'];
 
 const AuthContext = createContext(null);
 

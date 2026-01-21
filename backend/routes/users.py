@@ -16,7 +16,7 @@ router = APIRouter(prefix="/users", tags=["users"])
 
 # Admin credentials
 ADMIN_USERNAME = "admin"
-ADMIN_EMAIL = "admin@financehub.com"
+ADMIN_EMAIL = "admin@vaulton.com"
 ADMIN_PASSWORD = "admin"
 
 # Database dependency

@@ -81,7 +81,12 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
   return (
     <div className="w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0">
       <div className="mb-8">
-        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">💰 FinanceHub</h2>
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-1">
+          <div className="flex items-center gap-2">
+            <img src="/vaulton-logo.png" alt="Vaulton" className="h-8 w-8 object-contain" />
+            Vaulton
+          </div>
+        </h2>
         <p className="text-sm text-gray-500 dark:text-gray-400">
           {isGuest ? 'Guest Mode' : `Welcome, ${user?.username || 'User'}`}
         </p>

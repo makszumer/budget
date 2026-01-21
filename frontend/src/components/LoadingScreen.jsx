@@ -42,7 +42,7 @@ export const LoadingScreen = () => {
 
         {/* Loading Text */}
         <h1 className="text-4xl font-bold text-gray-800 mb-4">
-          FinanceHub
+          Vaulton
         </h1>
         <p className="text-xl text-gray-600 mb-8">
           Waking up servers{dots}
