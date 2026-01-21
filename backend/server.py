@@ -66,8 +66,8 @@ init_ai_router(db)
 
 # Create FastAPI app
 app = FastAPI(
-    title="Financial Tracker API",
-    description="A comprehensive API for tracking personal finances, investments, and budgets",
+    title="Vaulton API",
+    description="Vaulton - A comprehensive API for tracking personal finances, investments, and budgets",
     version="2.0.0"
 )
 
