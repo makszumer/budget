@@ -396,15 +396,18 @@ async def ai_assistant(request: dict):
     # ========== PARSE USER QUERY ==========
     text_lower = question.lower()
     
-    # Determine query type
+    # Determine query type - ORDER MATTERS
+    # Check for summary/overview FIRST as these should use AI with all data
     query_type = None
-    if any(kw in text_lower for kw in ["spend", "spent", "expense", "cost", "paid", "bought"]):
+    if any(kw in text_lower for kw in ["summary", "overview", "balance", "net worth", "financial health"]):
+        query_type = "summary"
+    elif any(kw in text_lower for kw in ["spend", "spent", "expense", "cost", "paid", "bought"]):
         query_type = "expense"
-    elif any(kw in text_lower for kw in ["earn", "earned", "income", "made", "received", "salary", "tips"]):
+    elif any(kw in text_lower for kw in ["earn", "earned", "income", "received", "salary"]):
         query_type = "income"
-    elif any(kw in text_lower for kw in ["invest", "invested", "investment", "portfolio", "stock", "etf", "crypto", "profit", "loss", "roi"]):
+    elif any(kw in text_lower for kw in ["invest", "invested", "investment", "portfolio", "stock", "etf", "crypto", "profit", "loss", "roi", "holdings"]):
         query_type = "investment"
-    elif any(kw in text_lower for kw in ["total", "balance", "net", "savings", "overview", "summary"]):
+    elif any(kw in text_lower for kw in ["total", "savings"]):
         query_type = "summary"
     
     # Parse date range
