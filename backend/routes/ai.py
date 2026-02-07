@@ -403,9 +403,9 @@ async def ai_assistant(request: dict):
         query_type = "summary"
     elif any(kw in text_lower for kw in ["spend", "spent", "expense", "cost", "paid", "bought"]):
         query_type = "expense"
-    elif any(kw in text_lower for kw in ["earn", "earned", "income", "received", "salary"]):
+    elif any(kw in text_lower for kw in ["earn", "earned", "income", "received", "salary", "tips", "gratuity", "made money"]):
         query_type = "income"
-    elif any(kw in text_lower for kw in ["invest", "invested", "investment", "portfolio", "stock", "etf", "crypto", "profit", "loss", "roi", "holdings"]):
+    elif any(kw in text_lower for kw in ["invest", "invested", "investment", "portfolio", "stock", "etf", "crypto", "profit", "loss", "roi", "holdings", "make on", "lose on"]):
         query_type = "investment"
     elif any(kw in text_lower for kw in ["total", "savings"]):
         query_type = "summary"
