@@ -2,7 +2,7 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import Optional, List
-from datetime import datetime, timezone, date as date_module
+from datetime import datetime, timezone, date as date_module, timedelta
 from collections import defaultdict
 import calendar
 import logging
@@ -133,7 +133,7 @@ DEFAULT_INCOME_CATEGORIES = {
     "Other Income": ["Gifts", "Lottery / windfalls", "One-time payments"],
 }
 
-DEFAULT_INVESTMENT_CATEGORIES = ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other"]
+DEFAULT_INVESTMENT_CATEGORIES = ["Stocks", "Bonds", "Real Estate", "Crypto", "Retirement", "Other", "ETFs"]
 
 CATEGORY_SYNONYMS = {
     "Groceries": ["grocery", "groceries", "supermarket", "food shopping", "walmart", "costco", "trader joe", "whole foods", "aldi", "kroger", "market"],
@@ -322,11 +322,11 @@ async def parse_voice_transaction(
         )
 
 
-# ========== AI ASSISTANT ENDPOINT ==========
+# ========== AI ASSISTANT ENDPOINT (COMPREHENSIVE) ==========
 
 @router.post("/ai-assistant")
 async def ai_assistant(request: dict):
-    """Natural language query about finances using AI"""
+    """Natural language query about finances using AI - with full investment support"""
     question = request.get("question", "")
     
     if not question:
@@ -334,6 +334,7 @@ async def ai_assistant(request: dict):
     
     today = date_module.today()
     
+    # Fetch all data
     all_transactions = await db.transactions.find({}, {"_id": 0}).to_list(10000)
     standing_orders = await db.recurring_transactions.find({"active": True}, {"_id": 0}).to_list(1000)
     
@@ -345,68 +346,198 @@ async def ai_assistant(request: dict):
         except ValueError:
             return None
     
-    # Build data summary
-    all_data = {
+    def get_quarter(month):
+        """Return quarter number (1-4) for a given month"""
+        return (month - 1) // 3 + 1
+    
+    # ========== BUILD COMPREHENSIVE DATA SUMMARY ==========
+    
+    # Initialize data structures
+    data = {
+        # Overall totals
         "total_income": 0,
         "total_expenses": 0,
+        "total_investments": 0,
+        
+        # Category breakdowns
         "income_by_category": defaultdict(float),
         "expense_by_category": defaultdict(float),
+        "investment_by_category": defaultdict(float),
+        "investment_by_asset": defaultdict(float),
+        
+        # Time-based breakdowns
         "income_by_month": defaultdict(float),
         "expense_by_month": defaultdict(float),
-        "income_categories": set(),
-        "expense_categories": set(),
-        "date_range": {"earliest": None, "latest": None}
+        "investment_by_month": defaultdict(float),
+        "income_by_quarter": defaultdict(float),
+        "expense_by_quarter": defaultdict(float),
+        "investment_by_quarter": defaultdict(float),
+        
+        # Date range
+        "date_range": {"earliest": None, "latest": None},
+        
+        # Transaction lists for detailed analysis
+        "recent_transactions": [],
+        "investment_transactions": [],
     }
     
+    # Process all transactions
     for t in all_transactions:
         amount = t.get("amount", 0)
         trans_type = t.get("type", "")
         category = t.get("category", "Other")
+        asset = t.get("asset", "")
+        description = t.get("description", "")
         date = parse_date(t.get("date"))
         
         if not date:
             continue
         
-        if all_data["date_range"]["earliest"] is None or date < all_data["date_range"]["earliest"]:
-            all_data["date_range"]["earliest"] = date
-        if all_data["date_range"]["latest"] is None or date > all_data["date_range"]["latest"]:
-            all_data["date_range"]["latest"] = date
+        # Update date range
+        if data["date_range"]["earliest"] is None or date < data["date_range"]["earliest"]:
+            data["date_range"]["earliest"] = date
+        if data["date_range"]["latest"] is None or date > data["date_range"]["latest"]:
+            data["date_range"]["latest"] = date
         
-        month_name = f"{calendar.month_name[date.month]} {date.year}"
+        # Time keys
+        month_key = f"{calendar.month_name[date.month]} {date.year}"
+        quarter_key = f"Q{get_quarter(date.month)} {date.year}"
         
+        # Process by type
         if trans_type == "income":
-            all_data["total_income"] += amount
-            all_data["income_by_category"][category] += amount
-            all_data["income_by_month"][month_name] += amount
-            all_data["income_categories"].add(category)
+            data["total_income"] += amount
+            data["income_by_category"][category] += amount
+            data["income_by_month"][month_key] += amount
+            data["income_by_quarter"][quarter_key] += amount
+            
         elif trans_type == "expense":
-            all_data["total_expenses"] += amount
-            all_data["expense_by_category"][category] += amount
-            all_data["expense_by_month"][month_name] += amount
-            all_data["expense_categories"].add(category)
+            data["total_expenses"] += amount
+            data["expense_by_category"][category] += amount
+            data["expense_by_month"][month_key] += amount
+            data["expense_by_quarter"][quarter_key] += amount
+            
+        elif trans_type == "investment":
+            data["total_investments"] += amount
+            data["investment_by_category"][category] += amount
+            data["investment_by_month"][month_key] += amount
+            data["investment_by_quarter"][quarter_key] += amount
+            
+            if asset:
+                data["investment_by_asset"][asset] += amount
+            
+            # Store investment details
+            data["investment_transactions"].append({
+                "date": date.isoformat(),
+                "category": category,
+                "asset": asset,
+                "amount": amount,
+                "description": description,
+                "quantity": t.get("quantity"),
+                "purchase_price": t.get("purchase_price"),
+            })
+        
+        # Store recent transactions (last 30 days)
+        if (today - date).days <= 30:
+            data["recent_transactions"].append({
+                "date": date.isoformat(),
+                "type": trans_type,
+                "category": category,
+                "amount": amount,
+                "description": description,
+            })
     
-    # Build summary for AI
+    # ========== BUILD DETAILED SUMMARY FOR AI ==========
+    
+    # Sort months chronologically
+    def sort_month_key(key):
+        parts = key.split()
+        month_num = list(calendar.month_name).index(parts[0])
+        year = int(parts[1])
+        return (year, month_num)
+    
+    sorted_income_months = sorted(data["income_by_month"].items(), key=lambda x: sort_month_key(x[0]))
+    sorted_expense_months = sorted(data["expense_by_month"].items(), key=lambda x: sort_month_key(x[0]))
+    sorted_investment_months = sorted(data["investment_by_month"].items(), key=lambda x: sort_month_key(x[0]))
+    
+    # Find top categories
+    top_expense_cats = sorted(data["expense_by_category"].items(), key=lambda x: x[1], reverse=True)[:10]
+    top_income_cats = sorted(data["income_by_category"].items(), key=lambda x: x[1], reverse=True)[:10]
+    top_investment_cats = sorted(data["investment_by_category"].items(), key=lambda x: x[1], reverse=True)[:10]
+    top_assets = sorted(data["investment_by_asset"].items(), key=lambda x: x[1], reverse=True)[:15]
+    
+    # Build the comprehensive summary
     data_summary = f"""
-TODAY: {today.isoformat()}
-DATA RANGE: {all_data["date_range"]["earliest"]} to {all_data["date_range"]["latest"]}
+TODAY'S DATE: {today.isoformat()}
+DATA RANGE: {data["date_range"]["earliest"]} to {data["date_range"]["latest"]}
 TOTAL TRANSACTIONS: {len(all_transactions)}
 
-TOTALS:
-- Total Income: ${all_data["total_income"]:.2f}
-- Total Expenses: ${all_data["total_expenses"]:.2f}
-- Net Balance: ${(all_data["total_income"] - all_data["total_expenses"]):.2f}
+=====================================
+FINANCIAL OVERVIEW
+=====================================
+Total Income: ${data["total_income"]:,.2f}
+Total Expenses: ${data["total_expenses"]:,.2f}
+Total Investments: ${data["total_investments"]:,.2f}
+Net Savings (Income - Expenses): ${(data["total_income"] - data["total_expenses"]):,.2f}
 
-INCOME BY CATEGORY:
-{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["income_by_category"].items())])}
+=====================================
+EXPENSE BREAKDOWN BY CATEGORY
+=====================================
+{chr(10).join([f"  • {cat}: ${amt:,.2f}" for cat, amt in top_expense_cats])}
 
-EXPENSE BY CATEGORY:
-{chr(10).join([f"  • {cat}: ${amt:.2f}" for cat, amt in sorted(all_data["expense_by_category"].items())])}
+=====================================
+INCOME BREAKDOWN BY CATEGORY  
+=====================================
+{chr(10).join([f"  • {cat}: ${amt:,.2f}" for cat, amt in top_income_cats])}
 
-STANDING ORDERS ({len(standing_orders)} active):
-{chr(10).join([f"  • {so.get('description')}: ${so.get('amount'):.2f} ({so.get('frequency')})" for so in standing_orders[:10]])}
+=====================================
+INVESTMENT BREAKDOWN BY CATEGORY
+=====================================
+{chr(10).join([f"  • {cat}: ${amt:,.2f}" for cat, amt in top_investment_cats]) if top_investment_cats else "  No investments recorded"}
+
+=====================================
+INVESTMENT BREAKDOWN BY ASSET
+=====================================
+{chr(10).join([f"  • {asset}: ${amt:,.2f}" for asset, amt in top_assets]) if top_assets else "  No specific assets recorded"}
+
+=====================================
+MONTHLY INCOME (Last 12 months)
+=====================================
+{chr(10).join([f"  • {month}: ${amt:,.2f}" for month, amt in sorted_income_months[-12:]])}
+
+=====================================
+MONTHLY EXPENSES (Last 12 months)
+=====================================
+{chr(10).join([f"  • {month}: ${amt:,.2f}" for month, amt in sorted_expense_months[-12:]])}
+
+=====================================
+MONTHLY INVESTMENTS (Last 12 months)
+=====================================
+{chr(10).join([f"  • {month}: ${amt:,.2f}" for month, amt in sorted_investment_months[-12:]]) if sorted_investment_months else "  No monthly investment data"}
+
+=====================================
+QUARTERLY SUMMARY
+=====================================
+INCOME BY QUARTER:
+{chr(10).join([f"  • {q}: ${amt:,.2f}" for q, amt in sorted(data["income_by_quarter"].items())])}
+
+EXPENSES BY QUARTER:
+{chr(10).join([f"  • {q}: ${amt:,.2f}" for q, amt in sorted(data["expense_by_quarter"].items())])}
+
+INVESTMENTS BY QUARTER:
+{chr(10).join([f"  • {q}: ${amt:,.2f}" for q, amt in sorted(data["investment_by_quarter"].items())]) if data["investment_by_quarter"] else "  No quarterly investment data"}
+
+=====================================
+RECENT TRANSACTIONS (Last 30 days)
+=====================================
+{chr(10).join([f"  • {t['date']} | {t['type'].upper()} | {t['category']} | ${t['amount']:,.2f} | {t['description'][:40]}" for t in sorted(data["recent_transactions"], key=lambda x: x['date'], reverse=True)[:20]])}
+
+=====================================
+STANDING ORDERS ({len(standing_orders)} active)
+=====================================
+{chr(10).join([f"  • {so.get('description')}: ${so.get('amount'):,.2f} ({so.get('frequency')})" for so in standing_orders[:10]])}
 """
 
-    # Use AI to answer
+    # ========== USE AI TO ANSWER ==========
     try:
         from emergentintegrations.llm.chat import LlmChat, UserMessage
         
@@ -418,13 +549,22 @@ STANDING ORDERS ({len(standing_orders)} active):
                 "data_provided": False
             }
         
-        client = LlmChat(
-            api_key=llm_key,
-            session_id="financial_assistant",
-            system_message=f"""You are a helpful financial assistant. Use ONLY the data provided below.
-Never make up numbers. If you can't answer from the data, say so.
+        system_prompt = f"""You are a helpful financial assistant for Vaulton, a personal finance app.
+
+CRITICAL RULES:
+1. Use ONLY the data provided below - never make up numbers
+2. If you cannot answer from the data, say "I don't have enough data to answer that"
+3. Always format currency amounts with $ and commas (e.g., $1,234.56)
+4. Be concise but thorough
+5. For time-based questions, pay attention to month names and quarters
+6. For investment questions, reference specific assets (stocks, ETFs, crypto) when available
 
 {data_summary}"""
+
+        client = LlmChat(
+            api_key=llm_key,
+            session_id="vaulton_assistant",
+            system_message=system_prompt
         ).with_model("openai", "gpt-4o-mini")
         
         user_msg = UserMessage(text=question)
