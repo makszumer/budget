@@ -252,12 +252,12 @@ BTC, ETH, USDT, BNB, SOL, XRP, USDC, ADA, DOGE, TRX, AVAX, LINK, SHIB, DOT, TON,
 ## Upcoming/Future Tasks
 
 ### P0 (High Priority)
-- None currently pending
+- ✅ COMPLETED: AI Financial Engine Rebuild & Testing (46 tests passed)
 
 ### P1 (Medium Priority)
 - COMPLETED: Refactor App.js component (frontend hooks created)
 - COMPLETED: Refactor server.py into modular route files
-- Migrate App.js to use new custom hooks (optional - hooks available)
+- Optional: Migrate App.js to use new custom hooks (hooks available in `/app/frontend/src/hooks/`)
 
 ### P2 (Lower Priority)
 - Export analytics to PDF/CSV
