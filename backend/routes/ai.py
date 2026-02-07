@@ -720,6 +720,40 @@ async def _generate_ai_response(question: str, transactions: List[Dict], categor
             if asset:
                 investment_by_asset[asset] += amount
     
+    # Calculate investment P&L for each asset
+    investment_holdings = defaultdict(lambda: {"invested": 0, "quantity": 0, "category": ""})
+    for t in transactions:
+        if t["type"] == "investment" and t["asset"]:
+            investment_holdings[t["asset"]]["invested"] += t["amount"]
+            investment_holdings[t["asset"]]["quantity"] += t.get("quantity") or 0
+            investment_holdings[t["asset"]]["category"] = t["category"]
+    
+    # Get current prices and calculate P&L
+    investment_pnl_summary = ""
+    total_current_value = 0
+    try:
+        from routes.portfolio import get_current_price
+        
+        for asset, data in investment_holdings.items():
+            if data["quantity"] > 0:
+                current_price = get_current_price(asset, data["category"])
+                if current_price:
+                    current_value = data["quantity"] * current_price
+                    pnl = current_value - data["invested"]
+                    pnl_pct = (pnl / data["invested"] * 100) if data["invested"] > 0 else 0
+                    sign = "+" if pnl >= 0 else ""
+                    total_current_value += current_value
+                    investment_pnl_summary += f"• {asset}: {sign}${pnl:,.2f} ({sign}{pnl_pct:.1f}%)\n"
+    except Exception as e:
+        logging.warning(f"Could not calculate investment P&L: {e}")
+        investment_pnl_summary = "• P&L data unavailable\n"
+    
+    # Calculate total ROI
+    total_pnl = total_current_value - total_investments if total_current_value > 0 else 0
+    total_roi = (total_pnl / total_investments * 100) if total_investments > 0 and total_current_value > 0 else 0
+    roi_str = f"+{total_roi:.1f}%" if total_roi >= 0 else f"{total_roi:.1f}%"
+    pnl_sign = "+" if total_pnl >= 0 else ""
+    
     # Build data summary for AI
     data_summary = f"""
 TODAY: {today.isoformat()}
@@ -731,6 +765,14 @@ TOTALS:
 • Total Expenses: ${total_expenses:,.2f}
 • Total Investments: ${total_investments:,.2f}
 • Net Savings: ${(total_income - total_expenses):,.2f}
+
+INVESTMENT P&L (CURRENT):
+• Total Invested: ${total_investments:,.2f}
+• Current Value: ${total_current_value:,.2f}
+• Profit/Loss: {pnl_sign}${total_pnl:,.2f} (ROI: {roi_str})
+
+INVESTMENT P&L BY ASSET:
+{investment_pnl_summary if investment_pnl_summary else "• No investment holdings"}
 
 TOP EXPENSE CATEGORIES:
 {chr(10).join([f"• {cat}: ${amt:,.2f}" for cat, amt in sorted(expense_by_cat.items(), key=lambda x: x[1], reverse=True)[:10]])}
