@@ -223,7 +223,7 @@ CATEGORY_KEYWORDS = {
 
 
 def match_category(text: str, categories: List[str]) -> List[str]:
-    """Match text to transaction categories with precise matching"""
+    """Match text to transaction categories with precise matching and smart synonyms"""
     text_lower = text.lower()
     matched = []
     
@@ -238,15 +238,39 @@ def match_category(text: str, categories: List[str]) -> List[str]:
     if matched:
         return matched
     
-    # Priority 2: Keyword-based matching for specific terms
-    # Only use keywords if no exact category match was found
+    # Priority 2: Smart synonym groups - combine related categories
+    synonym_groups = {
+        "food": ["Groceries", "Restaurants / Cafes", "Takeout / Delivery", "Work Lunches / Snacks"],
+        "dining": ["Restaurants / Cafes", "Takeout / Delivery"],
+        "tips": ["Commissions / tips", "tips"],
+        "gratuity": ["Commissions / tips", "tips"],
+        "tip income": ["Commissions / tips"],
+        "investments": ["Stocks", "ETFs", "Crypto", "Bonds", "Real Estate", "Retirement"],
+        "transport": ["Public Transport", "Fuel / Gas", "Car Payment / Lease", "Parking & Tolls"],
+        "transportation": ["Public Transport", "Fuel / Gas", "Car Payment / Lease"],
+        "housing": ["Rent / Mortgage", "Home Maintenance / Repairs", "Property Tax"],
+        "medical": ["Health Insurance", "Doctor / Dentist Visits", "Prescriptions"],
+        "healthcare": ["Health Insurance", "Doctor / Dentist Visits", "Prescriptions"],
+    }
+    
+    for keyword, group_categories in synonym_groups.items():
+        if keyword in text_lower:
+            for target in group_categories:
+                for cat in categories:
+                    if target.lower() in cat.lower() or cat.lower() in target.lower():
+                        if cat not in matched:
+                            matched.append(cat)
+    
+    if matched:
+        return matched
+    
+    # Priority 3: Keyword-based matching for specific terms
     specific_keywords = {
         "groceries": ["Groceries"],
         "grocery": ["Groceries"],
         "supermarket": ["Groceries"],
         "restaurant": ["Restaurants / Cafes"],
         "restaurants": ["Restaurants / Cafes"],
-        "dining": ["Restaurants / Cafes"],
         "eating out": ["Restaurants / Cafes"],
         "takeout": ["Takeout / Delivery"],
         "delivery": ["Takeout / Delivery"],
@@ -260,13 +284,17 @@ def match_category(text: str, categories: List[str]) -> List[str]:
         "salary": ["Salary / wages"],
         "wages": ["Salary / wages"],
         "paycheck": ["Salary / wages"],
-        "tips": ["Commissions / tips"],
         "bonus": ["Overtime / bonuses"],
         "travel": ["Travel / Vacations"],
         "vacation": ["Travel / Vacations"],
         "trip": ["Travel / Vacations"],
         "hotel": ["Travel / Vacations"],
         "flight": ["Travel / Vacations"],
+        "gym": ["Gym / Fitness / Sports"],
+        "fitness": ["Gym / Fitness / Sports"],
+        "netflix": ["Subscriptions"],
+        "spotify": ["Subscriptions"],
+        "streaming": ["Subscriptions"],
     }
     
     for keyword, target_categories in specific_keywords.items():
