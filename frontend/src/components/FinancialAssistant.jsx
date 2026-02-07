@@ -47,11 +47,13 @@ export const FinancialAssistant = () => {
   };
 
   const exampleQuestions = [
-    "How much did I make in tips in November?",
-    "How much did I spend on my MacBook in December?",
-    "What was my total income last month?",
-    "How much did I spend on groceries this week?",
+    "How much did I spend on food last month?",
     "What's my biggest expense category?",
+    "How much profit did I make on ETFs this year?",
+    "How much did I invest in crypto?",
+    "Which category did I spend the most on in Q2?",
+    "What was my total income last month?",
+    "How much did I earn from stocks in the last 6 months?",
   ];
 
   return (
