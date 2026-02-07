@@ -508,17 +508,27 @@ async def _calculate_income_response(transactions: List[Dict], period: str, cate
 
 
 async def _calculate_investment_response(transactions: List[Dict], period: str, assets: List[str], categories: List[str]) -> Dict:
-    """Calculate and format investment response"""
+    """
+    Calculate and format investment response with ROI and profit/loss.
+    ROI % = (profit or loss ÷ total invested) × 100
+    """
     total_invested = sum(t["amount"] for t in transactions)
     count = len(transactions)
     
-    # Group by asset
-    by_asset = defaultdict(lambda: {"amount": 0, "quantity": 0})
+    # Group by asset with full tracking
+    by_asset = defaultdict(lambda: {"invested": 0, "quantity": 0, "avg_price": 0, "purchase_price": 0})
     for t in transactions:
         asset = t["asset"] or t["category"]
-        by_asset[asset]["amount"] += t["amount"]
+        by_asset[asset]["invested"] += t["amount"]
         if t["quantity"]:
             by_asset[asset]["quantity"] += t["quantity"]
+        if t["purchase_price"]:
+            by_asset[asset]["purchase_price"] = t["purchase_price"]
+    
+    # Calculate average purchase price for each asset
+    for asset, data in by_asset.items():
+        if data["quantity"] > 0:
+            data["avg_price"] = data["invested"] / data["quantity"]
     
     # Group by category (ETFs, Stocks, Crypto, etc.)
     by_category = defaultdict(float)
@@ -536,30 +546,81 @@ async def _calculate_investment_response(transactions: List[Dict], period: str, 
             "data_provided": True
         }
     
-    # Build response
-    if assets:
-        response = f"**Total invested in {assets[0]} ({period}): ${total_invested:,.2f}**\n"
-    elif categories:
-        response = f"**Total invested in {categories[0]} ({period}): ${total_invested:,.2f}**\n"
-    else:
-        response = f"**Total invested in {period}: ${total_invested:,.2f}**\n"
+    # Try to get current prices for ROI calculation
+    from routes.portfolio import get_current_price
     
+    total_current_value = 0
+    asset_pnl = {}  # Profit/Loss per asset
+    has_prices = False
+    
+    for asset, data in by_asset.items():
+        if data["quantity"] > 0:
+            # Determine category for price lookup
+            asset_category = None
+            for t in transactions:
+                if t["asset"] == asset:
+                    asset_category = t["category"]
+                    break
+            
+            current_price = get_current_price(asset, asset_category or "")
+            if current_price:
+                has_prices = True
+                current_value = data["quantity"] * current_price
+                profit_loss = current_value - data["invested"]
+                pnl_pct = (profit_loss / data["invested"] * 100) if data["invested"] > 0 else 0
+                
+                total_current_value += current_value
+                asset_pnl[asset] = {
+                    "invested": data["invested"],
+                    "quantity": data["quantity"],
+                    "current_price": current_price,
+                    "current_value": current_value,
+                    "profit_loss": profit_loss,
+                    "pnl_pct": pnl_pct
+                }
+    
+    # Build response header
+    if assets:
+        response = f"**Investment in {assets[0]} ({period})**\n"
+    elif categories:
+        response = f"**Investment in {categories[0]} ({period})**\n"
+    else:
+        response = f"**Investment Summary ({period})**\n"
+    
+    response += f"Total invested: **${total_invested:,.2f}**\n"
     response += f"({count} transaction{'s' if count != 1 else ''})\n\n"
+    
+    # Add ROI section if we have current prices
+    if has_prices and total_current_value > 0:
+        total_pnl = total_current_value - total_invested
+        total_roi = (total_pnl / total_invested * 100) if total_invested > 0 else 0
+        pnl_sign = "+" if total_pnl >= 0 else ""
+        
+        response += f"**Current Value: ${total_current_value:,.2f}**\n"
+        response += f"**Profit/Loss: {pnl_sign}${total_pnl:,.2f} ({pnl_sign}{total_roi:.1f}% ROI)**\n\n"
+        
+        # Per-asset P&L breakdown
+        response += "**Per Asset P&L:**\n"
+        for asset, pnl in sorted(asset_pnl.items(), key=lambda x: abs(x[1]["profit_loss"]), reverse=True):
+            sign = "+" if pnl["profit_loss"] >= 0 else ""
+            response += f"• {asset}: {sign}${pnl['profit_loss']:,.2f} ({sign}{pnl['pnl_pct']:.1f}%)\n"
+            response += f"  └ {pnl['quantity']:.4f} units @ ${pnl['current_price']:,.2f}\n"
+    else:
+        # No current prices available
+        response += "_Current market prices unavailable - showing invested amounts only._\n\n"
+        
+        # Asset breakdown (top 10)
+        response += "**Holdings by Asset:**\n"
+        sorted_assets = sorted(by_asset.items(), key=lambda x: x[1]["invested"], reverse=True)[:10]
+        for asset, data in sorted_assets:
+            qty_str = f" ({data['quantity']:.4f} units)" if data['quantity'] else ""
+            response += f"• {asset}: ${data['invested']:,.2f}{qty_str}\n"
     
     # Category breakdown
     if len(by_category) > 1:
-        response += "**By asset type:**\n"
+        response += "\n**By Asset Type:**\n"
         for cat, amt in sorted(by_category.items(), key=lambda x: x[1], reverse=True):
             response += f"• {cat}: ${amt:,.2f}\n"
-        response += "\n"
-    
-    # Asset breakdown (top 10)
-    if len(by_asset) > 0:
-        response += "**By asset:**\n"
-        sorted_assets = sorted(by_asset.items(), key=lambda x: x[1]["amount"], reverse=True)[:10]
-        for asset, data in sorted_assets:
-            qty_str = f" ({data['quantity']:.4f} units)" if data['quantity'] else ""
-            response += f"• {asset}: ${data['amount']:,.2f}{qty_str}\n"
     
     return {"answer": response.strip(), "data_provided": True}
 
