@@ -310,13 +310,35 @@ def match_category(text: str, categories: List[str]) -> List[str]:
 
 
 def match_asset(text: str, assets: List[str]) -> List[str]:
-    """Match text to investment assets"""
+    """Match text to investment assets with smart crypto/stock synonyms"""
     text_lower = text.lower()
     matched = []
     
+    # Direct asset name matches
     for asset in assets:
         if asset.lower() in text_lower:
             matched.append(asset)
+    
+    # Crypto synonym mapping
+    crypto_synonyms = {
+        "bitcoin": "BTC",
+        "ethereum": "ETH", 
+        "solana": "SOL",
+        "cardano": "ADA",
+        "dogecoin": "DOGE",
+        "ripple": "XRP",
+        "polkadot": "DOT",
+        "avalanche": "AVAX",
+        "chainlink": "LINK",
+        "litecoin": "LTC",
+        "polygon": "MATIC",
+    }
+    
+    for synonym, symbol in crypto_synonyms.items():
+        if synonym in text_lower:
+            for asset in assets:
+                if asset.upper() == symbol and asset not in matched:
+                    matched.append(asset)
     
     return matched
 
