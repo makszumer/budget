@@ -447,14 +447,26 @@ async def ai_assistant(request: dict):
     
     # ========== FILTER TRANSACTIONS ==========
     filtered = []
+    
+    # Check if we have month-only filtering (all years, specific month)
+    month_only_filter = None
+    if isinstance(start_date, str) and start_date == "month_only":
+        month_only_filter = end_date  # This is actually the month number
+        start_date = None
+        end_date = None
+    
     for t in parsed_transactions:
         # Filter by type if specified
         if query_type in ["expense", "income", "investment"]:
             if t["type"] != query_type:
                 continue
         
-        # Filter by date range
-        if start_date and end_date and t["date"]:
+        # Filter by month-only (search this month across ALL years)
+        if month_only_filter and t["date"]:
+            if t["date"].month != month_only_filter:
+                continue
+        # Filter by date range (specific dates)
+        elif start_date and end_date and t["date"]:
             if not (start_date <= t["date"] <= end_date):
                 continue
         
