@@ -319,12 +319,13 @@ BTC, ETH, USDT, BNB, SOL, XRP, USDC, ADA, DOGE, TRX, AVAX, LINK, SHIB, DOT, TON,
 ```
 
 ## Testing Status
-- **Backend Tests:** All passed (46/46 AI assistant tests, 42/42 refactored backend tests)
+- **Backend Tests:** All passed (71/71 AI tests, 42/42 refactored backend tests)
 - **Frontend Tests:** 100% (all features working)
 - **Test Reports:**
   - `/app/test_reports/iteration_5.json` - Backend refactoring
-  - `/app/test_reports/iteration_6.json` - AI Financial Engine
+  - `/app/test_reports/iteration_6.json` - AI Financial Engine (initial)
+  - `/app/test_reports/iteration_7.json` - AI Financial Engine (enhanced with ROI)
 - **Stripe Checkout:** Verified working
 - **Dashboard Layout:** Verified correct order
 - **Refactoring:** Verified - no regression
-- **AI Assistant:** Fully tested with comprehensive test suite
+- **AI Assistant:** Fully tested with ROI, P&L, smart category matching
