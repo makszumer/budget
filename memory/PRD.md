@@ -14,7 +14,28 @@ Vaulton is a comprehensive full-stack financial management application built wit
 - **3-day free trial** for new users (no credit card required)
 - **50% retention discount** for post-trial users
 
-### 2. Financial Health Snapshot (NEW - FREE with Premium Enhancements)
+### 2. Investment Assets (Expanded - January 2026)
+**ETFs (25 total):**
+VOO, IVV, SPY, VTI, QQQ, VEA, VUG, GLD, IEFA, VTV, BND, IEMG, AGG, VXUS, IWF, VWO, VGT, IJH, SPYM, VIG, IJR, VO, XLK, ITOT, RSP
+
+**Stocks (Top 100 by market cap):**
+AAPL, MSFT, GOOGL, AMZN, NVDA, META, BRK.B, TSLA, LLY, V, UNH, JPM, XOM, JNJ, WMT, MA, PG, AVGO, HD, CVX, MRK, COST, ABBV, KO, PEP, ADBE, CRM, TMO, BAC, NFLX, ACN, MCD, AMD, CSCO, LIN, ABT, ORCL, DHR, INTC, WFC, NKE, DIS, TXN, PM, VZ, CMCSA, COP, NEE, RTX, QCOM, IBM, LOW, UNP, SPGI, HON, BA, INTU, GE, ISRG, CAT, AMAT, BMY, GS, PFE, BKNG, NOW, T, AXP, BLK, SYK, MDLZ, SBUX, DE, MMC, ELV, GILD, ADI, LMT, TJX, VRTX, PLD, CVS, MO, AMT, CI, REGN, MS, ETN, ZTS, CB, ADP, LRCX, SCHW, SO, PANW, DUK, MU, FI, BSX, SLB
+
+**Crypto (Top 25 by market cap):**
+BTC, ETH, USDT, BNB, SOL, XRP, USDC, ADA, DOGE, TRX, AVAX, LINK, SHIB, DOT, TON, MATIC, BCH, LTC, NEAR, UNI, ICP, APT, ETC, STX, FIL
+
+### 3. AI Financial Assistant (Rebuilt - January 2026)
+- **Reads all user transactions** - income, expenses, investments
+- **Category analysis** - spending breakdown by category
+- **Investment analysis** - portfolio performance, asset-level tracking
+- **Date range support** - monthly, quarterly, yearly queries
+- **Example queries supported:**
+  - "How much did I spend on food last month?"
+  - "How much profit did I make on ETFs this year?"
+  - "Which category did I spend the most on in Q2?"
+  - "How much did I earn from crypto in the last 6 months?"
+
+### 4. Financial Health Snapshot (FREE with Premium Enhancements)
 **FREE for all users:**
 - Savings Rate (with color-coded health indicator)
 - Net Cash Flow (last 30 days)
