@@ -8,7 +8,7 @@ import os
 import uuid
 from datetime import datetime, timedelta
 
-BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://budgetbox.preview.emergentagent.com')
+BASE_URL = os.environ.get('REACT_APP_BACKEND_URL', 'https://vaulton-preview.preview.emergentagent.com')
 
 # Test credentials
 ADMIN_EMAIL = "admin@financehub.com"
@@ -255,7 +255,7 @@ class TestSubscriptionPackages:
             f"{BASE_URL}/api/subscription/create-checkout",
             json={
                 "package_id": "monthly",
-                "origin_url": "https://budgetbox.preview.emergentagent.com",
+                "origin_url": "https://vaulton-preview.preview.emergentagent.com",
                 "apply_discount": False
             },
             headers={"Authorization": f"Bearer {admin_token}"}
@@ -276,7 +276,7 @@ class TestSubscriptionPackages:
             f"{BASE_URL}/api/subscription/create-checkout",
             json={
                 "package_id": "yearly",
-                "origin_url": "https://budgetbox.preview.emergentagent.com",
+                "origin_url": "https://vaulton-preview.preview.emergentagent.com",
                 "apply_discount": False
             },
             headers={"Authorization": f"Bearer {admin_token}"}
@@ -295,7 +295,7 @@ class TestSubscriptionPackages:
             f"{BASE_URL}/api/subscription/create-checkout",
             json={
                 "package_id": "invalid_package",
-                "origin_url": "https://budgetbox.preview.emergentagent.com",
+                "origin_url": "https://vaulton-preview.preview.emergentagent.com",
                 "apply_discount": False
             },
             headers={"Authorization": f"Bearer {admin_token}"}
