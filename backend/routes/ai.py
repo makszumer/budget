@@ -223,23 +223,60 @@ CATEGORY_KEYWORDS = {
 
 
 def match_category(text: str, categories: List[str]) -> List[str]:
-    """Match text to transaction categories"""
+    """Match text to transaction categories with precise matching"""
     text_lower = text.lower()
     matched = []
     
-    # First, check for exact category name matches
+    # Priority 1: Exact category name matches (e.g., "groceries" -> "Groceries")
     for cat in categories:
-        if cat.lower() in text_lower:
+        cat_lower = cat.lower()
+        # Check if the category name appears as a whole word in the text
+        if cat_lower in text_lower:
             matched.append(cat)
     
-    # Then check keyword matches
-    for keyword, synonyms in CATEGORY_KEYWORDS.items():
-        if any(syn in text_lower for syn in synonyms):
-            for cat in categories:
-                cat_lower = cat.lower()
-                if keyword in cat_lower or any(syn in cat_lower for syn in synonyms):
-                    if cat not in matched:
-                        matched.append(cat)
+    # If we found exact matches, return them (most precise)
+    if matched:
+        return matched
+    
+    # Priority 2: Keyword-based matching for specific terms
+    # Only use keywords if no exact category match was found
+    specific_keywords = {
+        "groceries": ["Groceries"],
+        "grocery": ["Groceries"],
+        "supermarket": ["Groceries"],
+        "restaurant": ["Restaurants / Cafes"],
+        "restaurants": ["Restaurants / Cafes"],
+        "dining": ["Restaurants / Cafes"],
+        "eating out": ["Restaurants / Cafes"],
+        "takeout": ["Takeout / Delivery"],
+        "delivery": ["Takeout / Delivery"],
+        "gas": ["Fuel / Gas"],
+        "fuel": ["Fuel / Gas"],
+        "uber": ["Public Transport"],
+        "lyft": ["Public Transport"],
+        "taxi": ["Public Transport"],
+        "rent": ["Rent / Mortgage"],
+        "mortgage": ["Rent / Mortgage"],
+        "salary": ["Salary / wages"],
+        "wages": ["Salary / wages"],
+        "paycheck": ["Salary / wages"],
+        "tips": ["Commissions / tips"],
+        "bonus": ["Overtime / bonuses"],
+        "travel": ["Travel / Vacations"],
+        "vacation": ["Travel / Vacations"],
+        "trip": ["Travel / Vacations"],
+        "hotel": ["Travel / Vacations"],
+        "flight": ["Travel / Vacations"],
+    }
+    
+    for keyword, target_categories in specific_keywords.items():
+        if keyword in text_lower:
+            for target in target_categories:
+                # Check if target category exists in user's categories
+                for cat in categories:
+                    if target.lower() in cat.lower() or cat.lower() in target.lower():
+                        if cat not in matched:
+                            matched.append(cat)
     
     return matched
 
