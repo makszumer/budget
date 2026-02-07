@@ -170,7 +170,7 @@ def parse_date_reference(text: str, data_years: List[int]) -> tuple:
             # Check for year in text
             year_match = re.search(r"(\d{4})", text_lower)
             if year_match:
-                # Specific year mentioned - search only that year
+                # Specific year mentioned - search only that year+month
                 year = int(year_match.group(1))
                 start = date_module(year, month_num, 1)
                 last_day = calendar.monthrange(year, month_num)[1]
@@ -178,8 +178,10 @@ def parse_date_reference(text: str, data_years: List[int]) -> tuple:
                 return start, end, f"{calendar.month_name[month_num]} {year}"
             else:
                 # NO year specified - search ALL years with this month
-                # Return None dates to trigger all-time search, but label it with month name
-                return None, None, f"{calendar.month_name[month_num]} (all years)"
+                # Use a special marker: return (month_num, "all_years_month")
+                # We encode this as: start=None, end=month_num, period_desc contains month
+                # Actually, let's use a tuple approach
+                return ("month_only", month_num, f"{calendar.month_name[month_num]} (all years)")
     
     # Default: all time
     return None, None, "all time"
