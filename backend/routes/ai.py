@@ -364,6 +364,26 @@ async def ai_assistant(request: dict):
     matched_categories = match_category(question, list(all_categories))
     matched_assets = match_asset(question, list(all_assets))
     
+    # Check if user asked for a specific category that doesn't exist
+    # Common category keywords to detect when user is asking about a specific category
+    category_keywords_in_query = []
+    category_search_terms = ["travel", "vacation", "trip", "groceries", "food", "rent", "mortgage", 
+                            "restaurants", "dining", "utilities", "subscriptions", "entertainment",
+                            "health", "medical", "shopping", "clothing", "salary", "transport",
+                            "gas", "fuel", "gym", "fitness"]
+    for term in category_search_terms:
+        if term in text_lower:
+            category_keywords_in_query.append(term)
+    
+    # If user asked about a specific category but we couldn't match any existing category
+    # Return a helpful message instead of showing all transactions
+    if category_keywords_in_query and not matched_categories and query_type in ["expense", "income"]:
+        return {
+            "answer": f"No transactions found for '{category_keywords_in_query[0]}' in {period_desc}. "
+                     f"Your recorded categories include: {', '.join(sorted(all_categories)[:10])}.",
+            "data_provided": True
+        }
+    
     # ========== HANDLE SUMMARY QUERIES FIRST ==========
     # Summary queries should use AI with ALL data, not filtered data
     if query_type == "summary":
