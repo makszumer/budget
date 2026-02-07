@@ -327,6 +327,11 @@ async def ai_assistant(request: dict):
     matched_categories = match_category(question, list(all_categories))
     matched_assets = match_asset(question, list(all_assets))
     
+    # ========== HANDLE SUMMARY QUERIES FIRST ==========
+    # Summary queries should use AI with ALL data, not filtered data
+    if query_type == "summary":
+        return await _generate_ai_response(question, parsed_transactions, all_categories, all_assets, all_years)
+    
     # ========== FILTER TRANSACTIONS ==========
     filtered = []
     for t in parsed_transactions:
@@ -340,7 +345,7 @@ async def ai_assistant(request: dict):
             if not (start_date <= t["date"] <= end_date):
                 continue
         
-        # Filter by category
+        # Filter by category (exact match only)
         if matched_categories:
             if t["category"] not in matched_categories:
                 continue
@@ -375,11 +380,7 @@ async def ai_assistant(request: dict):
     elif query_type == "investment":
         return await _calculate_investment_response(filtered, period_desc, matched_assets, matched_categories)
     
-    elif query_type == "summary" or not query_type:
-        # General summary or unrecognized query - use AI for complex interpretation
-        return await _generate_ai_response(question, parsed_transactions, all_categories, all_assets, all_years)
-    
-    # Fallback to AI for complex queries
+    # Fallback to AI for complex/unrecognized queries
     return await _generate_ai_response(question, parsed_transactions, all_categories, all_assets, all_years)
 
 
