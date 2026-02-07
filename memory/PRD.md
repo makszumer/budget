@@ -24,24 +24,29 @@ AAPL, MSFT, GOOGL, AMZN, NVDA, META, BRK.B, TSLA, LLY, V, UNH, JPM, XOM, JNJ, WM
 **Crypto (Top 25 by market cap):**
 BTC, ETH, USDT, BNB, SOL, XRP, USDC, ADA, DOGE, TRX, AVAX, LINK, SHIB, DOT, TON, MATIC, BCH, LTC, NEAR, UNI, ICP, APT, ETC, STX, FIL
 
-### 3. AI Financial Assistant (Rebuilt & Tested - February 2026)
+### 3. AI Financial Assistant (Enhanced - February 2026)
 - **Data-Driven Financial Calculator** - Always calculates from stored transaction data
-- **Reads all user transactions** - income, expenses, investments
-- **Category analysis** - spending breakdown by category (exact matching prioritized)
-- **Investment analysis** - portfolio performance, asset-level tracking (ETH, BTC, etc.)
-- **Comprehensive date range support:**
-  - Relative: today, this week, last week, this/last month/year
-  - Last N: "last 7 days", "last 3 months", "last 6 months"
-  - Quarters: Q1, Q2, Q3, Q4 (with optional year)
-  - Specific months: "January", "December 2024"
-- **Smart category handling** - Returns helpful message when category doesn't exist
+- **Investment P&L Engine:**
+  - Total invested, current value, profit/loss
+  - ROI % = (profit/loss ÷ total invested) × 100
+  - Per-asset P&L breakdown (ETH, BTC with current prices)
+  - Uses yfinance for real-time prices with fallback prices
+- **Smart Date Handling:**
+  - Named months across ALL years: "December" searches all years
+  - Specific year+month: "December 2025" searches only that combination
+  - Relative: today, this week, last N days/months, Q1-Q4
+- **Smart Category Matching:**
+  - food = Groceries + Restaurants + Takeout
+  - tips = gratuity = Commissions / tips
+  - transport = Public Transport + Fuel / Gas
+  - investments = Stocks + ETFs + Crypto + Bonds
+- **Crypto Synonyms:** Bitcoin→BTC, Ethereum→ETH, etc.
+- **71 backend tests passed** - Fully verified and tested
 - **Example queries supported:**
-  - "How much did I spend on groceries last month?"
-  - "How much did I invest in crypto?"
-  - "Give me a summary of my finances"
-  - "How much did I earn this year?"
-  - "What were my expenses in Q4 2025?"
-- **46 backend tests passed** - Fully verified and tested
+  - "How much did I make or lose on investments?" → Shows P&L + ROI%
+  - "How much did I spend on food?" → Combines grocery categories
+  - "How much did I earn in tips?" → Maps to Commissions/tips
+  - "How much did I spend in December?" → Searches ALL years
 
 ### 4. Financial Health Snapshot (FREE with Premium Enhancements)
 **FREE for all users:**
