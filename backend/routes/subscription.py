@@ -3,11 +3,9 @@ from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
 import os
 import sys
+import stripe
 sys.path.append('/app/backend')
 
-from emergentintegrations.payments.stripe.checkout import (
-    StripeCheckout, CheckoutSessionResponse, CheckoutStatusResponse, CheckoutSessionRequest
-)
 from auth import get_current_user
 from pydantic import BaseModel
 from typing import Optional, Literal
@@ -15,20 +13,16 @@ import uuid
 
 router = APIRouter(prefix="/subscription", tags=["subscription"])
 
-# Database dependency
 def get_db():
     mongo_url = os.environ['MONGO_URL']
     client = AsyncIOMotorClient(mongo_url)
     return client[os.environ['DB_NAME']]
 
-# Trial duration in days
 TRIAL_DURATION_DAYS = 3
 
-# Subscription packages (FIXED PRICES - NEVER FROM FRONTEND)
 PACKAGES = {
     "monthly": {"amount": 4.00, "duration_days": 30, "name": "Monthly Premium"},
     "yearly": {"amount": 36.00, "duration_days": 365, "name": "Yearly Premium"},
-    # Discounted packages (50% off)
     "monthly_discount": {"amount": 2.00, "duration_days": 30, "name": "Monthly Premium (50% Off)", "discount_months": 6},
     "yearly_discount": {"amount": 18.00, "duration_days": 365, "name": "Yearly Premium (50% Off)"},
 }
@@ -50,45 +44,41 @@ async def create_checkout_session(
     request: CheckoutRequest,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Create a Stripe checkout session for subscription"""
     db = get_db()
-    
-    # Validate package
     if request.package_id not in PACKAGES:
         raise HTTPException(status_code=400, detail="Invalid package")
     
     package = PACKAGES[request.package_id]
     amount = package["amount"]
     
-    # Get user info
     user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
     
-    # Check if trying to use discount packages
     if request.package_id in ["monthly_discount", "yearly_discount"]:
-        # Verify user is eligible for discount (trial ended but not subscribed)
         if user.get('discount_used', False):
             raise HTTPException(status_code=400, detail="Discount has already been used")
-        
-        # Mark discount as used when they proceed to checkout
         await db.users.update_one(
             {"id": current_user_id},
             {"$set": {"discount_used": True}}
         )
     
-    # Initialize Stripe
-    stripe_api_key = os.environ.get('STRIPE_API_KEY')
-    webhook_url = f"{request.origin_url}/api/webhook/stripe"
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url=webhook_url)
+    stripe.api_key = os.environ.get('STRIPE_API_KEY')
     
-    # Create checkout session
     success_url = f"{request.origin_url}/subscription/success?session_id={{CHECKOUT_SESSION_ID}}"
     cancel_url = f"{request.origin_url}/subscription/cancel"
     
-    checkout_request = CheckoutSessionRequest(
-        amount=amount,
-        currency="eur",
+    session = stripe.checkout.Session.create(
+        payment_method_types=["card"],
+        line_items=[{
+            "price_data": {
+                "currency": "eur",
+                "product_data": {"name": package["name"]},
+                "unit_amount": int(amount * 100),
+            },
+            "quantity": 1,
+        }],
+        mode="payment",
         success_url=success_url,
         cancel_url=cancel_url,
         metadata={
@@ -96,16 +86,12 @@ async def create_checkout_session(
             "package_id": request.package_id,
             "email": user['email'],
             "username": user['username'],
-            "is_discounted": str(request.package_id in ["monthly_discount", "yearly_discount"])
         }
     )
     
-    session = await stripe_checkout.create_checkout_session(checkout_request)
-    
-    # Store payment transaction
     payment_doc = {
         "id": str(uuid.uuid4()),
-        "session_id": session.session_id,
+        "session_id": session.id,
         "user_id": current_user_id,
         "email": user['email'],
         "package_id": request.package_id,
@@ -114,231 +100,118 @@ async def create_checkout_session(
         "payment_status": "pending",
         "status": "initiated",
         "created_at": datetime.now(timezone.utc).isoformat(),
-        "metadata": checkout_request.metadata
     }
-    
     await db.payment_transactions.insert_one(payment_doc)
     
-    return CheckoutResponse(
-        checkout_url=session.url,
-        session_id=session.session_id
-    )
+    return CheckoutResponse(checkout_url=session.url, session_id=session.id)
 
 @router.post("/check-payment-status")
 async def check_payment_status(
     request: CheckoutStatusRequest,
     current_user_id: str = Depends(get_current_user)
 ):
-    """Check the status of a payment session"""
     db = get_db()
-    
-    # Get payment record
     payment = await db.payment_transactions.find_one(
         {"session_id": request.session_id, "user_id": current_user_id},
         {"_id": 0}
     )
-    
     if not payment:
         raise HTTPException(status_code=404, detail="Payment not found")
-    
-    # If already processed, return the status
     if payment['payment_status'] == 'paid':
         return {"status": "success", "message": "Payment already processed"}
     
-    # Initialize Stripe
-    stripe_api_key = os.environ.get('STRIPE_API_KEY')
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    stripe.api_key = os.environ.get('STRIPE_API_KEY')
     
-    # Check status from Stripe
     try:
-        checkout_status = await stripe_checkout.get_checkout_status(request.session_id)
-        
-        # Update payment record
+        session = stripe.checkout.Session.retrieve(request.session_id)
         await db.payment_transactions.update_one(
             {"session_id": request.session_id},
-            {
-                "$set": {
-                    "payment_status": checkout_status.payment_status,
-                    "status": checkout_status.status,
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }
-            }
+            {"$set": {"payment_status": session.payment_status, "updated_at": datetime.now(timezone.utc).isoformat()}}
         )
-        
-        # If payment is successful and not yet processed
-        if checkout_status.payment_status == 'paid' and payment['payment_status'] != 'paid':
-            # Upgrade user to premium
+        if session.payment_status == 'paid':
             package = PACKAGES[payment['package_id']]
             expires_at = datetime.now(timezone.utc) + timedelta(days=package['duration_days'])
-            
             await db.users.update_one(
                 {"id": current_user_id},
-                {
-                    "$set": {
-                        "subscription_level": "premium",
-                        "subscription_expires_at": expires_at.isoformat(),
-                        "updated_at": datetime.now(timezone.utc).isoformat()
-                    }
-                }
+                {"$set": {"subscription_level": "premium", "subscription_expires_at": expires_at.isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()}}
             )
-            
-            return {
-                "status": "success",
-                "message": "Payment successful! You are now a premium user.",
-                "expires_at": expires_at.isoformat()
-            }
-        
-        elif checkout_status.status == 'expired':
+            return {"status": "success", "message": "Payment successful! You are now a premium user.", "expires_at": expires_at.isoformat()}
+        elif session.status == 'expired':
             return {"status": "expired", "message": "Payment session expired"}
-        
         else:
             return {"status": "pending", "message": "Payment is being processed"}
-    
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error checking payment status: {str(e)}")
 
 @router.post("/webhook/stripe")
 async def stripe_webhook(request: Request):
-    """Handle Stripe webhooks"""
     db = get_db()
-    
-    # Get webhook body and signature
     body = await request.body()
     signature = request.headers.get("Stripe-Signature")
-    
-    stripe_api_key = os.environ.get('STRIPE_API_KEY')
-    stripe_checkout = StripeCheckout(api_key=stripe_api_key, webhook_url="")
+    stripe.api_key = os.environ.get('STRIPE_API_KEY')
+    webhook_secret = os.environ.get('STRIPE_WEBHOOK_SECRET', '')
     
     try:
-        webhook_response = await stripe_checkout.handle_webhook(body, signature)
-        
-        # Update payment transaction
-        await db.payment_transactions.update_one(
-            {"session_id": webhook_response.session_id},
-            {
-                "$set": {
-                    "payment_status": webhook_response.payment_status,
-                    "event_type": webhook_response.event_type,
-                    "updated_at": datetime.now(timezone.utc).isoformat()
-                }
-            }
-        )
-        
-        # If payment successful, upgrade user
-        if webhook_response.payment_status == 'paid':
-            payment = await db.payment_transactions.find_one(
-                {"session_id": webhook_response.session_id},
-                {"_id": 0}
+        event = stripe.Webhook.construct_event(body, signature, webhook_secret) if webhook_secret else stripe.Event.construct_from({"type": "manual"}, stripe.api_key)
+        if event['type'] == 'checkout.session.completed':
+            session = event['data']['object']
+            await db.payment_transactions.update_one(
+                {"session_id": session['id']},
+                {"$set": {"payment_status": session['payment_status'], "updated_at": datetime.now(timezone.utc).isoformat()}}
             )
-            
-            if payment:
-                user_id = payment['user_id']
-                package_id = payment['package_id']
-                package = PACKAGES[package_id]
-                
-                expires_at = datetime.now(timezone.utc) + timedelta(days=package['duration_days'])
-                
-                await db.users.update_one(
-                    {"id": user_id},
-                    {
-                        "$set": {
-                            "subscription_level": "premium",
-                            "subscription_expires_at": expires_at.isoformat(),
-                            "updated_at": datetime.now(timezone.utc).isoformat()
-                        }
-                    }
-                )
-        
+            if session['payment_status'] == 'paid':
+                payment = await db.payment_transactions.find_one({"session_id": session['id']}, {"_id": 0})
+                if payment:
+                    package = PACKAGES[payment['package_id']]
+                    expires_at = datetime.now(timezone.utc) + timedelta(days=package['duration_days'])
+                    await db.users.update_one(
+                        {"id": payment['user_id']},
+                        {"$set": {"subscription_level": "premium", "subscription_expires_at": expires_at.isoformat(), "updated_at": datetime.now(timezone.utc).isoformat()}}
+                    )
         return {"status": "success"}
-    
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
-
 @router.post("/start-trial")
-async def start_free_trial(
-    current_user_id: str = Depends(get_current_user)
-):
-    """Start a 3-day free trial for premium features"""
+async def start_free_trial(current_user_id: str = Depends(get_current_user)):
     db = get_db()
-    
-    # Get user info
     user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    # Check if user already used their trial
     if user.get('trial_used', False):
         raise HTTPException(status_code=400, detail="You have already used your free trial")
-    
-    # Check if user is already premium
     if user.get('subscription_level') == 'premium':
-        # Check if it's not an expired subscription
         expires_at = user.get('subscription_expires_at')
         if expires_at:
             if isinstance(expires_at, str):
                 expires_at = datetime.fromisoformat(expires_at.replace('Z', '+00:00'))
             if expires_at > datetime.now(timezone.utc):
                 raise HTTPException(status_code=400, detail="You already have an active premium subscription")
-    
-    # Start the trial
     now = datetime.now(timezone.utc)
     trial_expires = now + timedelta(days=TRIAL_DURATION_DAYS)
-    
     await db.users.update_one(
         {"id": current_user_id},
-        {
-            "$set": {
-                "trial_started_at": now.isoformat(),
-                "trial_expires_at": trial_expires.isoformat(),
-                "trial_used": True,
-                "updated_at": now.isoformat()
-            }
-        }
+        {"$set": {"trial_started_at": now.isoformat(), "trial_expires_at": trial_expires.isoformat(), "trial_used": True, "updated_at": now.isoformat()}}
     )
-    
-    return {
-        "status": "success",
-        "message": f"Your {TRIAL_DURATION_DAYS}-day free trial has started!",
-        "trial_started_at": now.isoformat(),
-        "trial_expires_at": trial_expires.isoformat(),
-        "days_remaining": TRIAL_DURATION_DAYS
-    }
-
+    return {"status": "success", "message": f"Your {TRIAL_DURATION_DAYS}-day free trial has started!", "trial_started_at": now.isoformat(), "trial_expires_at": trial_expires.isoformat(), "days_remaining": TRIAL_DURATION_DAYS}
 
 @router.get("/trial-status")
-async def get_trial_status(
-    current_user_id: str = Depends(get_current_user)
-):
-    """Get the current trial status for a user"""
+async def get_trial_status(current_user_id: str = Depends(get_current_user)):
     db = get_db()
-    
     user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
     trial_expires_at = user.get('trial_expires_at')
     trial_used = user.get('trial_used', False)
     is_trial_active = False
     days_remaining = 0
-    
     if trial_expires_at:
         if isinstance(trial_expires_at, str):
             trial_expires_at_dt = datetime.fromisoformat(trial_expires_at.replace('Z', '+00:00'))
         else:
             trial_expires_at_dt = trial_expires_at
-        
         if trial_expires_at_dt > datetime.now(timezone.utc):
             is_trial_active = True
             time_remaining = trial_expires_at_dt - datetime.now(timezone.utc)
-            days_remaining = max(0, time_remaining.days + 1)  # Round up
-    
-    return {
-        "trial_used": trial_used,
-        "is_trial_active": is_trial_active,
-        "trial_started_at": user.get('trial_started_at'),
-        "trial_expires_at": trial_expires_at,
-        "days_remaining": days_remaining,
-        "discount_eligible": trial_used and not is_trial_active and not user.get('discount_used', False),
-        "discount_used": user.get('discount_used', False)
-    }
+            days_remaining = max(0, time_remaining.days + 1)
+    return {"trial_used": trial_used, "is_trial_active": is_trial_active, "trial_started_at": user.get('trial_started_at'), "trial_expires_at": trial_expires_at, "days_remaining": days_remaining, "discount_eligible": trial_used and not is_trial_active and not user.get('discount_used', False), "discount_used": user.get('discount_used', False)}
