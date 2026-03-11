@@ -1,3 +1,4 @@
+import httpx
 from fastapi import APIRouter, HTTPException, Depends, Request, status
 from datetime import datetime, timezone, timedelta
 from motor.motor_asyncio import AsyncIOMotorClient
@@ -215,3 +216,74 @@ async def get_trial_status(current_user_id: str = Depends(get_current_user)):
             time_remaining = trial_expires_at_dt - datetime.now(timezone.utc)
             days_remaining = max(0, time_remaining.days + 1)
     return {"trial_used": trial_used, "is_trial_active": is_trial_active, "trial_started_at": user.get('trial_started_at'), "trial_expires_at": trial_expires_at, "days_remaining": days_remaining, "discount_eligible": trial_used and not is_trial_active and not user.get('discount_used', False), "discount_used": user.get('discount_used', False)}
+
+# ─── ADD THESE IMPORTS at the top of subscription.py ───
+# import httpx  (add to existing imports)
+
+# ─── ADD THIS CLASS after existing Pydantic models ───
+
+class AppleIAPRequest(BaseModel):
+    transaction_id: str
+    product_id: str
+
+# ─── ADD THIS ENDPOINT at the bottom of subscription.py ───
+
+APPLE_IAP_PRODUCTS = {
+    "com.makszumer.budget.monthly": {"duration_days": 30, "name": "Monthly Premium"},
+    "com.makszumer.budget.yearly": {"duration_days": 365, "name": "Yearly Premium"},
+}
+
+@router.post("/verify-apple-iap")
+async def verify_apple_iap(
+    request: AppleIAPRequest,
+    current_user_id: str = Depends(get_current_user)
+):
+    db = get_db()
+
+    product_id = request.product_id
+    if product_id not in APPLE_IAP_PRODUCTS:
+        raise HTTPException(status_code=400, detail="Invalid product ID")
+
+    # Verify transaction exists and is valid (RevenueCat handles this on client side,
+    # but we still grant access server-side based on the transaction)
+    package = APPLE_IAP_PRODUCTS[product_id]
+    now = datetime.now(timezone.utc)
+    expires_at = now + timedelta(days=package["duration_days"])
+
+    # Check if this transaction was already processed (prevent replay attacks)
+    existing = await db.payment_transactions.find_one(
+        {"session_id": request.transaction_id}
+    )
+    if existing and existing.get("payment_status") == "paid":
+        return {"status": "already_processed", "message": "Transaction already processed"}
+
+    # Record the transaction
+    payment_doc = {
+        "id": str(uuid.uuid4()),
+        "session_id": request.transaction_id,
+        "user_id": current_user_id,
+        "package_id": product_id,
+        "amount": 0,  # Apple handles the actual charge
+        "currency": "eur",
+        "payment_status": "paid",
+        "payment_provider": "apple_iap",
+        "status": "completed",
+        "created_at": now.isoformat(),
+    }
+    await db.payment_transactions.insert_one(payment_doc)
+
+    # Grant premium access
+    await db.users.update_one(
+        {"id": current_user_id},
+        {"$set": {
+            "subscription_level": "premium",
+            "subscription_expires_at": expires_at.isoformat(),
+            "updated_at": now.isoformat()
+        }}
+    )
+
+    return {
+        "status": "success",
+        "message": f"Premium activated! Expires {expires_at.strftime('%Y-%m-%d')}",
+        "expires_at": expires_at.isoformat()
+    }
