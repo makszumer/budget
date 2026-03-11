@@ -1,188 +1,180 @@
-import React, { createContext, useState, useContext, useEffect, useCallback } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import { Preferences } from '@capacitor/preferences';
 
 const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 
-// Admin email whitelist
-const ADMIN_EMAILS = ['admin@vaulton.com'];
-
 const AuthContext = createContext(null);
 
-export const useAuth = () => {
-  const context = useContext(AuthContext);
-  if (!context) {
-    throw new Error('useAuth must be used within AuthProvider');
+// Helper functions for cross-platform storage
+const storage = {
+  get: async (key) => {
+    try {
+      const { value } = await Preferences.get({ key });
+      return value;
+    } catch {
+      return localStorage.getItem(key);
+    }
+  },
+  set: async (key, value) => {
+    try {
+      await Preferences.set({ key, value });
+      localStorage.setItem(key, value);
+    } catch {
+      localStorage.setItem(key, value);
+    }
+  },
+  remove: async (key) => {
+    try {
+      await Preferences.remove({ key });
+      localStorage.removeItem(key);
+    } catch {
+      localStorage.removeItem(key);
+    }
   }
-  return context;
 };
 
 export const AuthProvider = ({ children }) => {
+  const [token, setToken] = useState(null);
+  const [isGuest, setIsGuest] = useState(false);
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [token, setToken] = useState(localStorage.getItem('access_token'));
-  const [isGuest, setIsGuest] = useState(localStorage.getItem('is_guest') === 'true');
+  const [isPremium, setIsPremium] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [isOnTrial, setIsOnTrial] = useState(false);
+  const [trialUsed, setTrialUsed] = useState(false);
+  const [discountEligible, setDiscountEligible] = useState(false);
+  const [discountUsed, setDiscountUsed] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Load token from storage on startup
+  useEffect(() => {
+    const loadToken = async () => {
+      const savedToken = await storage.get('access_token');
+      const savedIsGuest = await storage.get('is_guest');
+      if (savedToken) {
+        setToken(savedToken);
+      }
+      if (savedIsGuest === 'true') {
+        setIsGuest(true);
+      }
+      setIsLoading(false);
+    };
+    loadToken();
+  }, []);
 
   const fetchUserProfile = useCallback(async () => {
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    
-    // If guest, don't fetch profile
-    if (isGuest) {
-      setLoading(false);
-      return;
-    }
-    
+    if (!token || isGuest) return;
     try {
       const response = await axios.get(`${API}/users/me`, {
         headers: { Authorization: `Bearer ${token}` }
       });
-      setUser(response.data);
-    } catch (error) {
-      console.error('Failed to fetch user profile:', error);
-      // Only logout if it's a 401 error (unauthorized)
-      if (error.response?.status === 401) {
-        logout();
+      const userData = response.data;
+      setUser(userData);
+      setIsPremium(userData.is_premium || false);
+      setIsAdmin(userData.is_admin || false);
+
+      // Fetch trial status
+      try {
+        const trialResponse = await axios.get(`${API}/subscription/trial-status`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const trialData = trialResponse.data;
+        setIsOnTrial(trialData.is_trial_active || false);
+        setTrialUsed(trialData.trial_used || false);
+        setDiscountEligible(trialData.discount_eligible || false);
+        setDiscountUsed(trialData.discount_used || false);
+      } catch (e) {
+        // Trial status fetch failed, ignore
       }
-    } finally {
-      setLoading(false);
+    } catch (error) {
+      if (error.response?.status === 401) {
+        await logout();
+      }
     }
   }, [token, isGuest]);
 
   useEffect(() => {
     if (token && !isGuest) {
       fetchUserProfile();
-    } else {
-      setLoading(false);
     }
   }, [token, isGuest, fetchUserProfile]);
 
   const login = async (email, password) => {
     const response = await axios.post(`${API}/users/login`, { email, password });
     const { access_token, user_id, is_premium } = response.data;
-    
-    localStorage.setItem('access_token', access_token);
-    localStorage.removeItem('is_guest');
+    await storage.set('access_token', access_token);
+    await storage.remove('is_guest');
     setToken(access_token);
     setIsGuest(false);
-    
-    // Fetch full user profile
-    await fetchUserProfile();
-    
+    setIsPremium(is_premium || false);
     return response.data;
   };
 
-  const register = async (email, username, password) => {
-    const response = await axios.post(`${API}/users/register`, {
-      email,
-      username,
-      password
-    });
-    
+  const register = async (email, password, username) => {
+    const response = await axios.post(`${API}/users/register`, { email, password, username });
     const { access_token, user_id, is_premium } = response.data;
-    
-    localStorage.setItem('access_token', access_token);
-    localStorage.removeItem('is_guest');
+    await storage.set('access_token', access_token);
+    await storage.remove('is_guest');
     setToken(access_token);
     setIsGuest(false);
-    
-    // Fetch full user profile
-    await fetchUserProfile();
-    
+    setIsPremium(is_premium || false);
     return response.data;
   };
 
   const loginAsGuest = async () => {
-    // Create guest session locally (no backend call needed)
-    const guestUser = {
-      user_id: 'guest-' + Date.now(),
-      email: null,
-      username: 'Guest',
-      subscription_level: 'free',
-      is_premium: false,
-      primary_currency: 'USD',
-      role: 'guest'
-    };
-    
-    // Store guest state
-    localStorage.setItem('is_guest', 'true');
-    localStorage.removeItem('access_token');
-    
-    setUser(guestUser);
-    setToken(null);
+    await storage.set('is_guest', 'true');
+    await storage.remove('access_token');
     setIsGuest(true);
-    setLoading(false);
-    
-    return guestUser;
+    setToken(null);
   };
 
-  const logout = () => {
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('is_guest');
+  const logout = async () => {
+    await storage.remove('access_token');
+    await storage.remove('is_guest');
     setToken(null);
-    setUser(null);
     setIsGuest(false);
+    setUser(null);
+    setIsPremium(false);
+    setIsAdmin(false);
+    setIsOnTrial(false);
+    setTrialUsed(false);
+    setDiscountEligible(false);
+    setDiscountUsed(false);
   };
 
   const refreshUserProfile = async () => {
-    if (token && !isGuest) {
-      await fetchUserProfile();
-    }
+    await fetchUserProfile();
   };
 
-  const updatePrimaryCurrency = async (currency) => {
-    if (!token || isGuest) {
-      // For guests, just update local state
-      if (isGuest) {
-        setUser(prev => ({ ...prev, primary_currency: currency }));
-        return true;
-      }
-      return;
-    }
-    
-    try {
-      await axios.put(`${API}/users/preferences`, 
-        { primary_currency: currency },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-      // Update local user state
-      setUser(prev => ({ ...prev, primary_currency: currency }));
-      return true;
-    } catch (error) {
-      console.error('Failed to update primary currency:', error);
-      throw error;
-    }
-  };
+  const isAuthenticated = !isLoading && (!!token || isGuest);
 
-  // Computed values
-  const isAdmin = user?.email && ADMIN_EMAILS.includes(user.email);
-  const isOnTrial = user?.is_trial || false;
-  const isPremium = isAdmin || user?.is_premium || isOnTrial || false;
-  const isAuthenticated = !!user;
+  return (
+    <AuthContext.Provider value={{
+      token,
+      user,
+      isPremium,
+      isAdmin,
+      isGuest,
+      isOnTrial,
+      trialUsed,
+      discountEligible,
+      discountUsed,
+      isLoading,
+      isAuthenticated,
+      login,
+      register,
+      loginAsGuest,
+      logout,
+      refreshUserProfile,
+    }}>
+      {children}
+    </AuthContext.Provider>
+  );
+};
 
-  const value = {
-    user,
-    token,
-    loading,
-    login,
-    register,
-    loginAsGuest,
-    logout,
-    refreshUserProfile,
-    updatePrimaryCurrency,
-    isAuthenticated,
-    isPremium,
-    isAdmin,
-    isGuest,
-    isOnTrial,
-    trialExpiresAt: user?.trial_expires_at || null,
-    trialUsed: user?.trial_used || false,
-    discountEligible: user?.discount_eligible || false,
-    discountUsed: user?.discount_used || false,
-    primaryCurrency: user?.primary_currency || 'USD'
-  };
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) throw new Error('useAuth must be used within AuthProvider');
+  return context;
 };
