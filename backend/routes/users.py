@@ -265,3 +265,20 @@ async def update_user_preferences(
 async def get_supported_currencies():
     """Get list of supported currencies"""
     return {"currencies": SUPPORTED_CURRENCIES}
+@router.delete("/delete-account")
+async def delete_account(current_user_id: str = Depends(get_current_user)):
+    """Permanently delete user account and all associated data"""
+    db = get_db()
+    
+    user = await db.users.find_one({"id": current_user_id})
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    await db.transactions.delete_many({"user_id": current_user_id})
+    await db.portfolio.delete_many({"user_id": current_user_id})
+    await db.recurring_transactions.delete_many({"user_id": current_user_id})
+    await db.budget_envelopes.delete_many({"user_id": current_user_id})
+    await db.categories.delete_many({"user_id": current_user_id})
+    await db.users.delete_one({"id": current_user_id})
+    
+    return {"message": "Account permanently deleted"}
