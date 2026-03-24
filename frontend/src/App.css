@@ -7,3 +7,6 @@
 .App {
   min-height: 100vh;
 }
+button, a {
+  touch-action: manipulation;
+}

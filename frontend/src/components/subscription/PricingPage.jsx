@@ -43,6 +43,7 @@ const PREMIUM_FEATURES = [
 ];
 
 const isNativeIOS = () => Capacitor.getPlatform() === 'ios';
+const isIPad = () => Capacitor.getPlatform() === 'ios' && navigator.maxTouchPoints > 1 && window.screen.width >= 768;
 
 export const PricingPage = ({ onGoBack }) => {
   const { user, token, isPremium, isAdmin, refreshUserProfile, isOnTrial, trialUsed, discountEligible, discountUsed } = useAuth();
@@ -438,11 +439,12 @@ export const PricingPage = ({ onGoBack }) => {
             <span>•</span>
             <span>{onIOS ? 'Powered by Apple' : 'Powered by Stripe'}</span>
           </div>
-          <p className="text-xs text-slate-400 dark:text-slate-500">
+<p className="text-xs text-slate-400 dark:text-slate-500">
             {onIOS
               ? 'Payment processed by Apple. Manage subscriptions in iOS Settings → Apple ID → Subscriptions.'
               : 'All prices in EUR. 3-day free trial available. No credit card required for trial.'}
           </p>
+         <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">By subscribing you agree to our <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Terms of Use</a> and <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Privacy Policy</a>.</p>
         </div>
       </div>
     </div>
