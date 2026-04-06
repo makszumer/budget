@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { Preferences } from "@capacitor/preferences";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -14,6 +15,20 @@ export const FinancialAssistant = () => {
   const [loading, setLoading] = useState(false);
   const [answer, setAnswer] = useState(null);
   const [conversationHistory, setConversationHistory] = useState([]);
+  const [hasConsented, setHasConsented] = useState(false);
+const [showConsentModal, setShowConsentModal] = useState(false);
+
+useEffect(() => {
+  const checkConsent = async () => {
+    const { value } = await Preferences.get({ key: 'ai_assistant_consent' });
+    if (value === 'true') {
+      setHasConsented(true);
+    } else {
+      setShowConsentModal(true);
+    }
+  };
+  checkConsent();
+}, []);
 
   const handleAsk = async (e) => {
     e.preventDefault();
@@ -47,17 +62,43 @@ export const FinancialAssistant = () => {
   };
 
   const exampleQuestions = [
-    "How much did I spend on food last month?",
-    "What's my biggest expense category?",
-    "How much profit did I make on ETFs this year?",
-    "How much did I invest in crypto?",
-    "Which category did I spend the most on in Q2?",
+    "How much did I make in tips in November?",
+    "How much did I spend on my MacBook in December?",
     "What was my total income last month?",
-    "How much did I earn from stocks in the last 6 months?",
+    "How much did I spend on groceries this week?",
+    "What's my biggest expense category?",
   ];
 
-  return (
+return (
     <div className="space-y-6">
+      {/* AI Consent Modal */}
+      {showConsentModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full">
+            <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3">AI Assistant Data Notice</h2>
+            <p className="text-gray-600 dark:text-gray-400 mb-4 text-sm">
+              To answer your financial questions, this feature sends your query text to <strong>OpenAI, L.L.C.</strong> for processing. Your financial transaction data may also be included to provide accurate answers.
+            </p>
+            <p className="text-gray-600 dark:text-gray-400 mb-6 text-sm">
+              OpenAI processes this data according to their privacy policy. We do not store your queries beyond this session.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowConsentModal(false); window.history.back(); }}
+                className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 font-medium"
+              >
+                Decline
+              </button>
+              <button
+onClick={async () => { await Preferences.set({ key: 'ai_assistant_consent', value: 'true' }); setHasConsented(true); setShowConsentModal(false); }}
+                className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+              >
+                I Agree
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
