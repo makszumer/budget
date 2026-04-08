@@ -69,7 +69,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
+<form onSubmit={handleSubmit} className="space-y-4" style={{touchAction: 'manipulation'}}>
             <div className="space-y-2">
               <Label htmlFor="email">Email or Username</Label>
               <div className="relative">
@@ -102,7 +102,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               </div>
             </div>
 
-            <Button type="submit" className="w-full" disabled={loading || guestLoading}>
+<Button type="submit" className="w-full" disabled={loading || guestLoading} style={{touchAction: 'manipulation'}}>
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -127,14 +127,15 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
           </div>
 
           {/* Guest Login */}
-          <Button
-            type="button"
-            variant="outline"
-            className="w-full"
-            onClick={handleGuestLogin}
-            disabled={loading || guestLoading}
-            data-testid="guest-login-btn"
-          >
+  <Button
+  type="button"
+  variant="outline"
+  className="w-full"
+  onClick={handleGuestLogin}
+  disabled={loading || guestLoading}
+  data-testid="guest-login-btn"
+  style={{touchAction: 'manipulation'}}
+>
             {guestLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
