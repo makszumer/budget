@@ -19,7 +19,7 @@ import { CurrencyPreferences } from "@/components/CurrencyPreferences";
 import { FeatureLock, PremiumBadge } from "@/components/FeatureLock";
 import { FinancialHealthSnapshot } from "@/components/FinancialHealthSnapshot";
 import { WhatChanged } from "@/components/WhatChanged";
-import { Eye, EyeOff, LogOut, Crown, Shield, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Eye, EyeOff, LogOut, Shield, ChevronDown, ChevronUp } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -73,24 +73,20 @@ function MainApp() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [serverAwake, setServerAwake] = useState(false);
   const [privacyMode, setPrivacyMode] = useState(false);
-  const [dateFilter, setDateFilter] = useState("all"); // all, day, week, month, year
+  const [dateFilter, setDateFilter] = useState("all");
   const [selectedDate, setSelectedDate] = useState(new Date());
   const [currencies, setCurrencies] = useState(["USD"]);
-  const [authView, setAuthView] = useState('login'); // 'login' or 'register'
+  const [authView, setAuthView] = useState('login');
   const [recurringTransactions, setRecurringTransactions] = useState([]);
   const [budgetEnvelopes, setBudgetEnvelopes] = useState([]);
-  const [showTransactions, setShowTransactions] = useState(false); // Hidden by default
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-  const [showAnalytics, setShowAnalytics] = useState(false); // Hidden by default
-  
-  // Scroll direction for hiding/showing action buttons
+  const [showTransactions, setShowTransactions] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+
   const { isVisible: actionsVisible } = useScrollDirection(15);
 
-  // Check URL for subscription routes
   useEffect(() => {
     const path = window.location.pathname;
     const search = window.location.search;
-    
     if (path.includes('/subscription/success') || search.includes('session_id')) {
       setCurrentPage('subscription-success');
     } else if (path.includes('/subscription/cancel')) {
@@ -100,7 +96,6 @@ function MainApp() {
     }
   }, []);
 
-  // Fetch transactions
   const fetchTransactions = async () => {
     try {
       const response = await axios.get(`${API}/transactions`);
@@ -111,7 +106,6 @@ function MainApp() {
     }
   };
 
-  // Fetch summary
   const fetchSummary = async () => {
     try {
       const response = await axios.get(`${API}/transactions/summary`);
@@ -121,7 +115,6 @@ function MainApp() {
     }
   };
 
-  // Fetch portfolio
   const fetchPortfolio = async () => {
     try {
       const response = await axios.get(`${API}/portfolio`);
@@ -131,7 +124,6 @@ function MainApp() {
     }
   };
 
-  // Fetch analytics
   const fetchAnalytics = async () => {
     try {
       const response = await axios.get(`${API}/analytics`);
@@ -141,7 +133,6 @@ function MainApp() {
     }
   };
 
-  // Fetch budget growth
   const fetchBudgetGrowth = async () => {
     try {
       const response = await axios.get(`${API}/analytics/budget-growth`);
@@ -151,7 +142,6 @@ function MainApp() {
     }
   };
 
-  // Fetch investment growth
   const fetchInvestmentGrowth = async () => {
     try {
       const response = await axios.get(`${API}/analytics/investment-growth`);
@@ -161,7 +151,6 @@ function MainApp() {
     }
   };
 
-  // Fetch currencies
   const fetchCurrencies = async () => {
     try {
       const response = await axios.get(`${API}/currencies`);
@@ -171,7 +160,6 @@ function MainApp() {
     }
   };
 
-  // Fetch recurring transactions (for Smart Alerts)
   const fetchRecurringTransactions = async () => {
     try {
       const response = await axios.get(`${API}/recurring-transactions`);
@@ -181,7 +169,6 @@ function MainApp() {
     }
   };
 
-  // Fetch budget envelopes (for Smart Alerts)
   const fetchBudgetEnvelopes = async () => {
     try {
       const response = await axios.get(`${API}/budget-envelopes`);
@@ -191,7 +178,6 @@ function MainApp() {
     }
   };
 
-  // Process recurring transactions
   const processRecurringTransactions = async () => {
     try {
       await axios.post(`${API}/recurring-transactions/process`);
@@ -202,43 +188,31 @@ function MainApp() {
     }
   };
 
-  // Keep-alive ping to prevent server sleep
   useEffect(() => {
     const keepAlive = async () => {
       try {
         await axios.get(`${API}/`, { timeout: 5000 });
-        if (!serverAwake) {
-          setServerAwake(true);
-        }
+        if (!serverAwake) setServerAwake(true);
       } catch (error) {
         console.log("Keep-alive ping failed, server may be sleeping");
       }
     };
-
-    // Ping immediately
     keepAlive();
-
-    // Then ping every 3 minutes to keep server awake
-    const interval = setInterval(keepAlive, 3 * 60 * 1000); // 3 minutes
-
+    const interval = setInterval(keepAlive, 3 * 60 * 1000);
     return () => clearInterval(interval);
   }, [serverAwake]);
 
-  // Load data on mount
   useEffect(() => {
     const loadData = async () => {
       setLoading(true);
-      
-      // Try to load data with retry logic
       let retries = 0;
       const maxRetries = 3;
-      
       while (retries < maxRetries) {
         try {
           await Promise.all([
-            fetchTransactions(), 
-            fetchSummary(), 
-            fetchPortfolio(), 
+            fetchTransactions(),
+            fetchSummary(),
+            fetchPortfolio(),
             fetchAnalytics(),
             fetchBudgetGrowth(),
             fetchInvestmentGrowth(),
@@ -254,7 +228,6 @@ function MainApp() {
           retries++;
           console.log(`Attempt ${retries} failed, retrying...`);
           if (retries < maxRetries) {
-            // Wait 10 seconds before retrying
             await new Promise(resolve => setTimeout(resolve, 10000));
           } else {
             console.error("Failed to load data after retries");
@@ -266,7 +239,6 @@ function MainApp() {
     loadData();
   }, []);
 
-  // Add transaction
   const handleAddTransaction = async (transaction) => {
     try {
       const response = await axios.post(`${API}/transactions`, transaction);
@@ -281,7 +253,6 @@ function MainApp() {
     }
   };
 
-  // Edit transaction
   const handleEditTransaction = async (updatedTransaction) => {
     try {
       const response = await axios.put(`${API}/transactions/${updatedTransaction.id}`, {
@@ -294,21 +265,16 @@ function MainApp() {
         quantity: updatedTransaction.quantity,
         purchase_price: updatedTransaction.purchase_price
       });
-      
-      // Update local state
-      setTransactions(transactions.map(t => 
+      setTransactions(transactions.map(t =>
         t.id === updatedTransaction.id ? response.data : t
       ));
-      
-      // Refresh all data
       await Promise.all([
-        fetchSummary(), 
-        fetchPortfolio(), 
+        fetchSummary(),
+        fetchPortfolio(),
         fetchAnalytics(),
         fetchBudgetGrowth(),
         fetchInvestmentGrowth()
       ]);
-      
       toast.success("Transaction updated successfully");
     } catch (error) {
       console.error("Error updating transaction:", error);
@@ -316,14 +282,13 @@ function MainApp() {
     }
   };
 
-  // Delete transaction
   const handleDeleteTransaction = async (id) => {
     try {
       await axios.delete(`${API}/transactions/${id}`);
       setTransactions(transactions.filter((t) => t.id !== id));
       await Promise.all([
-        fetchSummary(), 
-        fetchPortfolio(), 
+        fetchSummary(),
+        fetchPortfolio(),
         fetchAnalytics(),
         fetchBudgetGrowth(),
         fetchInvestmentGrowth()
@@ -335,75 +300,49 @@ function MainApp() {
     }
   };
 
-  if (loading) {
-    return <LoadingScreen />;
-  }
+  if (loading) return <LoadingScreen />;
 
-  const handleNavigateToPricing = () => {
-    setCurrentPage("pricing");
-  };
+  const handleNavigateToPricing = () => setCurrentPage("pricing");
 
   const renderPage = () => {
     switch (currentPage) {
-      case "dashboard":
-        return renderDashboard();
-      case "recurring":
-        return <RecurringTransactions currencies={currencies} />;
-      case "budget-envelopes":
-        return <BudgetEnvelopes currencies={currencies} />;
-      case "custom-categories":
-        return <CustomCategoryManager />;
+      case "dashboard": return renderDashboard();
+      case "recurring": return <RecurringTransactions currencies={currencies} />;
+      case "budget-envelopes": return <BudgetEnvelopes currencies={currencies} />;
+      case "custom-categories": return <CustomCategoryManager />;
       case "ai-assistant":
         return (
           <FeatureLock feature={FEATURES.AI_ASSISTANT} onUpgradeClick={handleNavigateToPricing}>
             <FinancialAssistant />
           </FeatureLock>
         );
-      case "admin":
-        return <AdminDashboard />;
-      case "investing-overview":
-        return <InvestingOverview />;
-      case "investing-crypto":
-        return <CryptoGuide />;
-      case "investing-stocks":
-        return <StocksGuide />;
-      case "investing-bonds":
-        return <BondsGuide />;
-      case "investing-etfs":
-        return <ETFsGuide />;
-      case "investing-inflation":
-        return <InflationGuide />;
-      case "calculator":
-        return <CompoundCalculator />;
-      case "pricing":
-        return <PricingPage onGoBack={() => setCurrentPage("dashboard")} />;
-      default:
-        return renderDashboard();
+      case "admin": return <AdminDashboard />;
+      case "investing-overview": return <InvestingOverview />;
+      case "investing-crypto": return <CryptoGuide />;
+      case "investing-stocks": return <StocksGuide />;
+      case "investing-bonds": return <BondsGuide />;
+      case "investing-etfs": return <ETFsGuide />;
+      case "investing-inflation": return <InflationGuide />;
+      case "calculator": return <CompoundCalculator />;
+      case "pricing": return <PricingPage onGoBack={() => setCurrentPage("dashboard")} />;
+      default: return renderDashboard();
     }
   };
 
   const renderDashboard = () => {
     const filteredTransactions = getFilteredTransactions();
     const filteredSummary = getFilteredSummary();
-    
     return (
       <div className="space-y-8" data-testid="dashboard-container">
-        {/* Header with Appearance Toggle */}
         <div className="mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
               <div className="p-1 rounded-lg bg-white dark:bg-gray-100 shadow-sm">
-                <img 
-                  src="/vaulton-logo.png" 
-                  alt="Vaulton" 
-                  className="h-12 w-auto object-contain"
-                />
+                <img src="/vaulton-logo.png" alt="Vaulton" className="h-12 w-auto object-contain" />
               </div>
-              {/* User tier badge */}
               {isAdmin && (
                 <span className="inline-flex items-center gap-1 px-2 py-0.5 bg-gradient-to-r from-purple-500 to-indigo-600 text-white text-xs font-bold rounded-full">
-                  <Shield className="h-3 w-3" />
-                  Admin
+                  <Shield className="h-3 w-3" />Admin
                 </span>
               )}
               {isGuest && (
@@ -412,63 +351,37 @@ function MainApp() {
                 </span>
               )}
             </div>
-            <p className="text-slate-600 dark:text-slate-400">
-              Your financial overview and management
-            </p>
+            <p className="text-slate-600 dark:text-slate-400">Your financial overview and management</p>
           </div>
           <div className="flex items-center gap-3 flex-wrap">
-            {/* Currency - Premium Feature for conversion */}
-            <FeatureLock 
-              feature={FEATURES.CURRENCY_CONVERSION} 
-              onUpgradeClick={handleNavigateToPricing}
-              showBadge={false}
-            >
-              <CurrencyPreferences compact />
-            </FeatureLock>
+            <CurrencyPreferences compact />
             <AppearanceToggle />
-            {/* Voice Input - Premium Feature */}
-            <FeatureLock 
-              feature={FEATURES.VOICE_INPUT} 
-              onUpgradeClick={handleNavigateToPricing}
-            >
+            <FeatureLock feature={FEATURES.VOICE_INPUT} onUpgradeClick={handleNavigateToPricing}>
               <VoiceInput onTransactionCreated={handleAddTransaction} />
             </FeatureLock>
           </div>
         </div>
 
-        {/* Date Filter */}
-        <DateFilter 
+        <DateFilter
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
           selectedDate={selectedDate}
           setSelectedDate={setSelectedDate}
         />
 
-        {/* ===== DASHBOARD LAYOUT - USER SPECIFIED ORDER ===== */}
-        
-        {/* 1. QUOTE OF THE DAY - Always at top, blurred for free users */}
         <QuoteOfDay onUpgradeClick={handleNavigateToPricing} />
 
-        {/* 2. ADD EXPENSE / ADD INCOME - Clear action buttons, always visible */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-testid="transaction-forms">
           <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
-            <TransactionForm
-              type="expense"
-              onAddTransaction={handleAddTransaction}
-            />
+            <TransactionForm type="expense" onAddTransaction={handleAddTransaction} />
           </div>
           <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
-            <TransactionForm
-              type="income"
-              onAddTransaction={handleAddTransaction}
-            />
+            <TransactionForm type="income" onAddTransaction={handleAddTransaction} />
           </div>
         </div>
 
-        {/* 3. TOTALS SUMMARY - Compact and readable */}
         <Dashboard summary={filteredSummary} privacyMode={privacyMode} />
 
-        {/* 4. BUDGET MANAGER & INVESTMENT PORTFOLIO - Primary planning section */}
         <div className="mb-6 flex justify-center">
           <div className="inline-flex rounded-xl border-2 border-slate-300 dark:border-gray-700 bg-white dark:bg-gray-800 p-1.5 shadow-lg">
             <button
@@ -501,10 +414,8 @@ function MainApp() {
           </div>
         </div>
 
-        {/* Budget Section Content */}
         {activeSection === "budget" && (
           <div className="space-y-6">
-            {/* 5. TRANSACTIONS & ANALYTICS - Hidden by Default, shown when button clicked */}
             <div className="flex justify-center gap-3">
               <Button
                 variant={showTransactions ? "default" : "outline"}
@@ -525,8 +436,6 @@ function MainApp() {
                 Analytics
               </Button>
             </div>
-
-            {/* Transactions Panel - Only visible when clicked */}
             {showTransactions && (
               <div className="animate-in slide-in-from-top-2 duration-200">
                 <TransactionList
@@ -537,13 +446,11 @@ function MainApp() {
                 />
               </div>
             )}
-
-            {/* Analytics Panel - Only visible when clicked */}
             {showAnalytics && (
               <div className="animate-in slide-in-from-top-2 duration-200">
-                <BudgetAnalytics 
-                  analytics={analytics} 
-                  budgetGrowth={budgetGrowth} 
+                <BudgetAnalytics
+                  analytics={analytics}
+                  budgetGrowth={budgetGrowth}
                   privacyMode={privacyMode}
                   transactions={filteredTransactions.filter(t => t.type !== "investment")}
                 />
@@ -552,40 +459,24 @@ function MainApp() {
           </div>
         )}
 
-        {/* Investment Section - Premium Feature */}
         {activeSection === "investments" && (
           <FeatureLock feature={FEATURES.INVESTMENT_PORTFOLIO} onUpgradeClick={handleNavigateToPricing}>
             <div className="space-y-8">
-              {/* Investment Tabs */}
               <Tabs defaultValue="portfolio" className="w-full">
                 <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
-                  <TabsTrigger value="portfolio" data-testid="portfolio-tab">
-                    Portfolio
-                  </TabsTrigger>
-                  <TabsTrigger value="add" data-testid="add-investment-tab">
-                    Add Investment
-                  </TabsTrigger>
-                  <TabsTrigger value="history" data-testid="investment-history-tab">
-                    History
-                  </TabsTrigger>
-                  <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
-                    Analytics
-                  </TabsTrigger>
+                  <TabsTrigger value="portfolio" data-testid="portfolio-tab">Portfolio</TabsTrigger>
+                  <TabsTrigger value="add" data-testid="add-investment-tab">Add Investment</TabsTrigger>
+                  <TabsTrigger value="history" data-testid="investment-history-tab">History</TabsTrigger>
+                  <TabsTrigger value="analytics" data-testid="investment-analytics-tab">Analytics</TabsTrigger>
                 </TabsList>
-
-                {/* Portfolio Tab */}
                 <TabsContent value="portfolio" className="space-y-6 mt-6">
                   <PortfolioTracker portfolio={portfolio} />
                 </TabsContent>
-
-                {/* Add Investment Tab */}
                 <TabsContent value="add" className="mt-6">
                   <div className="max-w-4xl mx-auto border-2 border-blue-200 dark:border-blue-800 rounded-xl p-1 bg-blue-50/50 dark:bg-blue-950/30">
                     <InvestmentForm onAddInvestment={handleAddTransaction} />
                   </div>
                 </TabsContent>
-
-                {/* History Tab */}
                 <TabsContent value="history" className="mt-6">
                   <div className="max-w-4xl mx-auto">
                     <InvestmentTransactionList
@@ -595,8 +486,6 @@ function MainApp() {
                     />
                   </div>
                 </TabsContent>
-
-                {/* Analytics Tab */}
                 <TabsContent value="analytics" className="mt-6">
                   <InvestmentAnalytics analytics={analytics} investmentGrowth={investmentGrowth} />
                 </TabsContent>
@@ -605,8 +494,7 @@ function MainApp() {
           </FeatureLock>
         )}
 
-        {/* 6. FINANCIAL HEALTH SNAPSHOT - Glanceable, non-dominant */}
-        <FinancialHealthSnapshot 
+        <FinancialHealthSnapshot
           transactions={transactions}
           summary={filteredSummary}
           investmentGrowth={investmentGrowth}
@@ -615,9 +503,8 @@ function MainApp() {
           onUpgradeClick={handleNavigateToPricing}
         />
 
-        {/* 7. WHAT CHANGED? - Near bottom, Premium-only */}
         <div className="pt-4 border-t border-gray-100 dark:border-gray-800">
-          <WhatChanged 
+          <WhatChanged
             transactions={transactions}
             recurringTransactions={recurringTransactions}
             investmentGrowth={investmentGrowth}
@@ -632,115 +519,63 @@ function MainApp() {
 
   const handleNavigate = (page) => {
     setCurrentPage(page);
-    setSidebarOpen(false); // Close sidebar after navigation
+    setSidebarOpen(false);
   };
 
-  // Filter transactions by date
   const getFilteredTransactions = () => {
     if (dateFilter === "all") return transactions;
-
     const now = selectedDate;
-    const filtered = transactions.filter(t => {
+    return transactions.filter(t => {
       const transDate = new Date(t.date);
-      
-      if (dateFilter === "day") {
-        return transDate.toDateString() === now.toDateString();
-      } else if (dateFilter === "week") {
+      if (dateFilter === "day") return transDate.toDateString() === now.toDateString();
+      if (dateFilter === "week") {
         const weekStart = new Date(now);
         weekStart.setDate(now.getDate() - now.getDay());
         const weekEnd = new Date(weekStart);
         weekEnd.setDate(weekStart.getDate() + 7);
         return transDate >= weekStart && transDate < weekEnd;
-      } else if (dateFilter === "month") {
-        return transDate.getMonth() === now.getMonth() && 
-               transDate.getFullYear() === now.getFullYear();
-      } else if (dateFilter === "year") {
-        return transDate.getFullYear() === now.getFullYear();
       }
+      if (dateFilter === "month") return transDate.getMonth() === now.getMonth() && transDate.getFullYear() === now.getFullYear();
+      if (dateFilter === "year") return transDate.getFullYear() === now.getFullYear();
       return true;
     });
-    
-    return filtered;
   };
 
-  // Calculate filtered summary
   const getFilteredSummary = () => {
     const filtered = getFilteredTransactions();
     const totalIncome = filtered.filter(t => t.type === 'income').reduce((sum, t) => sum + t.amount, 0);
     const totalExpenses = filtered.filter(t => t.type === 'expense').reduce((sum, t) => sum + t.amount, 0);
     const totalInvestments = filtered.filter(t => t.type === 'investment').reduce((sum, t) => sum + t.amount, 0);
-    
-    return {
-      totalIncome,
-      totalExpenses,
-      totalInvestments,
-      balance: totalIncome - totalExpenses
-    };
+    return { totalIncome, totalExpenses, totalInvestments, balance: totalIncome - totalExpenses };
   };
 
-  // Show loading screen while checking auth
-  if (authLoading) {
-    return <LoadingScreen />;
-  }
+  if (authLoading) return <LoadingScreen />;
 
-  // Show login/register if not authenticated
   if (!isAuthenticated) {
     if (authView === 'register') {
-      return (
-        <RegisterPage
-          onSwitchToLogin={() => setAuthView('login')}
-          onRegisterSuccess={() => setAuthView('login')}
-        />
-      );
+      return <RegisterPage onSwitchToLogin={() => setAuthView('login')} onRegisterSuccess={() => setAuthView('login')} />;
     }
-    return (
-      <LoginPage
-        onSwitchToRegister={() => setAuthView('register')}
-        onLoginSuccess={() => {}}
-      />
-    );
+    return <LoginPage onSwitchToRegister={() => setAuthView('register')} onLoginSuccess={() => {}} />;
   }
 
-  // Handle subscription routes
-  if (currentPage === 'pricing') {
-    return <PricingPage onGoBack={() => setCurrentPage('dashboard')} />;
-  }
-
-  if (currentPage === 'subscription-success') {
-    return <SubscriptionSuccess onGoHome={() => setCurrentPage('dashboard')} />;
-  }
-
-  if (currentPage === 'subscription-cancel') {
-    return <SubscriptionCancel onGoHome={() => setCurrentPage('dashboard')} />;
-  }
+  if (currentPage === 'pricing') return <PricingPage onGoBack={() => setCurrentPage('dashboard')} />;
+  if (currentPage === 'subscription-success') return <SubscriptionSuccess onGoHome={() => setCurrentPage('dashboard')} />;
+  if (currentPage === 'subscription-cancel') return <SubscriptionCancel onGoHome={() => setCurrentPage('dashboard')} />;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex relative">
       <Toaster />
-      
-      {/* Menu Button (Three Dots) - Hide on scroll down */}
+
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-6 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
-          actionsVisible 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 -translate-y-4 pointer-events-none'
+        className={`fixed top-16 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
+          actionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
         data-testid="menu-toggle"
       >
-        <svg
-          className="w-6 h-6 text-gray-700 dark:text-gray-200"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
+        <svg className="w-6 h-6 text-gray-700 dark:text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           {sidebarOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
           ) : (
             <>
               <circle cx="12" cy="5" r="1.5" fill="currentColor" />
@@ -751,49 +586,21 @@ function MainApp() {
         </svg>
       </button>
 
-      {/* User Actions - Top Right - Hide on scroll down */}
       <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 transition-all duration-300 ease-in-out ${
-        actionsVisible 
-          ? 'opacity-100 translate-y-0' 
-          : 'opacity-0 -translate-y-4 pointer-events-none'
+        actionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
       }`}>
-        {/* Premium Badge / Upgrade Button */}
-        {isPremium ? (
-          <button
-            onClick={() => setCurrentPage('pricing')}
-            data-testid="premium-badge-btn"
-            className="px-4 py-2 bg-gradient-to-r from-yellow-400 to-yellow-600 text-white rounded-lg shadow-lg flex items-center gap-2 hover:shadow-xl transition-all"
-          >
-            <Crown className="h-4 w-4" />
-            <span className="font-semibold text-sm">
-              {isOnTrial ? 'Trial' : 'Premium'}
-            </span>
-          </button>
-        ) : (
-          <button
-            onClick={() => setCurrentPage('pricing')}
-            data-testid="upgrade-premium-btn"
-            className="px-4 py-2 bg-gradient-to-r from-blue-500 to-indigo-600 text-white rounded-lg shadow-lg hover:shadow-xl transition-all font-semibold text-sm"
-          >
-            Upgrade to Premium
-          </button>
-        )}
-
-        {/* Privacy Toggle Button */}
         <button
           onClick={() => setPrivacyMode(!privacyMode)}
           className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700"
           data-testid="privacy-toggle"
           title={privacyMode ? "Show amounts" : "Hide amounts"}
-      >
-        {privacyMode ? (
-          <EyeOff className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-        ) : (
-          <Eye className="w-5 h-5 text-gray-700 dark:text-gray-200" />
-        )}
-      </button>
-
-        {/* Logout Button */}
+        >
+          {privacyMode ? (
+            <EyeOff className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          ) : (
+            <Eye className="w-5 h-5 text-gray-700 dark:text-gray-200" />
+          )}
+        </button>
         <button
           onClick={logout}
           className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
@@ -801,88 +608,18 @@ function MainApp() {
         >
           <LogOut className="w-5 h-5 text-gray-700 dark:text-gray-200" />
         </button>
-        {/* Delete Account Button */}
-          {!isGuest && (
-            <button
-              onClick={() => setShowDeleteConfirm(true)}
-              className="p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl transition-all border border-gray-200 dark:border-gray-700 hover:bg-red-50 dark:hover:bg-red-900/20"
-              title="Delete Account"
-            >
-              <Trash2 className="w-5 h-5 text-red-500" />
-            </button>
-          )}
-
-          {/* Delete Account Confirmation Modal */}
-          {showDeleteConfirm && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-              <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-6 max-w-sm w-full">
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="p-2 bg-red-100 dark:bg-red-900/30 rounded-full">
-                    <Trash2 className="h-6 w-6 text-red-600" />
-                  </div>
-                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">Delete Account</h2>
-                </div>
-                <p className="text-gray-600 dark:text-gray-400 mb-6">
-                  This will permanently delete your account and all your financial data. This action cannot be undone.
-                </p>
-                <div className="flex gap-3">
-                  <button
-                    onClick={() => setShowDeleteConfirm(false)}
-                    className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 font-medium"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={async () => {
-                      try {
-                        await axios.delete(`${API}/users/delete-account`);
-                        setShowDeleteConfirm(false);
-                        logout();
-                        toast.success("Account deleted successfully");
-                      } catch (error) {
-                        toast.error("Failed to delete account. Please try again.");
-                      }
-                    }}
-                    className="flex-1 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium"
-                  >
-                    Delete Forever
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
       </div>
 
-      {/* Server Status Indicator - Hide on scroll down */}
-      {serverAwake && (
-        <div className={`fixed top-20 right-6 z-50 flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg shadow-md transition-all duration-300 ease-in-out ${
-          actionsVisible 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}>
-          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-          <span className="text-sm text-green-700 dark:text-green-400 font-medium">Server Active</span>
-        </div>
-      )}
-
-      {/* Overlay when sidebar is open */}
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={() => setSidebarOpen(false)}
-        />
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-30" onClick={() => setSidebarOpen(false)} />
       )}
 
-      {/* Sidebar */}
-      <div
-        className={`fixed left-0 top-0 h-full z-40 transform transition-transform duration-300 ease-in-out ${
-          sidebarOpen ? "translate-x-0" : "-translate-x-full"
-        }`}
-      >
+      <div className={`fixed left-0 top-0 h-full z-40 transform transition-transform duration-300 ease-in-out ${
+        sidebarOpen ? "translate-x-0" : "-translate-x-full"
+      }`}>
         <Sidebar currentPage={currentPage} onNavigate={handleNavigate} />
       </div>
 
-      {/* Main Content */}
       <div className="flex-1 overflow-auto w-full">
         <div className="container mx-auto px-8 py-8">
           {renderPage()}
@@ -892,7 +629,6 @@ function MainApp() {
   );
 }
 
-// Wrap MainApp with AuthProvider, ThemeProvider, and AccessProvider
 function App() {
   return (
     <ThemeProvider>
