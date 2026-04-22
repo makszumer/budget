@@ -422,7 +422,13 @@ export const PricingPage = ({ onGoBack }) => {
               ? 'Payment processed by Apple. Manage subscriptions in iOS Settings → Apple ID → Subscriptions.'
               : 'All prices in EUR. 3-day free trial available. No credit card required for trial.'}
           </p>
-          <p className="text-xs text-slate-400 dark:text-slate-500 mt-3">By subscribing you agree to our <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Terms of Use</a> and <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline hover:text-slate-600">Privacy Policy</a>.</p>
+        <p className="text-xs text-slate-500 dark:text-slate-400 mt-3">
+            By subscribing you agree to our{' '}
+            <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline font-medium text-blue-600 hover:text-blue-700">Terms of Use (EULA)</a>
+            {' '}and{' '}
+            <a href="https://makszumer.github.io/vaulton-legal" target="_blank" rel="noopener noreferrer" className="underline font-medium text-blue-600 hover:text-blue-700">Privacy Policy</a>.
+            {' '}Subscriptions auto-renew unless cancelled at least 24 hours before the end of the current period.
+          </p>
         </div>
       </div>
     </div>

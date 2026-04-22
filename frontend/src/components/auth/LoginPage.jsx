@@ -14,14 +14,11 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async () => {
     if (!email || !password) {
       toast.error('Please fill in all fields');
       return;
     }
-
     setLoading(true);
     try {
       await login(email, password);
@@ -53,12 +50,11 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          {/* Vaulton Logo and Branding */}
           <div className="flex flex-col items-center mb-4">
             <div className="p-2 rounded-xl bg-white dark:bg-gray-100 shadow-sm">
-              <img 
-                src="/vaulton-logo.png" 
-                alt="Vaulton" 
+              <img
+                src="/vaulton-logo.png"
+                alt="Vaulton"
                 className="h-24 w-auto object-contain"
               />
             </div>
@@ -69,7 +65,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
           </CardDescription>
         </CardHeader>
         <CardContent>
-<form onSubmit={handleSubmit} className="space-y-4" style={{touchAction: 'manipulation'}}>
+          <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email or Username</Label>
               <div className="relative">
@@ -102,7 +98,13 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               </div>
             </div>
 
-<Button type="submit" className="w-full" disabled={loading || guestLoading} style={{touchAction: 'manipulation'}}>
+            <Button
+              type="button"
+              onClick={handleSubmit}
+              className="w-full"
+              disabled={loading || guestLoading}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+            >
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -112,9 +114,8 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
                 'Sign In'
               )}
             </Button>
-          </form>
+          </div>
 
-          {/* Divider */}
           <div className="relative my-6">
             <div className="absolute inset-0 flex items-center">
               <span className="w-full border-t border-gray-300 dark:border-gray-700" />
@@ -126,16 +127,15 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
             </div>
           </div>
 
-          {/* Guest Login */}
-  <Button
-  type="button"
-  variant="outline"
-  className="w-full"
-  onClick={handleGuestLogin}
-  disabled={loading || guestLoading}
-  data-testid="guest-login-btn"
-  style={{touchAction: 'manipulation'}}
->
+          <Button
+            type="button"
+            variant="outline"
+            className="w-full"
+            onClick={handleGuestLogin}
+            disabled={loading || guestLoading}
+            data-testid="guest-login-btn"
+            style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+          >
             {guestLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />

@@ -142,6 +142,12 @@ export const AuthProvider = ({ children }) => {
     setDiscountEligible(false);
     setDiscountUsed(false);
   };
+  const deleteAccount = async () => {
+    await axios.delete(`${API}/users/delete-account`, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    await logout();
+  };
 
   const refreshUserProfile = async () => {
     await fetchUserProfile();
@@ -166,6 +172,7 @@ export const AuthProvider = ({ children }) => {
       register,
       loginAsGuest,
       logout,
+      deleteAccount,
       refreshUserProfile,
     }}>
       {children}

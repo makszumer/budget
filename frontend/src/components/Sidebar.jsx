@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag, Moon, Sun, Monitor, Crown, Lock, MessageSquare } from "lucide-react";
+import { ChevronDown, ChevronRight, LayoutDashboard, BookOpen, Calculator, Repeat, Shield, Wallet, Sparkles, Tag, Moon, Sun, Monitor, Crown, Lock, MessageSquare, Trash2 } from "lucide-react";
 import { useAuth } from "@/context/AuthContext";
 import { useTheme } from "@/context/ThemeContext";
 
 export const Sidebar = ({ currentPage, onNavigate }) => {
   const [investingOpen, setInvestingOpen] = useState(false);
-  const { user, isPremium, isAdmin, isGuest } = useAuth();
+ const { user, isPremium, isAdmin, isGuest, logout, deleteAccount } = useAuth();
   const { theme, isDark, toggleTheme, setThemeMode } = useTheme();
 
   const MenuItem = ({ icon: Icon, label, page, active, isPremiumFeature = false }) => (
@@ -240,6 +240,28 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
 
         {/* Premium/Upgrade Section */}
         {renderPremiumSection()}
+        {/* Account Actions */}
+        {!isGuest && (
+          <div className="mt-2 space-y-2">
+            <button
+              onClick={logout}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+            >
+              <span className="font-medium">Log Out</span>
+            </button>
+            <button
+              onClick={async () => {
+                if (window.confirm('Are you sure you want to permanently delete your account? This cannot be undone.')) {
+                  await deleteAccount();
+                }
+              }}
+              className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all"
+            >
+              <Trash2 className="h-5 w-5" />
+              <span className="font-medium">Delete Account</span>
+            </button>
+          </div>
+        )}
       </nav>
     </div>
   );
