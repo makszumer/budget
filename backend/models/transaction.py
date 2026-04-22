@@ -19,7 +19,7 @@ class Transaction(BaseModel):
     asset: Optional[str] = None
     quantity: Optional[float] = None
     purchase_price: Optional[float] = None
-    currency: str = "USD"
+    currency: Optional[str] = "USD"
     # Multi-currency support
     original_amount: Optional[float] = None
     original_currency: Optional[str] = None
@@ -60,7 +60,7 @@ class RecurringTransaction(BaseModel):
     amount: float
     description: str
     category: str
-    currency: str = "USD"
+    currency: Optional[str] = "USD"
     frequency: Literal["daily", "weekly", "monthly", "yearly"]
     day_of_month: Optional[int] = None
     day_of_week: Optional[int] = None
@@ -77,7 +77,7 @@ class RecurringTransactionCreate(BaseModel):
     amount: float
     description: str
     category: str
-    currency: str = "USD"
+    currency: Optional[str] = "USD"
     frequency: Literal["daily", "weekly", "monthly", "yearly"]
     day_of_month: Optional[int] = None
     day_of_week: Optional[int] = None
