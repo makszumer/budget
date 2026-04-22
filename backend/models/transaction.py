@@ -10,17 +10,16 @@ class Transaction(BaseModel):
     model_config = ConfigDict(extra="ignore")
     
     id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: Optional[str] = None
     type: Literal["expense", "income", "investment"]
     amount: float
     description: Optional[str] = ""
     category: str
     date: str
-    # Investment specific fields
     asset: Optional[str] = None
     quantity: Optional[float] = None
     purchase_price: Optional[float] = None
     currency: Optional[str] = "USD"
-    # Multi-currency support
     original_amount: Optional[float] = None
     original_currency: Optional[str] = None
     exchange_rate: Optional[float] = None

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 import logging
 
 from models.transaction import Transaction, TransactionCreate, TransactionSummary
-from auth import get_current_user_optional
+from auth import get_current_user, get_current_user_optional
 
 logger = logging.getLogger(__name__)
 
@@ -42,17 +42,17 @@ def convert_to_usd(amount: float, currency: str) -> float:
 @router.post("", response_model=Transaction)
 async def create_transaction(
     transaction: TransactionCreate,
-    current_user_id: str = Depends(get_current_user_optional)
+    current_user_id: str = Depends(get_current_user)
 ):
     """Create a new transaction with optional currency conversion"""
     trans_dict = transaction.model_dump()
+    trans_dict['user_id'] = current_user_id
     
-    # Get user's primary currency if authenticated
+    # Get user's primary currency
     primary_currency = "USD"
-    if current_user_id:
-        user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
-        if user:
-            primary_currency = user.get("primary_currency", "USD")
+    user = await db.users.find_one({"id": current_user_id}, {"_id": 0})
+    if user:
+        primary_currency = user.get("primary_currency", "USD")
     
     # Check if conversion is needed
     source_currency = transaction.convert_from_currency or transaction.currency
@@ -105,9 +105,11 @@ async def create_transaction(
 
 
 @router.get("", response_model=List[Transaction])
-async def get_transactions():
-    """Get all transactions sorted by date (newest first)"""
-    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
+async def get_transactions(current_user_id: str = Depends(get_current_user)):
+    """Get all transactions for the current user, sorted by date (newest first)"""
+    transactions = await db.transactions.find(
+        {"user_id": current_user_id}, {"_id": 0}
+    ).to_list(1000)
     
     for trans in transactions:
         if isinstance(trans['createdAt'], str):
@@ -118,15 +120,22 @@ async def get_transactions():
 
 
 @router.put("/{transaction_id}", response_model=Transaction)
-async def update_transaction(transaction_id: str, transaction: TransactionCreate):
-    """Update an existing transaction"""
-    existing = await db.transactions.find_one({"id": transaction_id}, {"_id": 0})
+async def update_transaction(
+    transaction_id: str,
+    transaction: TransactionCreate,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Update an existing transaction (owner only)"""
+    existing = await db.transactions.find_one(
+        {"id": transaction_id, "user_id": current_user_id}, {"_id": 0}
+    )
     
     if not existing:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
     updated_doc = transaction.model_dump()
     updated_doc['id'] = transaction_id
+    updated_doc['user_id'] = current_user_id
     updated_doc['createdAt'] = existing['createdAt']
     
     await db.transactions.replace_one({"id": transaction_id}, updated_doc)
@@ -138,19 +147,23 @@ async def update_transaction(transaction_id: str, transaction: TransactionCreate
 
 
 @router.delete("/{transaction_id}")
-async def delete_transaction(transaction_id: str):
-    """Delete a transaction and clean up related envelope transactions"""
-    transaction = await db.transactions.find_one({"id": transaction_id}, {"_id": 0})
+async def delete_transaction(
+    transaction_id: str,
+    current_user_id: str = Depends(get_current_user)
+):
+    """Delete a transaction (owner only) and clean up related envelope transactions"""
+    transaction = await db.transactions.find_one(
+        {"id": transaction_id, "user_id": current_user_id}, {"_id": 0}
+    )
     
     if not transaction:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
-    result = await db.transactions.delete_one({"id": transaction_id})
+    result = await db.transactions.delete_one({"id": transaction_id, "user_id": current_user_id})
     
     if result.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Transaction not found")
     
-    # Clean up linked envelope transactions
     envelope_transaction_id = transaction.get("envelope_transaction_id")
     if envelope_transaction_id:
         envelope_txn = await db.envelope_transactions.find_one(
@@ -179,9 +192,11 @@ async def delete_transaction(transaction_id: str):
 
 
 @router.get("/summary", response_model=TransactionSummary)
-async def get_summary():
-    """Get transaction summary totals"""
-    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
+async def get_summary(current_user_id: str = Depends(get_current_user)):
+    """Get transaction summary totals for the current user"""
+    transactions = await db.transactions.find(
+        {"user_id": current_user_id}, {"_id": 0}
+    ).to_list(1000)
     
     total_income = sum(t['amount'] for t in transactions if t['type'] == 'income')
     total_expenses = sum(t['amount'] for t in transactions if t['type'] == 'expense')

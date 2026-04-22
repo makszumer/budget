@@ -1,10 +1,11 @@
 """Analytics routes - Budget and investment analytics"""
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from collections import defaultdict
 
 from models.analytics import (
     AnalyticsData, CategoryBreakdown, BudgetGrowth, InvestmentGrowth, GrowthDataPoint
 )
+from auth import get_current_user
 
 router = APIRouter(prefix="/analytics", tags=["analytics"])
 
@@ -21,11 +22,12 @@ def init_router(database, portfolio_func=None):
 
 
 @router.get("", response_model=AnalyticsData)
-async def get_analytics():
+async def get_analytics(current_user_id: str = Depends(get_current_user)):
     """Get category breakdowns for expenses, income, and investments"""
-    transactions = await db.transactions.find({}, {"_id": 0}).to_list(1000)
+    transactions = await db.transactions.find(
+        {"user_id": current_user_id}, {"_id": 0}
+    ).to_list(1000)
     
-    # Expense breakdown
     expense_by_category = {}
     for t in transactions:
         if t['type'] == 'expense':
@@ -42,7 +44,6 @@ async def get_analytics():
         for cat, amt in expense_by_category.items()
     ]
     
-    # Income breakdown
     income_by_category = {}
     for t in transactions:
         if t['type'] == 'income':
@@ -59,7 +60,6 @@ async def get_analytics():
         for cat, amt in income_by_category.items()
     ]
     
-    # Investment breakdown
     investment_by_category = {}
     for t in transactions:
         if t['type'] == 'investment':
@@ -84,10 +84,10 @@ async def get_analytics():
 
 
 @router.get("/budget-growth", response_model=BudgetGrowth)
-async def get_budget_growth():
+async def get_budget_growth(current_user_id: str = Depends(get_current_user)):
     """Get budget growth over time"""
     transactions = await db.transactions.find(
-        {"type": {"$in": ["income", "expense"]}},
+        {"type": {"$in": ["income", "expense"]}, "user_id": current_user_id},
         {"_id": 0}
     ).to_list(1000)
     
@@ -122,10 +122,10 @@ async def get_budget_growth():
 
 
 @router.get("/investment-growth", response_model=InvestmentGrowth)
-async def get_investment_growth():
+async def get_investment_growth(current_user_id: str = Depends(get_current_user)):
     """Get investment growth over time"""
     investments = await db.transactions.find(
-        {"type": "investment"},
+        {"type": "investment", "user_id": current_user_id},
         {"_id": 0}
     ).to_list(1000)
     
@@ -147,7 +147,6 @@ async def get_investment_growth():
             cumulative=cumulative_invested
         ))
     
-    # Get current portfolio value
     current_value = 0
     total_gain = 0
     if get_portfolio_func:
