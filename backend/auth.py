@@ -13,7 +13,7 @@ security = HTTPBearer()
 # JWT Configuration
 JWT_SECRET = os.environ.get('JWT_SECRET', 'default-secret-key')
 JWT_ALGORITHM = os.environ.get('JWT_ALGORITHM', 'HS256')
-ACCESS_TOKEN_EXPIRE_HOURS = 24
+ACCESS_TOKEN_EXPIRE_HOURS = 168
 
 # Password hashing
 def hash_password(password: str) -> str:

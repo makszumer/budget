@@ -13,20 +13,20 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [guestLoading, setGuestLoading] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async () => {
+    setError('');
     if (!email || !password) {
-      toast.error('Please fill in all fields');
+      setError('Please fill in all fields');
       return;
     }
     setLoading(true);
     try {
       await login(email, password);
-      toast.success('Welcome back!');
       if (onLoginSuccess) onLoginSuccess();
-    } catch (error) {
-      const message = error.response?.data?.detail || 'Invalid email or password';
-      toast.error(message);
+    } catch (err) {
+      setError(err.response?.data?.detail || 'Invalid email or password');
     } finally {
       setLoading(false);
     }
@@ -97,6 +97,12 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
                 />
               </div>
             </div>
+
+            {error && (
+              <div className="text-red-500 text-sm text-center mt-2 font-medium">
+                {error}
+              </div>
+            )}
 
             <Button
               type="button"

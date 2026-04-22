@@ -53,6 +53,18 @@ export const AuthProvider = ({ children }) => {
       const savedToken = await storage.get('access_token');
       const savedIsGuest = await storage.get('is_guest');
       if (savedToken) {
+        try {
+          const payload = JSON.parse(atob(savedToken.split('.')[1]));
+          if (payload.exp * 1000 < Date.now()) {
+            await storage.remove('access_token');
+            setIsLoading(false);
+            return;
+          }
+        } catch {
+          await storage.remove('access_token');
+          setIsLoading(false);
+          return;
+        }
         setToken(savedToken);
       }
       if (savedIsGuest === 'true') {
