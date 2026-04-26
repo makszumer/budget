@@ -568,7 +568,8 @@ function MainApp() {
 
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-16 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
+        style={{top: "calc(env(safe-area-inset-top, 20px) + 0.5rem)"}}
+        className={`fixed left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
           actionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
         }`}
         data-testid="menu-toggle"
@@ -586,7 +587,7 @@ function MainApp() {
         </svg>
       </button>
 
-      <div className={`fixed top-6 right-6 z-50 flex items-center gap-2 transition-all duration-300 ease-in-out ${
+      <div style={{top: "calc(env(safe-area-inset-top, 20px) + 0.5rem)"}} className={`fixed right-6 z-50 flex items-center gap-2 transition-all duration-300 ease-in-out ${
         actionsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'
       }`}>
         <button
@@ -621,7 +622,7 @@ function MainApp() {
       </div>
 
       <div className="flex-1 overflow-auto w-full">
-        <div className="container mx-auto px-8 py-8">
+        <div className="container mx-auto px-8 pb-8" style={{paddingTop: "calc(env(safe-area-inset-top, 20px) + 5rem)"}}>
           {renderPage()}
         </div>
       </div>
