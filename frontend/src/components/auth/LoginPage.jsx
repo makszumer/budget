@@ -1,10 +1,8 @@
 import { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { toast } from 'sonner';
 import { Lock, Mail, Loader2, UserCircle2 } from 'lucide-react';
 
 export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
@@ -36,20 +34,18 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
     setGuestLoading(true);
     try {
       await loginAsGuest();
-      toast.success('Welcome! Explore the app as a guest.');
       if (onLoginSuccess) onLoginSuccess();
     } catch (error) {
-      const message = error.response?.data?.detail || 'Failed to login as guest';
-      toast.error(message);
+      setError('Failed to login as guest');
     } finally {
       setGuestLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex items-center justify-center p-4">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
+      <div className="flex-1 flex flex-col justify-center px-8 py-12">
+        <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-4">
             <div className="p-2 rounded-xl bg-white dark:bg-gray-100 shadow-sm">
               <img
@@ -59,12 +55,12 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               />
             </div>
           </div>
-          <CardTitle className="text-xl font-semibold">Welcome Back</CardTitle>
-          <CardDescription className="text-center">
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Welcome Back</h1>
+          <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1">
             Sign in to your financial tracking account
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+          </p>
+        </div>
+        <div>
           <div className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email or Username</Label>
@@ -127,7 +123,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               <span className="w-full border-t border-gray-300 dark:border-gray-700" />
             </div>
             <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-white dark:bg-gray-900 px-2 text-gray-500 dark:text-gray-400">
+              <span className="bg-slate-50 dark:bg-gray-950 px-2 text-gray-500 dark:text-gray-400">
                 Or
               </span>
             </div>
@@ -170,8 +166,8 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               </button>
             </p>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
 };
