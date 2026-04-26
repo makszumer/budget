@@ -15,9 +15,9 @@ import uuid
 router = APIRouter(prefix="/users", tags=["users"])
 
 # Admin credentials
-ADMIN_USERNAME = "admin"
-ADMIN_EMAIL = "admin@vaulton.com"
-ADMIN_PASSWORD = "admin"
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_EMAIL = os.environ.get("ADMIN_EMAIL", "admin@vaulton.com")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")
 
 # Database dependency
 def get_db() -> AsyncIOMotorDatabase:

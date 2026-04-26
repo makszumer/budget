@@ -11,8 +11,8 @@ from typing import Optional
 router = APIRouter(prefix="/admin", tags=["admin"])
 
 # Admin credentials (in production, use environment variables)
-ADMIN_USERNAME = "admin"
-ADMIN_PASSWORD = "admin"  # In production, hash this!
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "")  # In production, hash this!
 
 # Database dependency
 def get_db():
