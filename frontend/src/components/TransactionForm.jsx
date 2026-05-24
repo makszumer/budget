@@ -113,8 +113,8 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
     return () => clearTimeout(debounceTimer);
   }, [amount, foreignCurrency, primaryCurrency, showCurrencyConversion]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
+   
     
     const newErrors = {};
     
@@ -190,7 +190,7 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
         </div>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
+         <div className="space-y-4">
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor={`amount-${type}`}>
@@ -391,11 +391,11 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
             )}
           </div>
 
-          <Button type="submit" className="w-full" data-testid={`submit-btn-${type}`}>
+         <Button type="button" onClick={handleSubmit} <Button  className="w-full" data-testid={`submit-btn-${type}`}>
             <Plus className="mr-2 h-4 w-4" />
             Add {type.charAt(0).toUpperCase() + type.slice(1)}
           </Button>
-        </form>
+        </div>
       </CardContent>
     </Card>
   );

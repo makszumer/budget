@@ -81,7 +81,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
           </div>
         </div>
         <p className="text-sm text-center text-gray-500 dark:text-gray-400">
-          {isGuest ? 'Guest Mode' : `Welcome, ${user?.username || 'User'}`}
+          {isGuest ? 'Guest Mode' : `Welcome, ${user?.username || user?.email || 'User'}`}
         </p>
       </div>
 

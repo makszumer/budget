@@ -31,6 +31,7 @@ class UserResponse(BaseModel):
     subscription_level: Literal['free', 'premium']
     subscription_expires_at: Optional[str] = None
     is_premium: bool
+    is_admin: bool = False
     primary_currency: str = 'USD'
     # Trial fields
     trial_started_at: Optional[str] = None

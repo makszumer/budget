@@ -46,7 +46,14 @@ export const AuthProvider = ({ children }) => {
   const [discountEligible, setDiscountEligible] = useState(false);
   const [discountUsed, setDiscountUsed] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
-
+// FIX: Inject axios auth header globally whenever token changes
+useEffect(() => {
+  if (token) {
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+  } else {
+    delete axios.defaults.headers.common['Authorization'];
+  }
+}, [token]);
   // Load token from storage on startup
   useEffect(() => {
     const loadToken = async () => {
@@ -65,6 +72,7 @@ export const AuthProvider = ({ children }) => {
           setIsLoading(false);
           return;
         }
+  axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
         setToken(savedToken);
       }
       if (savedIsGuest === 'true') {
@@ -114,24 +122,26 @@ export const AuthProvider = ({ children }) => {
 
   const login = async (email, password) => {
     const response = await axios.post(`${API}/users/login`, { email, password });
-    const { access_token, user_id, is_premium } = response.data;
-    await storage.set('access_token', access_token);
-    await storage.remove('is_guest');
-    setToken(access_token);
-    setIsGuest(false);
-    setIsPremium(is_premium || false);
-    return response.data;
+const { access_token, is_premium } = response.data;
+axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+await storage.set('access_token', access_token);
+await storage.remove('is_guest');
+setIsGuest(false);
+setIsPremium(is_premium || false);
+setToken(access_token);
+return response.data;
   };
 
   const register = async (email, password, username) => {
     const response = await axios.post(`${API}/users/register`, { email, password, username });
-    const { access_token, user_id, is_premium } = response.data;
-    await storage.set('access_token', access_token);
-    await storage.remove('is_guest');
-    setToken(access_token);
-    setIsGuest(false);
-    setIsPremium(is_premium || false);
-    return response.data;
+  const { access_token, is_premium } = response.data;
+axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+await storage.set('access_token', access_token);
+await storage.remove('is_guest');
+setIsGuest(false);
+setIsPremium(is_premium || false);
+setToken(access_token);
+return response.data;
   };
 
   const loginAsGuest = async () => {
@@ -142,6 +152,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async () => {
+    delete axios.defaults.headers.common['Authorization'];
     await storage.remove('access_token');
     await storage.remove('is_guest');
     setToken(null);

@@ -224,6 +224,7 @@ async def get_current_user_info(current_user_id: str = Depends(get_current_user)
         subscription_level=user['subscription_level'],
         subscription_expires_at=format_datetime(expires_at),
         is_premium=is_premium,
+        is_admin=user.get('is_admin', False),
         primary_currency=user.get('primary_currency', 'USD'),
         trial_started_at=format_datetime(trial_started_at),
         trial_expires_at=format_datetime(trial_expires_at),
