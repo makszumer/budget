@@ -276,9 +276,7 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
   // Add transaction
   const handleAddTransaction = async (transaction) => {
     try {
-      const response = await axios.post(`${API}/transactions`, transaction, {
-  headers: { Authorization: `Bearer ${token}` }
-});
+     const response = await axios.post(`${API}/transactions`, transaction);
       setTransactions([response.data, ...transactions]);
       await Promise.all([fetchSummary(), fetchAnalytics(), fetchBudgetGrowth()]);
       if (transaction.type === "investment") {
