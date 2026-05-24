@@ -391,7 +391,7 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
             )}
           </div>
 
-         <Button type="button" onClick={handleSubmit} <Button  className="w-full" data-testid={`submit-btn-${type}`}>
+         <Button type="button" onClick={handleSubmit} className="w-full" data-testid={`submit-btn-${type}`}>
             <Plus className="mr-2 h-4 w-4" />
             Add {type.charAt(0).toUpperCase() + type.slice(1)}
           </Button>
