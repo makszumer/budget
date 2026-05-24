@@ -50,7 +50,7 @@ const BACKEND_URL = process.env.REACT_APP_BACKEND_URL;
 const API = `${BACKEND_URL}/api`;
 // Always attach the stored token to every request
 axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem('access_token');
+  const token = localStorage.getItem('access_token') || window._vaultonToken;
   if (token) {
     config.headers['Authorization'] = `Bearer ${token}`;
   }

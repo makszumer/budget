@@ -73,6 +73,7 @@ useEffect(() => {
           return;
         }
   axios.defaults.headers.common['Authorization'] = `Bearer ${savedToken}`;
+  window._vaultonToken = savedToken;
         setToken(savedToken);
       }
       if (savedIsGuest === 'true') {
@@ -124,6 +125,7 @@ useEffect(() => {
     const response = await axios.post(`${API}/users/login`, { email, password });
 const { access_token, is_premium } = response.data;
 axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+window._vaultonToken = access_token;
 await storage.set('access_token', access_token);
 await storage.remove('is_guest');
 setIsGuest(false);
@@ -136,6 +138,7 @@ return response.data;
     const response = await axios.post(`${API}/users/register`, { email, password, username });
   const { access_token, is_premium } = response.data;
 axios.defaults.headers.common['Authorization'] = `Bearer ${access_token}`;
+window._vaultonToken = access_token;
 await storage.set('access_token', access_token);
 await storage.remove('is_guest');
 setIsGuest(false);
