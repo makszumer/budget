@@ -480,22 +480,22 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
               data-testid="budget-section-btn"
               className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg ${
                 activeSection === "budget"
-                  ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-md scale-105"
+                  ? "bg-[#1C3D2E] text-white"
                   : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
               }`}
             >
-              💼 Budget Manager
+              Budget Manager
             </button>
             <button
               onClick={() => setActiveSection("investments")}
               data-testid="investments-section-btn"
               className={`px-8 py-3 rounded-lg font-semibold transition-all text-lg relative ${
                 activeSection === "investments"
-                  ? "bg-gradient-to-r from-blue-500 to-indigo-600 text-white shadow-md scale-105"
+                  ? "bg-[#1C3D2E] text-white"
                   : "text-slate-600 dark:text-slate-300 hover:text-slate-900 dark:hover:text-white hover:bg-slate-50 dark:hover:bg-gray-700"
               }`}
             >
-              📈 Investment Portfolio
+              Investment Portfolio
               {!access.canUseInvestmentPortfolio && (
                 <span className="absolute -top-2 -right-2 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 text-[10px] font-medium px-1.5 py-0.5 rounded-full">
                   PRO
@@ -509,25 +509,29 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
         {activeSection === "budget" && (
           <div className="space-y-6">
             {/* 5. TRANSACTIONS & ANALYTICS - Hidden by Default, shown when button clicked */}
-            <div className="flex justify-center gap-3">
-              <Button
-                variant={showTransactions ? "default" : "outline"}
+            <div className="flex gap-2">
+              <button
                 onClick={() => { setShowTransactions(!showTransactions); setShowAnalytics(false); }}
-                className="flex items-center gap-2"
                 data-testid="show-transactions-btn"
+                className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  showTransactions
+                    ? 'bg-[#1C3D2E] text-white border-[#1C3D2E]'
+                    : 'bg-transparent text-gray-600 dark:text-gray-400 border-[#E8E6E1] dark:border-[#3a3a3a]'
+                }`}
               >
-                {showTransactions ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 Transactions
-              </Button>
-              <Button
-                variant={showAnalytics ? "default" : "outline"}
+              </button>
+              <button
                 onClick={() => { setShowAnalytics(!showAnalytics); setShowTransactions(false); }}
-                className="flex items-center gap-2"
                 data-testid="show-analytics-btn"
+                className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                  showAnalytics
+                    ? 'bg-[#1C3D2E] text-white border-[#1C3D2E]'
+                    : 'bg-transparent text-gray-600 dark:text-gray-400 border-[#E8E6E1] dark:border-[#3a3a3a]'
+                }`}
               >
-                {showAnalytics ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
                 Analytics
-              </Button>
+              </button>
             </div>
 
             {/* Transactions Panel - Only visible when clicked */}

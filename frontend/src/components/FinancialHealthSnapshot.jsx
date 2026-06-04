@@ -144,7 +144,7 @@ export const FinancialHealthSnapshot = ({
       <Card className="mb-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-500" />
+            <Activity className="h-5 w-5 text-[#1C3D2E]" />
             Financial Health
             <HelpTooltip term="financial_health" />
           </CardTitle>
@@ -230,10 +230,10 @@ export const FinancialHealthSnapshot = ({
 
         {/* PREMIUM: Investment Performance */}
         {hasPremiumAccess && investmentGrowth && investmentGrowth.total_invested > 0 && (
-          <div className="p-3 rounded-lg bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 border border-blue-200 dark:border-blue-800">
+          <div className="p-3 rounded-lg bg-[#F5F2EC] dark:bg-gray-800 border border-[#E8E6E1] dark:border-[#3a3a3a]">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4 text-blue-500" />
+                <TrendingUp className="h-4 w-4 text-[#1C3D2E]" />
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Investment Performance</span>
                 <HelpTooltip term="investment_performance" size="sm" />
               </div>

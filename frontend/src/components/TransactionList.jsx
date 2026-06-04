@@ -31,8 +31,8 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
 
   const getTypeColor = (type) => {
     switch (type) {
-      case 'income': return 'bg-green-500 hover:bg-green-600';
-      case 'expense': return 'bg-red-500 hover:bg-red-600';
+      case 'income': return 'bg-[#1C3D2E] hover:bg-[#1C3D2E]/90 text-white';
+      case 'expense': return 'bg-[#7C2D2D] hover:bg-[#7C2D2D]/90 text-white';
       case 'investment': return 'bg-blue-500 hover:bg-blue-600';
       default: return 'bg-gray-500';
     }
@@ -60,10 +60,12 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
               data-testid={`transaction-item-${transaction.id}`}
               className="flex items-center justify-between p-4 border border-gray-200 dark:border-gray-700 rounded-lg hover:bg-accent transition-colors"
             >
-              <div className="flex-1">
+              <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <Badge className={getTypeColor(transaction.type)}>{transaction.type}</Badge>
-                  <span className="font-medium text-slate-900 dark:text-slate-100">{transaction.description}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium text-slate-900 dark:text-slate-100 truncate">{transaction.description}</span>
                 </div>
                 <div className="text-sm text-muted-foreground">
                   <span className="font-semibold text-slate-700 dark:text-slate-300">{transaction.category}</span>
@@ -83,7 +85,7 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
               <div className="flex items-center gap-3">
                 <div className="text-right">
                   <span className={`text-lg font-bold ${
-                    transaction.type === 'income' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
+                    transaction.type === 'income' ? 'text-[#1C3D2E] dark:text-green-400' : 'text-[#7C2D2D] dark:text-red-400'
                   }`}>
                     {transaction.type === 'income' ? '+' : '-'}
                     {formatAmount(transaction.amount, transaction.currency || 'USD')}
@@ -99,7 +101,7 @@ export const TransactionList = ({ transactions, onDeleteTransaction, onEditTrans
                   size="icon"
                   data-testid={`edit-btn-${transaction.id}`}
                   onClick={() => handleEditClick(transaction)}
-                  className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/30"
+                  className="text-gray-400 hover:text-gray-600 dark:text-gray-500 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
                 >
                   <Edit className="h-4 w-4" />
                 </Button>
