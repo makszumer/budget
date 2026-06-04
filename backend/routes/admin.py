@@ -5,6 +5,7 @@ import os
 import sys
 sys.path.append('/app/backend')
 
+from auth import get_current_user
 from user_models import AdminBankInfo, AdminCredentials
 from typing import Optional
 
@@ -66,10 +67,7 @@ async def get_bank_info(credentials: AdminCredentials):
     return bank_info
 
 @router.get("/stats")
-async def get_admin_stats(username: str, password: str):
-    """Get admin statistics"""
-    credentials = AdminCredentials(username=username, password=password)
-    await verify_admin(credentials)
+async def get_admin_stats(current_user_id: str = Depends(get_current_user)):
     
     db = get_db()
     
