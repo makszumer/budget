@@ -51,18 +51,11 @@ export const DateFilter = ({ dateFilter, setDateFilter, selectedDate, setSelecte
   };
 
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-4 mb-6 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700">
-      <div className="flex items-center gap-2">
-        <Calendar className="h-5 w-5 text-gray-600 dark:text-gray-400" />
-        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">View:</span>
-      </div>
-      
-      <div className="flex gap-2 flex-wrap justify-center">
+    <div className="flex items-center gap-2 mb-4 flex-wrap">
+       <div className="flex gap-2 flex-wrap justify-center">
         {filters.map(filter => (
-          <Button
+          <button
             key={filter.value}
-            variant={dateFilter === filter.value ? "default" : "outline"}
-            size="sm"
             onClick={() => {
               setDateFilter(filter.value);
               if (filter.value === "all") {
@@ -70,9 +63,14 @@ export const DateFilter = ({ dateFilter, setDateFilter, selectedDate, setSelecte
               }
             }}
             data-testid={`filter-${filter.value}`}
+            className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+              dateFilter === filter.value
+                ? 'bg-[#1C3D2E] text-white border-[#1C3D2E]'
+                : 'bg-transparent text-gray-600 dark:text-gray-400 border-[#E8E6E1] dark:border-[#3a3a3a] hover:border-[#1C3D2E] dark:hover:border-gray-500'
+            }`}
           >
             {filter.label}
-          </Button>
+          </button>
         ))}
       </div>
 
