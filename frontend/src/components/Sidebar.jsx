@@ -13,7 +13,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     <button
       onClick={() => onNavigate(page)}
       className={`w-full flex items-center justify-between gap-3 px-4 py-3 rounded-lg transition-all ${
-        active ? "bg-blue-600 text-white shadow-md" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
+        active ? "bg-[#1C3D2E] text-white" : "text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800"
       }`}
       data-testid={`menu-${page}`}
     >
@@ -33,7 +33,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     <button
       onClick={() => onNavigate(page)}
       className={`w-full flex items-center gap-3 pl-12 pr-4 py-2 rounded-lg text-sm transition-all ${
-        active ? "bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
+        active ? "bg-[#1C3D2E]/10 text-[#1C3D2E] dark:text-green-400 font-medium" : "text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-800"
       }`}
       data-testid={`menu-${page}`}
     >
@@ -44,7 +44,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
   const renderPremiumSection = () => {
     if (isAdmin) {
       return (
-        <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-purple-500 to-indigo-600 text-white">
+       <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white" style={{ backgroundColor: '#1C3D2E' }}>
           <Shield className="h-5 w-5" />
           <span className="font-medium">Admin Access</span>
         </div>
@@ -52,7 +52,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     }
     if (isPremium) {
       return (
-        <div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-gradient-to-r from-amber-400 to-orange-500 text-white">
+<div className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-white" style={{ backgroundColor: '#1A1A18' }}>
           <Crown className="h-5 w-5" />
           <span className="font-medium">Premium Member</span>
         </div>
@@ -61,9 +61,10 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
     return (
       <button
         onClick={() => onNavigate('pricing')}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all bg-gradient-to-r from-amber-400 to-orange-500 text-white hover:from-amber-500 hover:to-orange-600 shadow-md ${
-          currentPage === 'pricing' ? 'ring-2 ring-amber-300' : ''
+       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-white ${
+          currentPage === 'pricing' ? 'opacity-90' : ''
         }`}
+        style={{ backgroundColor: '#1C3D2E' }}
         data-testid="upgrade-premium-btn"
       >
         <Crown className="h-5 w-5" />
@@ -73,7 +74,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
   };
 
   return (
-    <div className="w-72 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0">
+    <div className="w-72 dark:bg-gray-900 border-r border-[#E8E6E1] dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0" style={{ backgroundColor: '#F5F2EC' }}>
       <div className="mb-6 pt-2">
         <div className="flex items-center justify-center mb-3">
           <div className="p-2 rounded-xl bg-white dark:bg-gray-100 shadow-sm">
