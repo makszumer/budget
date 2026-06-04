@@ -51,8 +51,8 @@ export const DateFilter = ({ dateFilter, setDateFilter, selectedDate, setSelecte
   };
 
   return (
-    <div className="flex items-center gap-2 mb-4 flex-wrap">
-       <div className="flex gap-2 flex-wrap justify-center">
+    <div className="flex flex-col gap-2 mb-4">
+       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
         {filters.map(filter => (
           <button
             key={filter.value}

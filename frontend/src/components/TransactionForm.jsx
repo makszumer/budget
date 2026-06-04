@@ -184,9 +184,6 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg">{typeLabels[type]}</CardTitle>
-          <span className="text-sm text-muted-foreground bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded">
-            {currencySymbol} {primaryCurrency}
-          </span>
         </div>
       </CardHeader>
       <CardContent>
@@ -391,7 +388,7 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
             )}
           </div>
 
-         <Button type="button" onClick={handleSubmit} className="w-full" data-testid={`submit-btn-${type}`}>
+         <Button type="button" onClick={handleSubmit} className="w-full" style={{ backgroundColor: '#1C3D2E', borderColor: '#1C3D2E', color: '#FFFFFF' }} data-testid={`submit-btn-${type}`}>
             <Plus className="mr-2 h-4 w-4" />
             Add {type.charAt(0).toUpperCase() + type.slice(1)}
           </Button>
