@@ -394,9 +394,9 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
     const filteredSummary = getFilteredSummary();
     
     return (
-      <div className="space-y-8" data-testid="dashboard-container">
+      <div className="space-y-8" data-testid="dashboard-container" style={{ backgroundColor: 'transparent' }}>
         {/* Header */}
-<div className="mb-6">
+<div className="mb-6 pt-12">
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
       <div className="p-1 rounded-lg bg-white dark:bg-gray-100 shadow-sm">
@@ -407,7 +407,7 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
         />
       </div>
       <div>
-        <h1 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight">
+        <h1 className="text-lg font-semibold text-gray-900 dark:text-white tracking-tight" style={{ fontFamily: 'Georgia, serif' }}>
           {isGuest ? 'Vaulton' : `Welcome, ${user?.username || 'User'}`}
         </h1>
         <p className="text-xs text-slate-500 dark:text-slate-400">Financial overview</p>
@@ -416,24 +416,6 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
 
     {/* Right side actions - compact */}
     <div className="flex items-center gap-2">
-      {/* Premium/Upgrade */}
-      {isPremium ? (
-        <button
-          onClick={() => setCurrentPage('pricing')}
-          className="flex items-center gap-1 px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-400 rounded-lg text-xs font-semibold"
-        >
-          <Crown className="h-3 w-3" />
-          {isOnTrial ? 'Trial' : 'Premium'}
-        </button>
-      ) : (
-        <button
-          onClick={() => setCurrentPage('pricing')}
-          className="flex items-center gap-1 px-3 py-1.5 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-lg text-xs font-semibold"
-        >
-          <Crown className="h-3 w-3" />
-          Upgrade
-        </button>
-      )}
 
       {/* Privacy Toggle */}
       <button
@@ -457,24 +439,6 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
       </div>
     </div>
   </div>
-
-  {/* Sub-toolbar: Currency + Theme + Voice — compact row */}
-  <div className="flex items-center gap-2 mt-3 flex-wrap">
-    <FeatureLock
-      feature={FEATURES.CURRENCY_CONVERSION}
-      onUpgradeClick={handleNavigateToPricing}
-      showBadge={false}
-    >
-      <CurrencyPreferences compact />
-    </FeatureLock>
-    <AppearanceToggle />
-    <FeatureLock
-      feature={FEATURES.VOICE_INPUT}
-      onUpgradeClick={handleNavigateToPricing}
-    >
-      <VoiceInput onTransactionCreated={handleAddTransaction} />
-    </FeatureLock>
-  </div>
 </div>
         {/* Date Filter */}
         <DateFilter 
@@ -491,13 +455,13 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
 
         {/* 2. ADD EXPENSE / ADD INCOME - Clear action buttons, always visible */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6" data-testid="transaction-forms">
-          <div className="border-2 border-red-200 dark:border-red-800 rounded-xl p-1 bg-red-50/50 dark:bg-red-950/30">
+          <div className="rounded-xl p-1 border border-[#E8E6E1] dark:border-[#3a3a3a]">
             <TransactionForm
               type="expense"
               onAddTransaction={handleAddTransaction}
             />
           </div>
-          <div className="border-2 border-green-200 dark:border-green-800 rounded-xl p-1 bg-green-50/50 dark:bg-green-950/30">
+          <div className="rounded-xl p-1 border border-[#E8E6E1] dark:border-[#3a3a3a]">
             <TransactionForm
               type="income"
               onAddTransaction={handleAddTransaction}
@@ -755,7 +719,7 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex relative">
+    <div className="min-h-screen dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-950 flex relative" style={{ backgroundColor: '#FAFAF7' }}>
       <Toaster />
       
       {/* Menu Button (Three Dots) - Hide on scroll down */}
