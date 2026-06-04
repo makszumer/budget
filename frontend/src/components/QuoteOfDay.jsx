@@ -120,14 +120,14 @@ export const QuoteOfDay = ({ onUpgradeClick }) => {
   // PREMIUM users - Fully visible, enhanced
   return (
     <Card 
-      className="mb-4 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 border-blue-100 dark:border-blue-800" 
+     className="mb-4 border-[#E8E6E1] dark:border-[#3a3a3a]" style={{ backgroundColor: '#F5F2EC' }} 
       data-testid="quote-premium"
     >
       <CardContent className="py-3 px-4">
         <div className="flex items-center gap-3">
-          <Sparkles className="h-4 w-4 text-blue-500 dark:text-blue-400 flex-shrink-0" />
+          <Sparkles className="h-4 w-4 text-[#6B6B67] dark:text-gray-400 flex-shrink-0" />
           <div className="flex-grow min-w-0">
-            <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed">
+            <p className="text-slate-700 dark:text-slate-200 text-sm leading-relaxed" style={{ fontFamily: 'Georgia, serif' }}>
               &ldquo;{quote.quote}&rdquo;
             </p>
             <p className="text-[10px] text-slate-500 dark:text-slate-400 mt-1">
@@ -138,7 +138,7 @@ export const QuoteOfDay = ({ onUpgradeClick }) => {
             <Button
               variant="ghost"
               size="icon"
-              className="flex-shrink-0 h-7 w-7 text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 hover:bg-blue-100 dark:hover:bg-blue-900/30"
+              className="flex-shrink-0 h-7 w-7 text-[#6B6B67] dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800"
               onClick={handleRefresh}
               title="Get a new quote (once per day)"
             >
