@@ -51,8 +51,8 @@ export const DateFilter = ({ dateFilter, setDateFilter, selectedDate, setSelecte
   };
 
   return (
-    <div className="flex flex-col gap-2 mb-4">
-       <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+    <div className="flex gap-2 mb-4 flex-wrap">
+       <div className="flex gap-2 flex-wrap">
         {filters.map(filter => (
           <button
             key={filter.value}
@@ -63,7 +63,7 @@ export const DateFilter = ({ dateFilter, setDateFilter, selectedDate, setSelecte
               }
             }}
             data-testid={`filter-${filter.value}`}
-            className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+            className={`px-3 py-1 text-xs rounded-full whitespace-nowrap border transition-colors ${
               dateFilter === filter.value
                 ? 'bg-[#1C3D2E] text-white border-[#1C3D2E]'
                 : 'bg-transparent text-gray-600 dark:text-gray-400 border-[#E8E6E1] dark:border-[#3a3a3a] hover:border-[#1C3D2E] dark:hover:border-gray-500'
