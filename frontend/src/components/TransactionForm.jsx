@@ -194,7 +194,7 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
           <div className="space-y-2">
             <div className="flex items-center justify-between">
               <Label htmlFor={`amount-${type}`}>
-                Amount ({showCurrencyConversion && foreignCurrency ? foreignSymbol : currencySymbol}) <span className="text-destructive">*</span>
+                Amount {currencySymbol && <span className="text-gray-500 dark:text-gray-400 font-normal">({showCurrencyConversion && foreignCurrency ? foreignSymbol : currencySymbol})</span>} <span className="text-destructive">*</span>
               </Label>
               <button
                 type="button"
@@ -205,7 +205,7 @@ export const TransactionForm = ({ type, onAddTransaction }) => {
                     setConversionPreview(null);
                   }
                 }}
-                className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 flex items-center gap-1"
                 data-testid={`currency-toggle-${type}`}
               >
                 <ArrowRightLeft className="h-3 w-3" />

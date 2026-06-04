@@ -721,41 +721,6 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
   return (
     <div className="min-h-screen dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-950 flex relative" style={{ backgroundColor: '#FAFAF7' }}>
       <Toaster />
-      
-      {/* Menu Button (Three Dots) - Hide on scroll down */}
-      <button
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className={`fixed top-6 left-6 z-50 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-lg hover:shadow-xl border border-gray-200 dark:border-gray-700 transition-all duration-300 ease-in-out ${
-          actionsVisible 
-            ? 'opacity-100 translate-y-0' 
-            : 'opacity-0 -translate-y-4 pointer-events-none'
-        }`}
-        data-testid="menu-toggle"
-      >
-        <svg
-          className="w-6 h-6 text-gray-700 dark:text-gray-200"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          {sidebarOpen ? (
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M6 18L18 6M6 6l12 12"
-            />
-          ) : (
-            <>
-              <circle cx="12" cy="5" r="1.5" fill="currentColor" />
-              <circle cx="12" cy="12" r="1.5" fill="currentColor" />
-              <circle cx="12" cy="19" r="1.5" fill="currentColor" />
-            </>
-          )}
-        </svg>
-      </button>
-
-
       {/* Overlay when sidebar is open */}
       {sidebarOpen && (
         <div
