@@ -19,7 +19,7 @@ import { CurrencyPreferences } from "@/components/CurrencyPreferences";
 import { FeatureLock, PremiumBadge } from "@/components/FeatureLock";
 import { FinancialHealthSnapshot } from "@/components/FinancialHealthSnapshot";
 import { WhatChanged } from "@/components/WhatChanged";
-import { Eye, EyeOff, LogOut, Crown, Shield, ChevronDown, ChevronUp, Trash2 } from "lucide-react";
+import { Eye, EyeOff, LogOut, Crown, Shield, ChevronDown, ChevronUp, ChevronLeft, Trash2 } from "lucide-react";
 import { TransactionForm } from "@/components/TransactionForm";
 import { InvestmentForm } from "@/components/InvestmentForm";
 import { TransactionList } from "@/components/TransactionList";
@@ -397,6 +397,24 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
       <div className="space-y-8" data-testid="dashboard-container" style={{ backgroundColor: 'transparent' }}>
         {/* Header */}
 <div className="mb-6 pt-12">
+          {currentPage !== 'dashboard' && (
+            <button
+              onClick={() => setCurrentPage('dashboard')}
+              className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </button>
+          )}
+          {currentPage !== 'dashboard' && (
+            <button
+              onClick={() => setCurrentPage('dashboard')}
+              className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4"
+            >
+              <ChevronLeft className="h-4 w-4" />
+              Back
+            </button>
+          )}
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-3">
       <div className="p-1 rounded-lg bg-white dark:bg-gray-100 shadow-sm">
@@ -566,17 +584,17 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
             <div className="space-y-8">
               {/* Investment Tabs */}
               <Tabs defaultValue="portfolio" className="w-full">
-                <TabsList className="grid w-full grid-cols-4 max-w-3xl mx-auto">
-                  <TabsTrigger value="portfolio" data-testid="portfolio-tab">
+                <TabsList className="flex gap-2 overflow-x-auto pb-1 bg-transparent border-0 h-auto justify-start">
+                  <TabsTrigger value="portfolio" data-testid="portfolio-tab" className="rounded-full border border-[#E8E6E1] dark:border-[#3a3a3a] data-[state=active]:bg-[#1C3D2E] data-[state=active]:text-white data-[state=active]:border-[#1C3D2E] data-[state=inactive]:bg-transparent whitespace-nowrap px-3 py-1 text-sm">
                     Portfolio
                   </TabsTrigger>
-                  <TabsTrigger value="add" data-testid="add-investment-tab">
+                  <TabsTrigger value="add" data-testid="add-investment-tab" className="rounded-full border border-[#E8E6E1] dark:border-[#3a3a3a] data-[state=active]:bg-[#1C3D2E] data-[state=active]:text-white data-[state=active]:border-[#1C3D2E] data-[state=inactive]:bg-transparent whitespace-nowrap px-3 py-1 text-sm">
                     Add Investment
                   </TabsTrigger>
-                  <TabsTrigger value="history" data-testid="investment-history-tab">
+                  <TabsTrigger value="history" data-testid="investment-history-tab" className="rounded-full border border-[#E8E6E1] dark:border-[#3a3a3a] data-[state=active]:bg-[#1C3D2E] data-[state=active]:text-white data-[state=active]:border-[#1C3D2E] data-[state=inactive]:bg-transparent whitespace-nowrap px-3 py-1 text-sm">
                     History
                   </TabsTrigger>
-                  <TabsTrigger value="analytics" data-testid="investment-analytics-tab">
+                  <TabsTrigger value="analytics" data-testid="investment-analytics-tab" className="rounded-full border border-[#E8E6E1] dark:border-[#3a3a3a] data-[state=active]:bg-[#1C3D2E] data-[state=active]:text-white data-[state=active]:border-[#1C3D2E] data-[state=inactive]:bg-transparent whitespace-nowrap px-3 py-1 text-sm">
                     Analytics
                   </TabsTrigger>
                 </TabsList>
@@ -588,7 +606,7 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
 
                 {/* Add Investment Tab */}
                 <TabsContent value="add" className="mt-6">
-                  <div className="max-w-4xl mx-auto border-2 border-blue-200 dark:border-blue-800 rounded-xl p-1 bg-blue-50/50 dark:bg-blue-950/30">
+                  <div className="max-w-4xl mx-auto rounded-xl p-1 border border-[#E8E6E1] dark:border-[#3a3a3a]">
                     <InvestmentForm onAddInvestment={handleAddTransaction} />
                   </div>
                 </TabsContent>
@@ -745,8 +763,17 @@ const { user, token, isLoading: authLoading, logout, isPremium, isAuthenticated,
       {/* Main Content */}
       <div className="flex-1 overflow-auto w-full">
         <div className="container mx-auto px-8 py-8">
-          {renderPage()}
-        </div>
+            {currentPage !== 'dashboard' && currentPage !== 'pricing' && currentPage !== 'subscription-success' && currentPage !== 'subscription-cancel' && (
+              <button
+                onClick={() => setCurrentPage('dashboard')}
+                className="flex items-center gap-1 text-sm text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white mb-4 pt-12"
+              >
+                <ChevronLeft className="h-4 w-4" />
+                Back
+              </button>
+            )}
+            {renderPage()}
+          </div>
       </div>
     </div>
   );

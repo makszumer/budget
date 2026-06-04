@@ -19,10 +19,10 @@ export const PortfolioTracker = ({ portfolio }) => {
   if (!portfolio || portfolio.holdings.length === 0) {
     return (
       <div className="space-y-6">
-        <Card className="border-blue-200 bg-blue-50/50">
+        <Card className="border-[#E8E6E1] dark:border-[#3a3a3a]">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <PieChart className="h-5 w-5 text-blue-600" />
+              <PieChart className="h-5 w-5 text-[#1C3D2E]" />
               Investment Portfolio
             </CardTitle>
           </CardHeader>
@@ -75,7 +75,7 @@ export const PortfolioTracker = ({ portfolio }) => {
         {stats.map((stat) => {
           const Icon = stat.icon;
           return (
-            <Card key={stat.title} className="border-blue-200">
+            <Card key={stat.title} className="border-[#E8E6E1] dark:border-[#3a3a3a]">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-sm font-medium">
                   {stat.title}
@@ -98,7 +98,7 @@ export const PortfolioTracker = ({ portfolio }) => {
       </div>
 
       {/* Holdings List */}
-      <Card className="border-blue-200">
+      <Card className="border-[#E8E6E1] dark:border-[#3a3a3a]">
         <CardHeader>
           <CardTitle>Portfolio Holdings</CardTitle>
         </CardHeader>
@@ -147,7 +147,7 @@ export const PortfolioTracker = ({ portfolio }) => {
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Current Value</p>
-                    <p className="font-semibold text-blue-600">{formatAmount(holding.current_value)}</p>
+                    <p className="font-semibold text-[#1C3D2E]">{formatAmount(holding.current_value)}</p>
                   </div>
                   <div>
                     <p className="text-xs text-muted-foreground">Gain/Loss</p>
