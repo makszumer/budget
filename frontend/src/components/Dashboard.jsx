@@ -17,32 +17,32 @@ export const Dashboard = ({ summary, privacyMode = false }) => {
       title: "Total Income",
       value: summary.totalIncome,
       icon: TrendingUp,
-      color: "text-green-600",
-      bgColor: "bg-green-50",
+      color: "text-[#1C3D2E]",
+      bgColor: "bg-[#F5F2EC] dark:bg-gray-800",
       testId: "total-income"
     },
     {
       title: "Total Expenses",
       value: summary.totalExpenses,
       icon: TrendingDown,
-      color: "text-red-600",
-      bgColor: "bg-red-50",
+      color: "text-[#7C2D2D]",
+      bgColor: "bg-[#F5F2EC] dark:bg-gray-800",
       testId: "total-expenses"
     },
     {
       title: "Total Investments",
       value: summary.totalInvestments,
       icon: PieChart,
-      color: "text-blue-600",
-      bgColor: "bg-blue-50",
+      color: "text-[#6B6B67]",
+      bgColor: "bg-[#F5F2EC] dark:bg-gray-800",
       testId: "total-investments"
     },
     {
       title: "Balance",
       value: summary.balance,
       icon: DollarSign,
-      color: summary.balance >= 0 ? "text-green-600" : "text-red-600",
-      bgColor: summary.balance >= 0 ? "bg-green-50" : "bg-red-50",
+      color: "text-[#1C3D2E]",
+      bgColor: "bg-[#F5F2EC] dark:bg-gray-800",
       testId: "balance"
     },
   ];
