@@ -6,6 +6,7 @@ import sys
 sys.path.append('/app/backend')
 
 from auth import get_current_user
+from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from user_models import AdminBankInfo, AdminCredentials
 from typing import Optional
 
@@ -67,7 +68,12 @@ async def get_bank_info(credentials: AdminCredentials):
     return bank_info
 
 @router.get("/stats")
-async def get_admin_stats(current_user_id: str = Depends(get_current_user)):
+async def get_admin_stats(credentials: HTTPAuthorizationCredentials = Depends(HTTPBearer())):
+    from auth import verify_token
+    payload = verify_token(credentials.credentials)
+    current_user_id = payload.get('user_id')
+    if not current_user_id:
+        raise HTTPException(status_code=401, detail="Invalid token")
     
     db = get_db()
     
