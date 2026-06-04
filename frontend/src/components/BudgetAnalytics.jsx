@@ -410,41 +410,25 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
             
             {/* Quick Filters */}
             <div className="flex gap-2 flex-wrap">
-              <Button
-                variant={pieChartFilter === "daily" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange("daily")}
-              >
-                Today
-              </Button>
-              <Button
-                variant={pieChartFilter === "weekly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange("weekly")}
-              >
-                This Week
-              </Button>
-              <Button
-                variant={pieChartFilter === "monthly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange("monthly")}
-              >
-                This Month
-              </Button>
-              <Button
-                variant={pieChartFilter === "yearly" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange("yearly")}
-              >
-                This Year
-              </Button>
-              <Button
-                variant={pieChartFilter === "all" ? "default" : "outline"}
-                size="sm"
-                onClick={() => handleFilterChange("all")}
-              >
-                All Time
-              </Button>
+              {[
+                { value: "daily", label: "Today" },
+                { value: "weekly", label: "This Week" },
+                { value: "monthly", label: "This Month" },
+                { value: "yearly", label: "This Year" },
+                { value: "all", label: "All Time" },
+              ].map(filter => (
+                <button
+                  key={filter.value}
+                  onClick={() => handleFilterChange(filter.value)}
+                  className={`px-3 py-1 text-sm rounded-full border transition-colors ${
+                    pieChartFilter === filter.value
+                      ? 'bg-[#1C3D2E] text-white border-[#1C3D2E]'
+                      : 'bg-transparent text-gray-600 dark:text-gray-400 border-[#E8E6E1] dark:border-[#3a3a3a] hover:border-[#1C3D2E]'
+                  }`}
+                >
+                  {filter.label}
+                </button>
+              ))}
             </div>
 
             {/* Year Selector */}
@@ -561,7 +545,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
       {filteredBudgetGrowth && filteredBudgetGrowth.data && filteredBudgetGrowth.data.length > 0 ? (
         <Card>
           <CardHeader>
-            <CardTitle className="text-green-700">📈 Budget Growth Over Time</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Budget Growth Over Time</CardTitle>
             <p className="text-sm text-muted-foreground">
               Track how your balance grows {pieChartFilter !== "all" && `(${getFilterLabel()})`}
             </p>
@@ -613,7 +597,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
       ) : pieChartFilter !== "all" && (
         <Card>
           <CardHeader>
-            <CardTitle className="text-green-700">📈 Budget Growth Over Time</CardTitle>
+            <CardTitle className="text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Budget Growth Over Time</CardTitle>
           </CardHeader>
           <CardContent>
             <NoDataMessage type="growth" />
@@ -627,7 +611,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-red-700 dark:text-red-400">💸 Expense Breakdown</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Expense Breakdown</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   What you spend the most on {pieChartFilter !== "all" && `(${getFilterLabel()})`}
                 </p>
@@ -651,9 +635,9 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
             {expenseData.length > 0 ? (
               <>
                 {/* Total Display */}
-                <div className="text-center mb-4 p-3 bg-red-50 dark:bg-red-950/30 rounded-lg">
-                  <p className="text-xs text-red-600 dark:text-red-400 font-medium">Total Expenses</p>
-                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">
+                <div className="text-center mb-4 p-3 bg-[#F5F2EC] dark:bg-gray-800 rounded-lg border border-[#E8E6E1] dark:border-[#3a3a3a]">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Expenses</p>
+                  <p className="text-2xl font-bold text-[#7C2D2D] dark:text-red-300">
                     {formatAmount(filteredTotals.expenses)}
                   </p>
                 </div>
@@ -762,7 +746,7 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
           <CardHeader>
             <div className="flex items-center justify-between">
               <div>
-                <CardTitle className="text-green-700 dark:text-green-400">💰 Income Sources</CardTitle>
+                <CardTitle className="text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Income Sources</CardTitle>
                 <p className="text-sm text-muted-foreground">
                   Your biggest sources of income {pieChartFilter !== "all" && `(${getFilterLabel()})`}
                 </p>
@@ -786,9 +770,9 @@ export const BudgetAnalytics = ({ analytics, budgetGrowth, privacyMode = false, 
             {incomeData.length > 0 ? (
               <>
                 {/* Total Display */}
-                <div className="text-center mb-4 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
-                  <p className="text-xs text-green-600 dark:text-green-400 font-medium">Total Income</p>
-                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">
+                <div className="text-center mb-4 p-3 bg-[#F5F2EC] dark:bg-gray-800 rounded-lg border border-[#E8E6E1] dark:border-[#3a3a3a]">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">Total Income</p>
+                  <p className="text-2xl font-bold text-[#1C3D2E] dark:text-green-300">
                     {formatAmount(filteredTotals.income)}
                   </p>
                 </div>
