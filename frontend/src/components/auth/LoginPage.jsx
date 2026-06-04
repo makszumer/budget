@@ -43,7 +43,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAFAF7' }}>
+    <div className="min-h-screen flex flex-col bg-[#FAFAF7] dark:bg-gray-950">
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-4">
@@ -55,7 +55,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Welcome Back</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif', color: undefined }}>Welcome Back</h1>
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1">
             Sign in to your financial tracking account
           </p>

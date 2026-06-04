@@ -74,7 +74,7 @@ export const Sidebar = ({ currentPage, onNavigate }) => {
   };
 
   return (
-    <div className="w-72 dark:bg-gray-900 border-r border-[#E8E6E1] dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0" style={{ backgroundColor: '#F5F2EC' }}>
+    <div className="w-72 bg-[#F5F2EC] dark:bg-gray-900 border-r border-[#E8E6E1] dark:border-gray-800 h-screen overflow-y-auto p-4 flex-shrink-0">
       <div className="mb-6 pt-2">
         <div className="flex items-center justify-center mb-3">
           <div className="p-2 rounded-xl bg-white dark:bg-gray-100 shadow-sm">

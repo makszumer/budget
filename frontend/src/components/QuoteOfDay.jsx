@@ -120,7 +120,7 @@ export const QuoteOfDay = ({ onUpgradeClick }) => {
   // PREMIUM users - Fully visible, enhanced
   return (
     <Card 
-     className="mb-4 border-[#E8E6E1] dark:border-[#3a3a3a]" style={{ backgroundColor: '#F5F2EC' }} 
+     className="mb-4 border-[#E8E6E1] dark:border-[#3a3a3a]" style={{ backgroundColor: window.matchMedia('(prefers-color-scheme: dark)').matches ? '#1f2937' : '#F5F2EC' }}
       data-testid="quote-premium"
     >
       <CardContent className="py-3 px-4">
