@@ -219,7 +219,7 @@ export const WhatChanged = ({
           data-testid="what-changed-btn"
         >
           <div className="flex items-center gap-2">
-            <RefreshCw className="h-4 w-4 text-blue-500" />
+            <RefreshCw className="h-4 w-4 text-[#6B6B67] dark:text-gray-400" />
             <span>What changed {comparison.periodLabel}?</span>
           </div>
           <CalendarRange className="h-4 w-4 text-muted-foreground" />
@@ -235,7 +235,7 @@ export const WhatChanged = ({
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between">
           <CardTitle className="text-lg flex items-center gap-2">
-            <RefreshCw className="h-5 w-5 text-blue-500" />
+            <RefreshCw className="h-5 w-5 text-[#6B6B67] dark:text-gray-400" />
             What Changed?
             <span className="text-sm font-normal text-muted-foreground">{comparison.periodLabel}</span>
           </CardTitle>
@@ -278,9 +278,9 @@ export const WhatChanged = ({
               </div>
 
               {/* Investments Change */}
-              <div className="p-3 rounded-lg bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
+              <div className="p-3 rounded-lg bg-[#F5F2EC] dark:bg-gray-800 border border-[#E8E6E1] dark:border-[#3a3a3a]">
                 <div className="flex items-center gap-1 mb-1">
-                  <Briefcase className="h-3 w-3 text-blue-500" />
+                  <Briefcase className="h-3 w-3 text-[#6B6B67] dark:text-gray-400" />
                   <span className="text-xs text-muted-foreground">Invested</span>
                 </div>
                 <ChangeIndicator value={comparison.investments.change} />
@@ -324,7 +324,7 @@ export const WhatChanged = ({
               {comparison.investmentValueChange !== 0 && (
                 <div className={`flex items-center justify-between p-2 rounded text-sm ${comparison.investmentValueChange >= 0 ? 'bg-emerald-50 dark:bg-emerald-950/20' : 'bg-rose-50 dark:bg-rose-950/20'}`}>
                   <div className="flex items-center gap-2">
-                    <Briefcase className="h-4 w-4 text-blue-500" />
+                    <Briefcase className="h-4 w-4 text-[#6B6B67] dark:text-gray-400" />
                     <span className="text-gray-700 dark:text-gray-300">
                       Investment portfolio value
                     </span>

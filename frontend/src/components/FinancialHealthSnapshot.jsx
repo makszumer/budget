@@ -133,7 +133,7 @@ export const FinancialHealthSnapshot = ({
   // Budget status styling
   const budgetStatusColors = {
     under: { bg: 'bg-green-50 dark:bg-green-950/30', text: 'text-green-600 dark:text-green-400', border: 'border-green-200 dark:border-green-800' },
-    on: { bg: 'bg-blue-50 dark:bg-blue-950/30', text: 'text-blue-600 dark:text-blue-400', border: 'border-blue-200 dark:border-blue-800' },
+    on: { bg: 'bg-[#F5F2EC] dark:bg-gray-800', text: 'text-[#1C3D2E] dark:text-green-400', border: 'border-[#E8E6E1] dark:border-[#3a3a3a]' },
     over: { bg: 'bg-red-50 dark:bg-red-950/30', text: 'text-red-600 dark:text-red-400', border: 'border-red-200 dark:border-red-800' }
   };
 
@@ -141,7 +141,7 @@ export const FinancialHealthSnapshot = ({
 
   if (!healthMetrics.hasEnoughData) {
     return (
-      <Card className="mb-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900">
+      <Card className="mb-6 border-[#E8E6E1] dark:border-[#3a3a3a]">
         <CardHeader className="pb-2">
           <CardTitle className="text-lg flex items-center gap-2">
             <Activity className="h-5 w-5 text-[#1C3D2E]" />
@@ -159,10 +159,10 @@ export const FinancialHealthSnapshot = ({
   }
 
   return (
-    <Card className="mb-6 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-800 dark:to-gray-900" data-testid="financial-health-snapshot">
+    <Card className="mb-6 border-[#E8E6E1] dark:border-[#3a3a3a]" data-testid="financial-health-snapshot">
       <CardHeader className="pb-3">
         <CardTitle className="text-lg flex items-center gap-2">
-          <Activity className="h-5 w-5 text-blue-500" />
+          <Activity className="h-5 w-5 text-[#1C3D2E]" />
           Financial Health
           <HelpTooltip term="financial_health" />
         </CardTitle>
@@ -251,15 +251,15 @@ export const FinancialHealthSnapshot = ({
 
         {/* PREMIUM: Smart Suggestions */}
         {hasPremiumAccess && healthMetrics.suggestions.length > 0 && (
-          <div className="p-3 rounded-lg bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 border border-purple-200 dark:border-purple-800">
+          <div className="p-3 rounded-lg bg-[#F5F2EC] dark:bg-gray-800 border border-[#E8E6E1] dark:border-[#3a3a3a]">
             <div className="flex items-center gap-2 mb-2">
-              <Lightbulb className="h-4 w-4 text-purple-500" />
+              <Lightbulb className="h-4 w-4 text-[#1C3D2E]" />
               <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Smart Insights</span>
             </div>
             <ul className="space-y-1">
               {healthMetrics.suggestions.slice(0, 2).map((suggestion, i) => (
                 <li key={i} className="text-xs text-gray-600 dark:text-gray-400 flex items-start gap-2">
-                  <span className="text-purple-500">•</span>
+                  <span className="text-[#1C3D2E]">•</span>
                   {suggestion}
                 </li>
               ))}
