@@ -28,7 +28,7 @@ export const AdminDashboard = () => {
   const fetchStats = async () => {
     try {
       const response = await axios.get(
-        `${API}/admin/stats?username=admin&password=admin`
+       `${API}/admin/stats`
       );
       setStats(response.data);
     } catch (error) {
