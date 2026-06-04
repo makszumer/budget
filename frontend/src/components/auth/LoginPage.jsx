@@ -43,7 +43,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 dark:from-gray-900 dark:to-gray-950 flex flex-col">
+    <div className="min-h-screen flex flex-col" style={{ backgroundColor: '#FAFAF7' }}>
       <div className="flex-1 flex flex-col justify-center px-8 py-12">
         <div className="text-center mb-8">
           <div className="flex flex-col items-center mb-4">
@@ -55,7 +55,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               />
             </div>
           </div>
-          <h1 className="text-xl font-semibold text-gray-900 dark:text-white">Welcome Back</h1>
+          <h1 className="text-xl font-semibold text-gray-900 dark:text-white" style={{ fontFamily: 'Georgia, serif' }}>Welcome Back</h1>
           <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-1">
             Sign in to your financial tracking account
           </p>
@@ -105,7 +105,7 @@ export const LoginPage = ({ onSwitchToRegister, onLoginSuccess }) => {
               onClick={handleSubmit}
               className="w-full"
               disabled={loading || guestLoading}
-              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent' }}
+              style={{ touchAction: 'manipulation', WebkitTapHighlightColor: 'transparent', backgroundColor: '#1C3D2E', borderColor: '#1C3D2E', color: '#FFFFFF' }}
             >
               {loading ? (
                 <>
